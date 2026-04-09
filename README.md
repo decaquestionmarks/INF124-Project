@@ -80,23 +80,17 @@ A family admin manages shared access and can:
 
 The current idea list includes the following functionality:
 
-- Nutrition tracker
+
 - Family account system
 - Family shopping cart / shopping list
 - Family fridge
-- Calorie and nutrition tracker
-- Recipe finder based on tracked foods
-- User-made recipes
-- Automatic macro calculator
-- Recommendations based on personal needs and wants
-- Receipt scanner
-- Barcode scanner
 - Food tracker
 - Macro, calorie, and micronutrient tracking
-- Recipe creation
-- Recipe finding
+- Recipe finder
+- User-made recipes
 - Recipe suggestion
-- Goals
+- Receipt scanner
+- Barcode scanner
 - Nearby stores
 - Notifications for low food
 - Social sharing for recipes and nutrition goals
@@ -105,14 +99,13 @@ The current idea list includes the following functionality:
 
 Based on the current notes, the items marked with `*` are being treated as the most important early features for the first usable version of the product:
 
-- Receipt and barcode scanning
+- Receipt scanning
 - Food tracking
 - Macro, calorie, and micronutrient visibility
 - Recipe creation
 - Recipe finding
 - Family fridge
 - Shopping list
-- Goals
 
 These features form the core value of the app: helping users understand what they eat, what food they have, and what they can do next.
 
@@ -121,6 +114,7 @@ These features form the core value of the app: helping users understand what the
 The following features appear to be planned as secondary or extended functionality after the core experience is working:
 
 - Recipe suggestions and recommendations
+- Barcode Scanning
 - Nearby store discovery
 - Notifications for low food inventory
 - Social media sharing
@@ -145,7 +139,6 @@ Some of the planning materials also show `Nearby Stores` as either a recipe-rela
 Current planned actions within the fridge flow include:
 
 - Scan receipt
-- Manually add food items
 - Add items to the family fridge
 - Add items to the shopping list
 - View food stored in the household fridge
@@ -154,11 +147,9 @@ Current planned actions within the fridge flow include:
 
 Current planned actions within calorie tracking include:
 
-- Track meals
-- Add food to breakfast, lunch, dinner, and snacks
+- Track breakfast, lunch, dinner, and snacks
 - Review daily calorie totals
 - Review macro information
-- Search for foods and select items for logging
 - Edit or delete meal entries
 
 ### Recipes Section
@@ -347,12 +338,11 @@ From the current design direction, the product should prioritize:
 
 The next logical steps for the project would be:
 
-1. Finalize the MVP feature list
-2. Define the primary user flow from sign-in to daily use
-3. Create a data model for users, meals, recipes, and family inventory
-4. Decide how receipt/barcode scanning and nutrition lookup will work
-5. Turn the wireframes into higher-fidelity designs
-6. Choose the implementation stack and begin development
+1. Define the primary user flow from sign-in to daily use
+2. Create a data model for users, meals, recipes, and family inventory
+3. Decide how receipt/barcode scanning and nutrition lookup will work
+4. Turn the wireframes into higher-fidelity designs
+5. Choose the implementation stack and begin development
 
 ## Summary
 
