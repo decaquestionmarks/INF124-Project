@@ -26,7 +26,7 @@ type SidebarProps = {
 }
 
 export function Sidebar({
-  brand = 'NAME',
+  brand = 'Foodly',
   isOpen,
   onToggle,
 }: SidebarProps) {
