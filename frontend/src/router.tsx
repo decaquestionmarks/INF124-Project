@@ -1,6 +1,7 @@
 import { Navigate, createBrowserRouter } from 'react-router-dom'
 import App from './App.tsx'
 import { PlaceholderPage } from './pages/PlaceholderPage.tsx'
+import { DashboardPage } from './pages/DashboardPage.tsx'
 
 export const router = createBrowserRouter([
   {
@@ -21,7 +22,7 @@ export const router = createBrowserRouter([
   },
   {
     path: '/dashboard',
-    element: <PlaceholderPage title="Dashboard" />,
+    element: <DashboardPage />,
   },
   {
     path: '/fridge',
