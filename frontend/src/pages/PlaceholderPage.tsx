@@ -10,7 +10,7 @@ const scaffoldedRoutes = [
   { label: 'Sign Up', path: '/signup' },
   { label: 'Dashboard', path: '/dashboard' },
   { label: 'Fridge', path: '/fridge' },
-  { label: 'Calorie Tracking', path: '/calorie-tracking' },
+  { label: 'Calorie Tracker', path: '/calorie-tracking' },
   { label: 'Recipes', path: '/recipes' },
   { label: 'Account', path: '/account' },
   { label: 'Nearby Stores', path: '/nearby-stores' },
