@@ -13,7 +13,6 @@ const scaffoldedRoutes = [
   { label: 'Calorie Tracker', path: '/calorie-tracking' },
   { label: 'Recipes', path: '/recipes' },
   { label: 'Account', path: '/account' },
-  { label: 'Nearby Stores', path: '/nearby-stores' },
   { label: 'Vite Starter', path: '/starter' },
 ]
 

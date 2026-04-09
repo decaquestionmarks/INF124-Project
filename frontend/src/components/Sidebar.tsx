@@ -4,7 +4,7 @@ import KeyboardDoubleArrowRightRoundedIcon from '@mui/icons-material/KeyboardDou
 import KitchenRoundedIcon from '@mui/icons-material/KitchenRounded'
 import LocalDiningRoundedIcon from '@mui/icons-material/LocalDiningRounded'
 import MonitorWeightRoundedIcon from '@mui/icons-material/MonitorWeightRounded'
-import StorefrontRoundedIcon from '@mui/icons-material/StorefrontRounded'
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import { NavLink } from 'react-router-dom'
 import './Sidebar.css'
 
@@ -17,7 +17,7 @@ const navigationItems = [
     icon: MonitorWeightRoundedIcon,
   },
   { label: 'Recipes', path: '/recipes', icon: LocalDiningRoundedIcon },
-  { label: 'Nearby Stores', path: '/nearby-stores', icon: StorefrontRoundedIcon },
+  { label: 'Account', path: '/account', icon: AccountCircleIcon },
 ]
 
 type SidebarProps = {
