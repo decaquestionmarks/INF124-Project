@@ -1,14 +1,16 @@
 .dashboard-page {
+  --sidebar-width: 18.5rem;
   display: grid;
-  grid-template-columns: 18.5rem minmax(0, 1fr);
+  grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
   min-height: 100svh;
   background: #fffaf5;
   text-align: left;
   isolation: isolate;
+  transition: grid-template-columns 320ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .dashboard-page--sidebar-closed {
-  grid-template-columns: 5.5rem minmax(0, 1fr);
+  --sidebar-width: 5.5rem;
 }
 
 .dashboard-page__content {
@@ -277,5 +279,11 @@
     z-index: 10;
     background: rgba(17, 17, 17, 0.28);
     backdrop-filter: blur(2px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-page {
+    transition: none;
   }
 }

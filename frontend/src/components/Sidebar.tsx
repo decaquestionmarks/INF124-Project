@@ -1,10 +1,9 @@
 import DashboardRoundedIcon from '@mui/icons-material/DashboardRounded'
 import KeyboardDoubleArrowLeftRoundedIcon from '@mui/icons-material/KeyboardDoubleArrowLeftRounded'
-import KeyboardDoubleArrowRightRoundedIcon from '@mui/icons-material/KeyboardDoubleArrowRightRounded'
 import KitchenRoundedIcon from '@mui/icons-material/KitchenRounded'
 import LocalDiningRoundedIcon from '@mui/icons-material/LocalDiningRounded'
 import MonitorWeightRoundedIcon from '@mui/icons-material/MonitorWeightRounded'
-import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle'
 import { NavLink } from 'react-router-dom'
 import './Sidebar.css'
 
@@ -31,10 +30,6 @@ export function Sidebar({
   isOpen,
   onToggle,
 }: SidebarProps) {
-  const ToggleIcon = isOpen
-    ? KeyboardDoubleArrowLeftRoundedIcon
-    : KeyboardDoubleArrowRightRoundedIcon
-
   return (
     <aside
       className={`app-sidebar${isOpen ? ' app-sidebar--open' : ' app-sidebar--closed'}`}
@@ -43,9 +38,6 @@ export function Sidebar({
       <div className="app-sidebar__topbar">
         <div className="app-sidebar__brand" aria-label={brand}>
           <span className="app-sidebar__brand-full">{brand}</span>
-          <span className="app-sidebar__brand-compact">
-            {brand.slice(0, 2).toUpperCase()}
-          </span>
         </div>
 
         <button
@@ -55,7 +47,11 @@ export function Sidebar({
           aria-expanded={isOpen}
           aria-label={isOpen ? 'Collapse sidebar' : 'Expand sidebar'}
         >
-          <ToggleIcon fontSize="small" aria-hidden="true" />
+          <KeyboardDoubleArrowLeftRoundedIcon
+            className="app-sidebar__toggle-icon"
+            fontSize="small"
+            aria-hidden="true"
+          />
         </button>
       </div>
 
