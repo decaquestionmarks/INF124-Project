@@ -6,7 +6,7 @@ import LocalDiningRoundedIcon from '@mui/icons-material/LocalDiningRounded'
 import MonitorWeightRoundedIcon from '@mui/icons-material/MonitorWeightRounded'
 import AccountCircleIcon from '@mui/icons-material/AccountCircle'
 import { useEffect, useState } from 'react'
-import { NavLink } from 'react-router-dom'
+import { NavLink, useLocation } from 'react-router-dom'
 import './Sidebar.css'
 
 type NavigationItem = {
@@ -70,13 +70,22 @@ export function Sidebar({
   isOpen,
   onToggle,
 }: SidebarProps) {
-  const [isAccountSubmenuOpen, setIsAccountSubmenuOpen] = useState(false)
+  const location = useLocation()
+  const [isAccountSubmenuOpen, setIsAccountSubmenuOpen] = useState(() => {
+    return ['/login', '/signup', '/account'].includes(location.pathname)
+  })
 
   useEffect(() => {
     if (!isOpen) {
       setIsAccountSubmenuOpen(false)
     }
   }, [isOpen])
+
+  useEffect(() => {
+    if (isOpen && ['/login', '/signup', '/account'].includes(location.pathname)) {
+      setIsAccountSubmenuOpen(true)
+    }
+  }, [location.pathname, isOpen])
 
   return (
     <aside
@@ -151,7 +160,7 @@ export function Sidebar({
             <NavLink
               to="/login"
               className={({ isActive }) =>
-                `app-sidebar__sublink${isActive ? ' app-sidebar__sublink--active' : ''}`
+                `app-sidebar__sublink${isActive || location.pathname === '/signup' ? ' app-sidebar__sublink--active' : ''}`
               }
             >
               {accountSubmenuLabel}

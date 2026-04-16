@@ -3,6 +3,7 @@ import App from './App.tsx'
 import { PlaceholderPage } from './pages/PlaceholderPage.tsx'
 import { DashboardPage } from './pages/DashboardPage.tsx'
 import { LoginPage } from './pages/LoginPage.tsx'
+import { SignupPage } from './pages/SignupPage.tsx'
 
 export const router = createBrowserRouter([
   {
@@ -19,7 +20,7 @@ export const router = createBrowserRouter([
   },
   {
     path: '/signup',
-    element: <PlaceholderPage title="Sign Up" />,
+    element: <SignupPage />,
   },
   {
     path: '/dashboard',
