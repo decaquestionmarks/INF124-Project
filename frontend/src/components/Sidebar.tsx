@@ -7,7 +7,21 @@ import AccountCircleIcon from '@mui/icons-material/AccountCircle'
 import { NavLink } from 'react-router-dom'
 import './Sidebar.css'
 
-const navigationItems = [
+type NavigationItem = {
+  label: string
+  path: string
+  icon: typeof DashboardRoundedIcon
+}
+
+/**
+ * Sidebar navigation configuration.
+ *
+ * Each entry controls:
+ * - The visible label in the sidebar.
+ * - The destination route used by NavLink.
+ * - The Material UI icon rendered for that route.
+ */
+const navigationItems: NavigationItem[] = [
   { label: 'Dashboard', path: '/dashboard', icon: DashboardRoundedIcon },
   { label: 'Fridge', path: '/fridge', icon: KitchenRoundedIcon },
   {
@@ -19,12 +33,26 @@ const navigationItems = [
   { label: 'Account', path: '/account', icon: AccountCircleIcon },
 ]
 
+/**
+ * Props for the Sidebar component.
+ */
 type SidebarProps = {
+  /** Brand name shown at the top left of the sidebar. */
   brand?: string
+  /** Controls whether the sidebar is expanded or collapsed. */
   isOpen: boolean
+  /** Triggered when the user clicks the collapse/expand button. */
   onToggle: () => void
 }
 
+/**
+ * Primary application sidebar.
+ *
+ * Responsibilities:
+ * - Render brand and collapse toggle controls.
+ * - Render main route navigation links.
+ * - Expose ARIA labels and expanded state for accessibility.
+ */
 export function Sidebar({
   brand = 'Foodly',
   isOpen,
@@ -35,6 +63,7 @@ export function Sidebar({
       className={`app-sidebar${isOpen ? ' app-sidebar--open' : ' app-sidebar--closed'}`}
       aria-label="Primary"
     >
+      {/* Top row with brand and sidebar toggle button. */}
       <div className="app-sidebar__topbar">
         <div className="app-sidebar__brand" aria-label={brand}>
           <span className="app-sidebar__brand-full">{brand}</span>
@@ -55,6 +84,7 @@ export function Sidebar({
         </button>
       </div>
 
+      {/* Main app navigation links. */}
       <nav className="app-sidebar__nav" aria-label="Main navigation">
         {navigationItems.map((item) => {
           const Icon = item.icon
