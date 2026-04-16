@@ -134,6 +134,10 @@
 .app-sidebar__link-text {
   min-width: 0;
   overflow: hidden;
+  padding-bottom: 0.15em;
+  padding-right: 0.15em;
+  margin-bottom: -0.15em;
+  margin-right: -0.15em;
   white-space: nowrap;
   max-width: 12rem;
   opacity: 1;
