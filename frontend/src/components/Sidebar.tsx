@@ -75,11 +75,8 @@ export function Sidebar({
     return ['/login', '/signup', '/account'].includes(location.pathname)
   })
 
-  useEffect(() => {
-    if (!isOpen) {
-      setIsAccountSubmenuOpen(false)
-    }
-  }, [isOpen])
+  // Remove the useEffect that closes the submenu right when sidebar collapses
+  // to avoid triggering a vertical shrink animation while the sidebar width shrinks horizontally.
 
   useEffect(() => {
     if (isOpen && ['/login', '/signup', '/account'].includes(location.pathname)) {
