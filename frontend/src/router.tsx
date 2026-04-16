@@ -2,6 +2,7 @@ import { Navigate, createBrowserRouter } from 'react-router-dom'
 import App from './App.tsx'
 import { PlaceholderPage } from './pages/PlaceholderPage.tsx'
 import { DashboardPage } from './pages/DashboardPage.tsx'
+import { LoginPage } from './pages/LoginPage.tsx'
 
 export const router = createBrowserRouter([
   {
@@ -14,7 +15,7 @@ export const router = createBrowserRouter([
   },
   {
     path: '/login',
-    element: <PlaceholderPage title="Login" />,
+    element: <LoginPage />,
   },
   {
     path: '/signup',
