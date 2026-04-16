@@ -63,7 +63,7 @@ export function LoginPage() {
             <span aria-hidden="true">{isSidebarOpen ? 'Hide' : 'Menu'}</span>
           </button>
           
-          <h1 className="login-page__title">Sign in</h1>
+          <h1 className="login-page__title">Log in</h1>
           
           <form className="login-page__form" onSubmit={(e) => e.preventDefault()}>
             <div className="login-page__input-group">
@@ -77,7 +77,7 @@ export function LoginPage() {
             </div>
             
             <button type="submit" className="login-page__submit">
-              Sign in
+              Log in
             </button>
           </form>
           
