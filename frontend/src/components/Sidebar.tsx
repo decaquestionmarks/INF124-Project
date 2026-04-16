@@ -1,9 +1,11 @@
 import DashboardRoundedIcon from '@mui/icons-material/DashboardRounded'
+import ExpandMoreRoundedIcon from '@mui/icons-material/ExpandMoreRounded'
 import KeyboardDoubleArrowLeftRoundedIcon from '@mui/icons-material/KeyboardDoubleArrowLeftRounded'
 import KitchenRoundedIcon from '@mui/icons-material/KitchenRounded'
 import LocalDiningRoundedIcon from '@mui/icons-material/LocalDiningRounded'
 import MonitorWeightRoundedIcon from '@mui/icons-material/MonitorWeightRounded'
 import AccountCircleIcon from '@mui/icons-material/AccountCircle'
+import { useEffect, useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import './Sidebar.css'
 
@@ -30,8 +32,18 @@ const navigationItems: NavigationItem[] = [
     icon: MonitorWeightRoundedIcon,
   },
   { label: 'Recipes', path: '/recipes', icon: LocalDiningRoundedIcon },
-  { label: 'Account', path: '/account', icon: AccountCircleIcon },
 ]
+
+const accountNavigationItem: NavigationItem = {
+  label: 'Account',
+  path: '/account',
+  icon: AccountCircleIcon,
+}
+
+// TODO: When account/auth logic is implemented, change this label to "Sign out" for logged-in users.
+const accountSubmenuLabel = 'Log in / Sign up'
+// TODO: When account/auth logic is implemented, only show this item for logged-in users.
+const accountSettingsSubmenuLabel = 'Settings'
 
 /**
  * Props for the Sidebar component.
@@ -58,6 +70,14 @@ export function Sidebar({
   isOpen,
   onToggle,
 }: SidebarProps) {
+  const [isAccountSubmenuOpen, setIsAccountSubmenuOpen] = useState(false)
+
+  useEffect(() => {
+    if (!isOpen) {
+      setIsAccountSubmenuOpen(false)
+    }
+  }, [isOpen])
+
   return (
     <aside
       className={`app-sidebar${isOpen ? ' app-sidebar--open' : ' app-sidebar--closed'}`}
@@ -106,6 +126,46 @@ export function Sidebar({
             </NavLink>
           )
         })}
+
+        <div
+          className={`app-sidebar__submenu${isAccountSubmenuOpen ? ' app-sidebar__submenu--open' : ''}`}
+        >
+          <button
+            type="button"
+            className="app-sidebar__link app-sidebar__submenu-toggle"
+            onClick={() => setIsAccountSubmenuOpen((open) => !open)}
+            aria-expanded={isAccountSubmenuOpen}
+            aria-controls="account-submenu"
+            aria-label={accountNavigationItem.label}
+          >
+            <span className="app-sidebar__link-icon" aria-hidden="true">
+              <AccountCircleIcon fontSize="small" />
+            </span>
+            <span className="app-sidebar__link-text">{accountNavigationItem.label}</span>
+            <span className="app-sidebar__submenu-chevron" aria-hidden="true">
+              <ExpandMoreRoundedIcon fontSize="small" />
+            </span>
+          </button>
+
+          <div id="account-submenu" className="app-sidebar__submenu-panel">
+            <NavLink
+              to="/login"
+              className={({ isActive }) =>
+                `app-sidebar__sublink${isActive ? ' app-sidebar__sublink--active' : ''}`
+              }
+            >
+              {accountSubmenuLabel}
+            </NavLink>
+            <NavLink
+              to={accountNavigationItem.path}
+              className={({ isActive }) =>
+                `app-sidebar__sublink${isActive ? ' app-sidebar__sublink--active' : ''}`
+              }
+            >
+              {accountSettingsSubmenuLabel}
+            </NavLink>
+          </div>
+        </div>
       </nav>
     </aside>
   )
