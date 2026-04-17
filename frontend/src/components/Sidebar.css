@@ -233,6 +233,14 @@
   transition: color 160ms ease;
 }
 
+.app-sidebar__sublink-button {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  padding: 0.3rem 0;
+}
+
 .app-sidebar__sublink:hover,
 .app-sidebar__sublink:focus-visible,
 .app-sidebar__sublink--active {

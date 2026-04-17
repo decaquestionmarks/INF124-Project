@@ -5,8 +5,11 @@ import KitchenRoundedIcon from '@mui/icons-material/KitchenRounded'
 import LocalDiningRoundedIcon from '@mui/icons-material/LocalDiningRounded'
 import MonitorWeightRoundedIcon from '@mui/icons-material/MonitorWeightRounded'
 import AccountCircleIcon from '@mui/icons-material/AccountCircle'
+import { signOut } from 'firebase/auth'
 import { useEffect, useState } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
+import { useAuth } from '../auth/AuthContext.tsx'
+import { auth } from '../firebase.ts'
 import './Sidebar.css'
 
 type NavigationItem = {
@@ -40,11 +43,6 @@ const accountNavigationItem: NavigationItem = {
   icon: AccountCircleIcon,
 }
 
-// TODO: When account/auth logic is implemented, change this label to "Sign out" for logged-in users.
-const accountSubmenuLabel = 'Log in / Sign up'
-// TODO: When account/auth logic is implemented, only show this item for logged-in users.
-const accountSettingsSubmenuLabel = 'Settings'
-
 /**
  * Props for the Sidebar component.
  */
@@ -70,6 +68,7 @@ export function Sidebar({
   isOpen,
   onToggle,
 }: SidebarProps) {
+  const { user } = useAuth()
   const location = useLocation()
   const [isAccountSubmenuOpen, setIsAccountSubmenuOpen] = useState(() => {
     return ['/login', '/signup', '/account'].includes(location.pathname)
@@ -83,6 +82,10 @@ export function Sidebar({
       setIsAccountSubmenuOpen(true)
     }
   }, [location.pathname, isOpen])
+
+  const handleLogout = async () => {
+    await signOut(auth)
+  }
 
   return (
     <aside
@@ -154,22 +157,34 @@ export function Sidebar({
           </button>
 
           <div id="account-submenu" className="app-sidebar__submenu-panel">
-            <NavLink
-              to="/login"
-              className={({ isActive }) =>
-                `app-sidebar__sublink${isActive || location.pathname === '/signup' ? ' app-sidebar__sublink--active' : ''}`
-              }
-            >
-              {accountSubmenuLabel}
-            </NavLink>
-            <NavLink
-              to={accountNavigationItem.path}
-              className={({ isActive }) =>
-                `app-sidebar__sublink${isActive ? ' app-sidebar__sublink--active' : ''}`
-              }
-            >
-              {accountSettingsSubmenuLabel}
-            </NavLink>
+            {user ? (
+              <>
+                <NavLink
+                  to={accountNavigationItem.path}
+                  className={({ isActive }) =>
+                    `app-sidebar__sublink${isActive ? ' app-sidebar__sublink--active' : ''}`
+                  }
+                >
+                  Account settings
+                </NavLink>
+                <button
+                  type="button"
+                  className="app-sidebar__sublink app-sidebar__sublink-button"
+                  onClick={handleLogout}
+                >
+                  Log out
+                </button>
+              </>
+            ) : (
+              <NavLink
+                to="/login"
+                className={({ isActive }) =>
+                  `app-sidebar__sublink${isActive || location.pathname === '/signup' ? ' app-sidebar__sublink--active' : ''}`
+                }
+              >
+                Log In/Sign up
+              </NavLink>
+            )}
           </div>
         </div>
       </nav>

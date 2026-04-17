@@ -3,7 +3,6 @@ import './AccountPage.css'
 import { useEffect, useState } from 'react'
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
-import { PlaceholderPage } from './PlaceholderPage.tsx';
 
 const userData = [
     { id: "starting-weight", label: "Starting Weight:", type: "text" },

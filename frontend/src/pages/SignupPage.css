@@ -124,6 +124,45 @@
   background: #7ca557;
 }
 
+.signup-page__submit:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.signup-page__google {
+  margin-top: 0.25rem;
+  padding: 0.85rem;
+  border: 1px solid #deb99b;
+  border-radius: 0.5rem;
+  background: #fff7ef;
+  color: #7f5e44;
+  font-size: 1rem;
+  font-family: 'Avenir Next', 'Segoe UI', sans-serif;
+  cursor: pointer;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease;
+}
+
+.signup-page__google:hover,
+.signup-page__google:focus-visible {
+  background: #fff1e5;
+  border-color: #ff8a3d;
+  color: #ff8a3d;
+}
+
+.signup-page__google:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.signup-page__error {
+  margin: 0;
+  color: #b42318;
+  font-size: 0.92rem;
+}
+
 .signup-page__footer {
   margin-top: 2rem;
   text-align: center;

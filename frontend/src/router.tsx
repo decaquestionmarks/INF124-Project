@@ -7,6 +7,7 @@ import { SignupPage } from './pages/SignupPage.tsx'
 import {RecipePage} from './pages/RecipePage.tsx'
 import { RecipeDetail } from './pages/RecipeDetail.tsx'
 import { AccountPage } from './pages/AccountPage.tsx'
+import { RedirectIfAuthenticated, RequireAuth } from './auth/RouteGuards.tsx'
 
 export const router = createBrowserRouter([
   {
@@ -19,39 +20,75 @@ export const router = createBrowserRouter([
   },
   {
     path: '/login',
-    element: <LoginPage />,
+    element: (
+      <RedirectIfAuthenticated>
+        <LoginPage />
+      </RedirectIfAuthenticated>
+    ),
   },
   {
     path: '/signup',
-    element: <SignupPage />,
+    element: (
+      <RedirectIfAuthenticated>
+        <SignupPage />
+      </RedirectIfAuthenticated>
+    ),
   },
   {
     path: '/dashboard',
-    element: <DashboardPage />,
+    element: (
+      <RequireAuth>
+        <DashboardPage />
+      </RequireAuth>
+    ),
   },
   {
     path: '/fridge',
-    element: <PlaceholderPage title="Fridge" />,
+    element: (
+      <RequireAuth>
+        <PlaceholderPage title="Fridge" />
+      </RequireAuth>
+    ),
   },
   {
     path: '/calorie-tracking',
-    element: <PlaceholderPage title="Calorie Tracking" />,
+    element: (
+      <RequireAuth>
+        <PlaceholderPage title="Calorie Tracking" />
+      </RequireAuth>
+    ),
   },
   {
     path: '/recipes',
-    element: <RecipePage/>,
+    element: (
+      <RequireAuth>
+        <RecipePage />
+      </RequireAuth>
+    ),
   },
     {
     path: '/recipes/:id',
-    element: <RecipeDetail/>,
+    element: (
+      <RequireAuth>
+        <RecipeDetail />
+      </RequireAuth>
+    ),
   },
   {
     path: '/account',
-    element: <AccountPage/>,
+    element: (
+      <RequireAuth>
+        <AccountPage />
+      </RequireAuth>
+    ),
   },
   {
     path: '/nearby-stores',
-    element: <PlaceholderPage title="Nearby Stores" />,
+    element: (
+      <RequireAuth>
+        <PlaceholderPage title="Nearby Stores" />
+      </RequireAuth>
+    ),
   },
   {
     path: '*',
