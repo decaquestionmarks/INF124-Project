@@ -2,6 +2,8 @@ import { Navigate, createBrowserRouter } from 'react-router-dom'
 import App from './App.tsx'
 import { PlaceholderPage } from './pages/PlaceholderPage.tsx'
 import { DashboardPage } from './pages/DashboardPage.tsx'
+import { LoginPage } from './pages/LoginPage.tsx'
+import { SignupPage } from './pages/SignupPage.tsx'
 import {RecipePage} from './pages/RecipePage.tsx'
 import { RecipeDetail } from './pages/RecipeDetail.tsx'
 import { AccountPage } from './pages/AccountPage.tsx'
@@ -17,11 +19,11 @@ export const router = createBrowserRouter([
   },
   {
     path: '/login',
-    element: <PlaceholderPage title="Login" />,
+    element: <LoginPage />,
   },
   {
     path: '/signup',
-    element: <PlaceholderPage title="Sign Up" />,
+    element: <SignupPage />,
   },
   {
     path: '/dashboard',

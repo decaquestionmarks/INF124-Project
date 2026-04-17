@@ -1,0 +1,175 @@
+.signup-page {
+  --sidebar-width: 18.5rem;
+  display: grid;
+  grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+  min-height: 100svh;
+  background: #fffaf5;
+  text-align: left;
+  isolation: isolate;
+  transition: grid-template-columns 320ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.signup-page--sidebar-closed {
+  --sidebar-width: 5.5rem;
+}
+
+.signup-page__content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  padding: max(1.75rem, env(safe-area-inset-top, 0px)) 1.75rem
+    max(2.25rem, env(safe-area-inset-bottom, 0px));
+  background: #ffffff;
+}
+
+.signup-page__form-container {
+  width: 100%;
+  max-width: 22rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.signup-page__menu-button {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  align-self: flex-start;
+  min-width: 5rem;
+  padding: 0.7rem 1rem;
+  border: 1px solid #deb99b;
+  border-radius: 999px;
+  background: #fff7ef;
+  color: #7f5e44;
+  cursor: pointer;
+  font-weight: 700;
+  margin-bottom: 2rem;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease;
+}
+
+.signup-page__menu-button:hover,
+.signup-page__menu-button:focus-visible {
+  background: #fff1e5;
+  border-color: #ff8a3d;
+  color: #ff8a3d;
+}
+
+.signup-page__title {
+  margin: 0 0 2rem;
+  color: #000000;
+  font-family: 'Avenir Next', 'Segoe UI', sans-serif;
+  font-size: clamp(2.5rem, 4vw, 3.5rem);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 0.95;
+}
+
+.signup-page__form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.signup-page__input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.signup-page__input-group label {
+  color: #111111;
+  font-size: 1.1rem;
+  font-family: 'Avenir Next', 'Segoe UI', sans-serif;
+}
+
+.signup-page__input-group input {
+  padding: 0.8rem 1rem;
+  border: 1px solid #999;
+  border-radius: 0.4rem;
+  font-size: 1rem;
+  font-family: inherit;
+  color: #111111;
+  caret-color: #111111;
+  background: #ffffff;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.signup-page__input-group input:focus {
+  border-color: #8cbe72;
+  box-shadow: 0 0 0 3px rgba(140, 190, 114, 0.2);
+}
+
+.signup-page__submit {
+  margin-top: 0.5rem;
+  padding: 0.85rem;
+  border: none;
+  border-radius: 0.5rem;
+  background: #92bc6a; /* Closely matches the user's green button */
+  color: #111111;
+  font-size: 1.1rem;
+  font-family: 'Avenir Next', 'Segoe UI', sans-serif;
+  cursor: pointer;
+  transition: background-color 160ms ease;
+}
+
+.signup-page__submit:hover,
+.signup-page__submit:focus-visible {
+  background: #7ca557;
+}
+
+.signup-page__footer {
+  margin-top: 2rem;
+  text-align: center;
+  color: #666666;
+  font-size: 1.1rem;
+  font-family: 'Avenir Next', 'Segoe UI', sans-serif;
+}
+
+.signup-page__footer a {
+  color: #e5935f;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+}
+
+.signup-page__footer a:hover {
+  text-decoration-thickness: 2px;
+}
+
+.signup-page__backdrop {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .signup-page {
+    grid-template-columns: 1fr;
+    min-height: auto;
+  }
+
+  .signup-page__menu-button {
+    display: inline-flex;
+  }
+
+  .signup-page__backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 10;
+    background: rgba(30, 20, 14, 0.4);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 320ms ease;
+  }
+
+  .signup-page__backdrop--visible {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
