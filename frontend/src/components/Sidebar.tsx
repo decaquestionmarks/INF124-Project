@@ -148,7 +148,16 @@ export function Sidebar({
             aria-label={accountNavigationItem.label}
           >
             <span className="app-sidebar__link-icon" aria-hidden="true">
-              <AccountCircleIcon fontSize="small" />
+              {user?.photoURL ? (
+                <img
+                  src={user.photoURL}
+                  alt=""
+                  className="app-sidebar__avatar"
+                  referrerPolicy="no-referrer"
+                />
+              ) : (
+                <AccountCircleIcon fontSize="small" />
+              )}
             </span>
             <span className="app-sidebar__link-text">{accountNavigationItem.label}</span>
             <span className="app-sidebar__submenu-chevron" aria-hidden="true">
