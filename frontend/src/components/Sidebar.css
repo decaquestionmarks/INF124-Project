@@ -134,10 +134,10 @@
 }
 
 .app-sidebar__avatar {
-  width: 100%;
-  height: 100%;
+  width: 1.35rem;
+  height: 1.35rem;
   object-fit: cover;
-  border-radius: inherit;
+  border-radius: 50%;
 }
 
 .app-sidebar__link-text {
