@@ -90,14 +90,15 @@ export function RecipePage(){
           
           <section>
             
-              <form action="" className="search-form">
+            <form action="" className="search-form">
                 <SearchIcon className="search-icon"></SearchIcon>
-              <input aria-label="search-box" type="search" placeholder="Search"className="search-bar" />
+                <input aria-label="search-box" type="search" placeholder="Search" className="search-bar" />
             </form>
 
           </section>
           <section className="recommended-recipes">
-              <h2>Recommended</h2>
+            <div className="recommended-heading"><h2>Recommended</h2></div>
+              
               <div className="recipe-row">
                 {recommended_recipes.map((recipe) => (
                   <div className="recipe-card">
@@ -118,10 +119,10 @@ export function RecipePage(){
 
               </div>
           </section>
-           <section className="recommended-recipes">
+           <section className="your-recipes">
             <div className="your-recipes-heading">
               <h2>Your Recipes</h2>
-              <Link className="add-recipe-link" to="">Add Recipe <AddCircleIcon/></Link>
+              <Link className="add-recipe-link" to="/recipes/create">Add Recipe <AddCircleIcon/></Link>
             </div>
               <div className="recipe-row">
                 {recommended_recipes.map((recipe) => (

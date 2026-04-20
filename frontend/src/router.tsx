@@ -8,6 +8,8 @@ import {RecipePage} from './pages/RecipePage.tsx'
 import { RecipeDetail } from './pages/RecipeDetail.tsx'
 import { AccountPage } from './pages/AccountPage.tsx'
 import { RedirectIfAuthenticated, RequireAuth } from './auth/RouteGuards.tsx'
+import { CreateRecipePage } from './pages/CreateRecipePage.tsx'
+import { FridgePage } from './pages/FridgePage.tsx'
 
 export const router = createBrowserRouter([
   {
@@ -46,7 +48,7 @@ export const router = createBrowserRouter([
     path: '/fridge',
     element: (
       <RequireAuth>
-        <PlaceholderPage title="Fridge" />
+        <FridgePage/>
       </RequireAuth>
     ),
   },
@@ -63,6 +65,14 @@ export const router = createBrowserRouter([
     element: (
       <RequireAuth>
         <RecipePage />
+      </RequireAuth>
+    ),
+  },
+    {
+    path: '/recipes/create',
+    element: (
+      <RequireAuth>
+        <CreateRecipePage />
       </RequireAuth>
     ),
   },

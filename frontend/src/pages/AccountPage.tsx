@@ -5,12 +5,12 @@ import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 
 const userData = [
-    { id: "starting-weight", label: "Starting Weight:", type: "text" },
-    { id: "current-weight", label: "Current Weight:", type: "text" },
-    { id: "goal-weight", label: "Goal Weight:", type: "text" },
-    { id: "age", label: "Age:", type: "text" },
-    { id: "height", label: "Height:", type: "text" },
-    { id: "activity-level", label: "Activity Level:", type: "select", options: ["Sedentary", "Lightly Active", "Moderately Active", "Very Active"] }
+    { id: "starting-weight", label: "Starting Weight:", type: "text", value:145},
+    { id: "current-weight", label: "Current Weight:", type: "text", value:150},
+    { id: "goal-weight", label: "Goal Weight:", type: "text", value:160 },
+    { id: "age", label: "Age:", type: "text", value:22 },
+    { id: "height", label: "Height:", type: "text", value:"5'" },
+    { id: "activity-level", label: "Activity Level:", type: "select", options: ["Sedentary", "Lightly Active", "Moderately Active", "Very Active"]}
 ];
 
 const familyData = [
@@ -102,8 +102,8 @@ export function AccountPage(){
                         { userData.map((data) => (
                             <div className="single-line__user-goals">
                                 <label htmlFor={data.id}>{data.label}</label> 
-                                {data.type == "text" ? <input id={data.id} className={`goal-input ${editingGoals ? '' : 'edit'}`} type="text" disabled={!editingGoals}/> :
-                                    <select name={data.label} className={`goal-input ${editingGoals ? '' : 'edit'}`} disabled={!editingGoals}>
+                                {data.type == "text" ? <input id={data.id} className={`goal-input`} type="text" disabled={!editingGoals} value={data.value}/> :
+                                    <select name={data.label} className={`goal-input`} disabled={!editingGoals}>
                                     {data.options?.map((option) => (
                                         <option value={option}>{option}</option>
                                     ))}
@@ -112,8 +112,14 @@ export function AccountPage(){
                             </div>
                                 
                         ))}
-                        <button className={`account-page-submit-form ${!editingGoals ? '' : 'edit'}`} type="submit" disabled={!editingGoals}>Save</button>
+                        
+                        
+
                     </div>
+                    <div className={`update-buttons ${!editingGoals ? '' : 'edit'}`}>
+                          <button className={`account-page-submit-form`} type="submit" disabled={!editingGoals}>Save</button>    
+                    </div>
+                      
                 </form>
             
             </section>

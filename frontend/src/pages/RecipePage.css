@@ -10,9 +10,34 @@
     padding: 3px;
 }
 
+.search-bar{
+    width: 100%;
+    background-color: white;
+    border: none;
+    padding: 10px;
+    color: black;
+    font-size: 1rem;
+}
+
+.search-icon{
+    color: #ff8a3d;
+}
+
+.search-bar:focus{ 
+    outline: none;
+}
+
+.recommended-recipes{
+    border-bottom: solid 1px #eadfd5;
+}
+
 .your-recipes-heading{
     display: flex;
     justify-content: space-between;
+}
+
+.recommended-heading, .your-recipes-heading{
+    padding-bottom: 1rem;
 }
 .add-recipe-link{
     text-decoration: none;
@@ -31,7 +56,7 @@
 
     overflow-x: auto;
     
-    border-bottom: solid 1px #eadfd5;
+    
     padding-bottom: 1.25rem;
 
 }
@@ -80,21 +105,4 @@
     text-align: center;
 }
 
-.search-icon{
-    color: #ff8a3d;
 
-}
-
-.search-bar{
-    width: 100%;
-    background-color: white;
-   border: none;
-    padding: 10px;
-   
-    color: black;
-    font-size: 1rem;
-}
-
-.search-bar:focus{ 
-    outline: none;
-}

@@ -14,21 +14,21 @@ h2{
 .account-page__user-goals-form__grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    column-gap: 2rem;
-    width: 100%;
     gap: 1rem;
     margin-top: 2rem;
+
 }
 
 
 .account-page-submit-form.edit{
-    /* display: inline-flex; */
+    display: inline-flex;
     opacity: 1;
 }
 
 .account-page-submit-form {
-    /* display: none; */
-    opacity: 0;
+    /* gonna try to add a transition to this later */
+    /* display: none;  */
+    /* opacity: 0; */
     align-items: center;
     justify-content: center;
     align-self: flex-start;
@@ -40,12 +40,46 @@ h2{
     color: #7f5e44;
     cursor: pointer;
     font-weight: 700;
-    font-size: .8rem;
+    font-size: .9rem;
     transition: opacity 160ms ease,
     background-color 160ms ease,
     border-color 160ms ease,
     color 160ms ease;
     width: 50%;
+
+}
+
+
+
+.update-buttons{
+    transition: opacity 160ms ease;
+    opacity: 0;
+    max-height: 0;
+    overflow: hidden;
+    display: flex;
+    justify-content: flex-end;
+    gap: .5rem;
+    width: 100%;
+}
+
+.update-buttons.edit{
+    margin-top: 1rem;
+    opacity: 1;
+    max-height: none;
+}
+
+input{
+    font-family: 'Avenir Next', 'Segoe UI', sans-serif;
+}
+
+.update-buttons button{
+    max-width: 15%;
+}
+
+@media(max-width: 700px) {
+.update-buttons button{
+    max-width: 100%;}
+
 }
 
 .account-page-submit-form:hover{
@@ -99,13 +133,6 @@ p, span{
     color: #62574c;
 }
 
-.goal-input{
-    transition: ease border-color 160ms;
-}
-
-.goal-input.edit{
-    border-color: white;
-}
 
 
 
@@ -147,7 +174,7 @@ p, span{
     gap: 1rem;
     justify-content: space-between;
     border-bottom: 1px solid #eadfd5;
-    transition: ease opacity 160ms;
+    transition: opacity 160ms ease;
 }
 
 .add-family-member.hidden{

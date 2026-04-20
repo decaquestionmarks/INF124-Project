@@ -1,0 +1,94 @@
+.category{
+    display: flex;
+    flex-direction: column;
+    border-radius: 1.25rem;
+    border: 1px solid #eadfd5;
+}
+
+.category-name{
+    color: black;
+    font-weight: 700;
+    font-size: 1.35rem;
+    letter-spacing: -0.04em;
+    line-height: 1.05;
+}
+
+.food-items{
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    color: #5a524b;
+}
+
+.add-food-options{
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+}
+
+.add-option{
+    display: flex;
+    gap: .25rem;
+    font-size: .9rem;
+}
+
+.add-food-options button{
+    display: inline-flex;
+    align-items: center;
+    background: none;
+    color:#ff8a3d;
+    border: none;
+    cursor: pointer;
+}
+
+.food-item-heading{
+    display: flex;
+    align-items: center;
+    padding: .5rem;
+    background: #f2efeb;
+    justify-content: space-between;
+    border-radius: 1rem;
+    transition: ease border-radius 160ms;
+   
+}
+
+.food-item-heading.active{
+    border-radius: 1rem 1rem 0rem 0rem;
+
+}
+
+.category button{
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+
+.popped-down{
+    
+    flex-direction: column;
+    
+    opacity: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: opacity 160ms ease, max-height 160ms ease;
+
+}
+
+
+.popped-down.active{
+    display: flex;
+    padding: .5rem;
+    flex-direction: column;
+
+    opacity: 1;
+    max-height: none;
+    
+
+
+}
+
+
+.down-icon{
+    color: #ff8a3d;
+}
