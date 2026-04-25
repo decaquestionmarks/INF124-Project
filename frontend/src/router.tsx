@@ -10,6 +10,8 @@ import { AccountPage } from './pages/AccountPage.tsx'
 import { RedirectIfAuthenticated, RequireAuth } from './auth/RouteGuards.tsx'
 import { CreateRecipePage } from './pages/CreateRecipePage.tsx'
 import { FridgePage } from './pages/FridgePage.tsx'
+import { CalorieTrackingPage } from './pages/CalorieTrackingPage.tsx'
+import { SearchFoodPage } from './pages/SearchFoodPage.tsx'
 
 export const router = createBrowserRouter([
   {
@@ -56,7 +58,7 @@ export const router = createBrowserRouter([
     path: '/calorie-tracking',
     element: (
       <RequireAuth>
-        <PlaceholderPage title="Calorie Tracking" />
+        <CalorieTrackingPage/>
       </RequireAuth>
     ),
   },
@@ -84,6 +86,15 @@ export const router = createBrowserRouter([
       </RequireAuth>
     ),
   },
+  {
+    path: '/search-food',
+    element: (
+      <RequireAuth>
+        <SearchFoodPage />
+      </RequireAuth>
+    ),
+  },
+  
   {
     path: '/account',
     element: (

@@ -3,22 +3,53 @@ import './AccountPage.css'
 import { useEffect, useState } from 'react'
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
+import { Header } from '../components/Header.tsx';
 
-const userData = [
-    { id: "starting-weight", label: "Starting Weight:", type: "text", value:145},
-    { id: "current-weight", label: "Current Weight:", type: "text", value:150},
-    { id: "goal-weight", label: "Goal Weight:", type: "text", value:160 },
-    { id: "age", label: "Age:", type: "text", value:22 },
-    { id: "height", label: "Height:", type: "text", value:"5'" },
-    { id: "activity-level", label: "Activity Level:", type: "select", options: ["Sedentary", "Lightly Active", "Moderately Active", "Very Active"]}
-];
+
 
 const familyData = [
     {username: "Jane Doe", pfp: "https://upload.wikimedia.org/wikipedia/commons/2/2c/Default_pfp.svg"},
     {username : "John Doe", pfp: "https://upload.wikimedia.org/wikipedia/commons/2/2c/Default_pfp.svg"},
 ]
 
+
 export function AccountPage(){
+  const formSchema = [
+      {
+        id: "weightStarting",
+        label: "Starting Weight:",
+        type: "number"
+      },
+      {
+        id: "weightCurrent",
+        label: "Current Weight:",
+        type: "number"
+      },
+      {
+        id: "weightGoal",
+        label: "Goal Weight:",
+        type: "number"
+      },
+      {
+        id: "age",
+        label: "Age:",
+        type: "number"
+      },
+
+
+      {
+        id: "activityLevel",
+        label: "Activity:",
+        type: "select",
+      },
+      {
+        id: "height",
+        label: "Height:",
+        type: "group",
+      },
+  ]
+    const [formValues, setFormValues] = useState<Record<string, string>>({})
+    const [originalFormValues, setOriginalFormValues] = useState(formValues)
     const [editingGoals, setEditingGoals] = useState(false);
     const [editingFamily, setEditingFamily] = useState(false);
 
@@ -53,7 +84,8 @@ export function AccountPage(){
     
         return () => legacyMediaQuery.removeListener?.(syncSidebarState)
       }, [])
-    
+
+      const formChanges = JSON.stringify(formValues) !== JSON.stringify(originalFormValues)
 
 
       return (
@@ -72,24 +104,8 @@ export function AccountPage(){
       />
 
       <section className="dashboard-page__content">
-        <header className="dashboard-page__header">
-          <div className="dashboard-page__header-copy">
-            <button
-              type="button"
-              className="dashboard-page__menu-button"
-              onClick={() => setIsSidebarOpen((open) => !open)}
-              aria-expanded={isSidebarOpen}
-              aria-label={isSidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
-            >
-              <span aria-hidden="true">{isSidebarOpen ? 'Hide' : 'Menu'}</span>
-            </button>
-
-            <p className="dashboard-page__eyebrow">Family Fridge</p>
-            <h1>Account</h1>
-          </div>
-
- 
-        </header>
+      
+        <Header setIsSidebarOpen={setIsSidebarOpen} isSidebarOpen={isSidebarOpen} pageTitle={"Account"}></Header>
             <section className="account-page__user-goals-content">
               <div className="account-page__section-header">
                 <h2>Goals</h2>
@@ -97,27 +113,63 @@ export function AccountPage(){
                   setEditingGoals(!editingGoals))}>{editingGoals ? "Cancel" : "Edit"}</button>
               </div>
                 
-                <form action="" className="account-page__user-goals-form">
+                <form autoComplete="off" action="" className="account-page__user-goals-form">
                     <div className="account-page__user-goals-form__grid">
-                        { userData.map((data) => (
-                            <div className="single-line__user-goals">
-                                <label htmlFor={data.id}>{data.label}</label> 
-                                {data.type == "text" ? <input id={data.id} className={`goal-input`} type="text" disabled={!editingGoals} value={data.value}/> :
-                                    <select name={data.label} className={`goal-input`} disabled={!editingGoals}>
-                                    {data.options?.map((option) => (
-                                        <option value={option}>{option}</option>
-                                    ))}
-                                    </select>
-                                }
-                            </div>
-                                
-                        ))}
-                        
-                        
+                      {formSchema.map((field) => {
+                        if (field.type == "select"){
+                          return (
+                            <div className="activity-grouping">
+                                <label htmlFor="">{field.label}</label>
+                                <select name="activity-level" className={`goal-input`} disabled={!editingGoals} value={formValues[field.id]}
+                                  onChange={(e) => setFormValues((prev) => ({...prev,  [field.id]: e.target.value}))}>
+                                  <option value="sedentary">Sedentary</option>
+                                  <option value="lightly-active">Lightly Active</option>
+                                  <option value="moderately-active">Moderately Active</option>
+                                  <option value="very-active">Very Active</option>
 
+                                </select>
+                              </div>
+                            )
+
+                        }
+                        if (field.type == "group"){
+                          return (
+                              <div className="height-grouping">
+                                  <label htmlFor="">{field.label}</label>
+                                    <div className="height-inputs">
+                                      <input min="0" type="number" id="height-ft" onWheel={(e) => {e.currentTarget.blur()}} 
+                                        value={formValues["height-ft"]}
+                                        onChange={(e) => setFormValues(prev => ({
+                                              ...prev, 
+                                              ["height-ft"]: e.target.value}))} disabled={!editingGoals} 
+                                              />
+                                              <span>ft</span>
+                                      <input min="0" type="number" id="height-inches" onChange={(e) => setFormValues(prev => ({
+                                            ...prev, 
+                                            ["height-in"]: e.target.value}))} disabled={!editingGoals} onWheel={(e) => {e.currentTarget.blur()}}
+                                            value={formValues["height-in"]}
+                                            />
+                                            <span>in</span>
+                                    </div>
+                                  
+                                </div>
+
+                                )
+                        }
+                        return (
+                        <div className="single-line__user-goals">
+                          <label htmlFor={field.id}>{field.label}</label> 
+                            <input id={field.id} type={field.type} value={formValues[field.id]} onChange={(e) => setFormValues((prev) => ({
+                                ...prev, 
+                                [field.id]: e.target.value}))} disabled={!editingGoals}
+                                onWheel={(e) => {e.currentTarget.blur()}}/>
+                        </div>
+                        )
+                        
+                      })}
                     </div>
                     <div className={`update-buttons ${!editingGoals ? '' : 'edit'}`}>
-                          <button className={`account-page-submit-form`} type="submit" disabled={!editingGoals}>Save</button>    
+                          <button className={`${formChanges ? "account-page-submit-form" : "disabled-account-page-submit-form"}`} type="submit" disabled={!editingGoals || !formChanges}>Save</button>    
                     </div>
                       
                 </form>
@@ -137,14 +189,14 @@ export function AccountPage(){
                               <AccountCircleIcon aria-label="profile picture" className="pfp-icon" fontSize="large"/>
                               <span>{data.username}</span>
                           </div>
-                          <button onClick={() => confirm("Are you sure you want to remove this user?")} className={`remove-user ${editingFamily ? 'edit' : ''}`}>{editingFamily ? 'Remove User' : ''}</button>
+                          <button className={`remove-user ${editingFamily ? 'edit' : ''}`}>{editingFamily ? 'Remove User' : ''}</button>
                         </div>
                        
                     ))}
                     <div className={`add-family-member ${editingFamily ? 'hidden' : ''}`}>
                        
                         <AddCircleIcon className="plus-icon" fontSize="large"/>
-                        <button className="add-user">Add Family Member</button>
+                        <button className="add-user">Add User</button>
                    
                     </div>
                 </div>

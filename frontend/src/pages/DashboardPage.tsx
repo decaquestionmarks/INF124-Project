@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Sidebar } from '../components/Sidebar.tsx'
 import './DashboardPage.css'
+import { Header } from '../components/Header.tsx'
 
 const overviewCards = [
   {
@@ -41,6 +42,9 @@ const activityItems = [
   },
 ]
 
+const pageIntro = "Keep the household organized with quick access to inventory, recipes, calorie tracking, and nearby stores."
+
+const pageButton =  <Link className="dashboard-page__action" to="/fridge">Open Fridge</Link>
 export function DashboardPage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
     if (typeof window === 'undefined') {
@@ -90,31 +94,7 @@ export function DashboardPage() {
       />
 
       <section className="dashboard-page__content">
-        <header className="dashboard-page__header">
-          <div className="dashboard-page__header-copy">
-            <button
-              type="button"
-              className="dashboard-page__menu-button"
-              onClick={() => setIsSidebarOpen((open) => !open)}
-              aria-expanded={isSidebarOpen}
-              aria-label={isSidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
-            >
-              <span aria-hidden="true">{isSidebarOpen ? 'Hide' : 'Menu'}</span>
-            </button>
-
-            <p className="dashboard-page__eyebrow">Family Fridge</p>
-            <h1>Dashboard</h1>
-            <p className="dashboard-page__intro">
-              Keep the household organized with quick access to inventory,
-              recipes, calorie tracking, and nearby stores.
-            </p>
-          </div>
-
-          <Link className="dashboard-page__action" to="/fridge">
-            Open Fridge
-          </Link>
-        </header>
-
+        <Header setIsSidebarOpen={setIsSidebarOpen} isSidebarOpen={isSidebarOpen} pageTitle="Dashboard" pageIntro={pageIntro} pageButton={pageButton}></Header>
         <section className="dashboard-page__grid" aria-label="Dashboard overview">
           {overviewCards.map((card) => (
             <article key={card.title} className="dashboard-page__card">

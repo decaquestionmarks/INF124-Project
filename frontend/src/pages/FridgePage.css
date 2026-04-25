@@ -3,6 +3,7 @@
     flex-direction: column;
     border-radius: 1.25rem;
     border: 1px solid #eadfd5;
+    overflow: hidden;
 }
 
 .category-name{
@@ -47,13 +48,15 @@
     padding: .5rem;
     background: #f2efeb;
     justify-content: space-between;
-    border-radius: 1rem;
+    /* border-radius: 1.25rem; */
     transition: ease border-radius 160ms;
    
 }
 
 .food-item-heading.active{
-    border-radius: 1rem 1rem 0rem 0rem;
+    border-radius: 1rem 1rem 0 0;
+    background: #f2efeb;
+
 
 }
 

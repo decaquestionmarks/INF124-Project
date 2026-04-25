@@ -19,21 +19,83 @@ h2{
 
 }
 
+.account-page__user-goals-form input:focus{
+    outline: 2px solid #ff8a3d;
+}
+
+.account-page__user-goals-form select:focus{
+    outline: 2px solid #ff8a3d;
+
+}
 
 .account-page-submit-form.edit{
     display: inline-flex;
     opacity: 1;
 }
 
+
+
+.height-grouping{
+    display: flex;
+    gap: .25rem;
+    align-items: center;
+    justify-content: space-between;
+    align-content: center;
+}
+
+.height-inputs{
+    display: flex;
+    justify-content: flex-end;
+    /* align-items:flex-end; */
+    align-items: center;
+    gap: .25rem;
+    width: 50%;
+
+}
+.height-inputs input{
+    width: 25%;
+    color: black;
+}
+
+.activity-grouping{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.activity-grouping select{
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    color:#5a524b;
+    width: 50%;
+    font-size: 1rem;
+    padding: 0.5rem;
+    appearance: none;
+    width: 50%;
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button{
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+input[type="number"]{
+    -moz-appearance: textfield;
+}
+
+
+
+.account-page-submit-form:hover{
+    background: #fff1e5;
+    border-color: #ff8a3d;
+    color: #ff8a3d;
+}
+
 .account-page-submit-form {
     /* gonna try to add a transition to this later */
-    /* display: none;  */
-    /* opacity: 0; */
-    align-items: center;
-    justify-content: center;
-    align-self: flex-start;
-    min-width: 5rem;
-    padding: 0.7rem 1rem;
+
     border: 1px solid #deb99b;
     border-radius: 999px;
     background: #fff7ef;
@@ -41,12 +103,30 @@ h2{
     cursor: pointer;
     font-weight: 700;
     font-size: .9rem;
-    transition: opacity 160ms ease,
-    background-color 160ms ease,
-    border-color 160ms ease,
-    color 160ms ease;
-    width: 50%;
+    transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease;
+    padding: .5rem;
+    min-width: 100px;
+    width: 25%;
+    margin: .1rem;
 
+
+}
+.disabled-account-page-submit-form{
+
+    border: 1px solid #deb99b;
+    border-radius: 999px;
+    background: #fff7ef;
+    color: #7f5e44;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: .9rem;
+    transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease;
+    padding: .5rem;
+    min-width: 100px;
+    width: 25%;
+    margin: .1rem;
+    opacity: 0.6;
+    cursor: default;
 }
 
 
@@ -58,14 +138,18 @@ h2{
     overflow: hidden;
     display: flex;
     justify-content: flex-end;
-    gap: .5rem;
-    width: 100%;
+    align-items: center
+
 }
 
 .update-buttons.edit{
     margin-top: 1rem;
     opacity: 1;
     max-height: none;
+}
+
+.update-buttons button:focus{
+    outline: 1px solid #ff8a3d;
 }
 
 input{
@@ -82,27 +166,12 @@ input{
 
 }
 
-.account-page-submit-form:hover{
-    background: #fff1e5;
-    border-color: #ff8a3d;
-    color: #ff8a3d;
-}
 
 
-
-
-@media (max-width: 700px){
+@media (max-width: 1024px){
     .account-page__user-goals-form__grid {
         grid-template-columns: 1fr;
     }
-}
-
-
-
-
-p, span{
-    color: #5a524b;
-
 }
 
 
@@ -115,7 +184,7 @@ p, span{
     gap: 1rem;
 }
 
-.single-line__user-goals input, .single-line__user-goals select{
+.single-line__user-goals input{
     background-color: white;
     border: 1px solid #ccc;
     border-radius: 10px;
@@ -134,11 +203,6 @@ p, span{
 }
 
 
-
-
-.single-line__user-goals input:focus, .single-line__user-goals select:focus{
-    outline: none;
-}
 
 @media (max-width: 700px){
     .account-page-submit-form{
