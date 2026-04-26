@@ -37,16 +37,17 @@ h2{
 
 .height-grouping{
     display: flex;
-    gap: .25rem;
     align-items: center;
     justify-content: space-between;
     align-content: center;
+    border: none;
+    margin: 0;
+
 }
 
 .height-inputs{
     display: flex;
     justify-content: flex-end;
-    /* align-items:flex-end; */
     align-items: center;
     gap: .25rem;
     width: 50%;
@@ -55,6 +56,8 @@ h2{
 .height-inputs input{
     width: 25%;
     color: black;
+    border-radius: 10px;
+    border: 1px solid #ccc;
 }
 
 .activity-grouping{
@@ -231,12 +234,10 @@ input{
 .add-family-member{
     opacity: 0;
     display: flex;
-    /* display: none; */
     padding-top: .5rem;
     padding-bottom: .5rem;
     align-items: center;
     gap: 1rem;
-    justify-content: space-between;
     border-bottom: 1px solid #eadfd5;
     transition: opacity 160ms ease;
 }
@@ -254,6 +255,10 @@ input{
     font-size: 1rem;
     border: none;
     cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
 }
 .remove-user{
     transition: ease color 250ms;

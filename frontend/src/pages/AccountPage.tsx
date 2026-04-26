@@ -14,6 +14,8 @@ const familyData = [
 
 
 export function AccountPage(){
+
+  const handleSaveGoals = () => (console.log("SAVE"))
   const formSchema = [
       {
         id: "weightStarting",
@@ -113,14 +115,14 @@ export function AccountPage(){
                   setEditingGoals(!editingGoals))}>{editingGoals ? "Cancel" : "Edit"}</button>
               </div>
                 
-                <form autoComplete="off" action="" className="account-page__user-goals-form">
+                <form autoComplete="off" action={handleSaveGoals} className="account-page__user-goals-form">
                     <div className="account-page__user-goals-form__grid">
                       {formSchema.map((field) => {
                         if (field.type == "select"){
                           return (
                             <div className="activity-grouping">
-                                <label htmlFor="">{field.label}</label>
-                                <select name="activity-level" className={`goal-input`} disabled={!editingGoals} value={formValues[field.id]}
+                                <label htmlFor={field.id}>{field.label}</label>
+                                <select id={field.id} name="activity-level" className={`goal-input`} aria-disabled={!editingGoals} disabled={!editingGoals} value={formValues[field.id]}
                                   onChange={(e) => setFormValues((prev) => ({...prev,  [field.id]: e.target.value}))}>
                                   <option value="sedentary">Sedentary</option>
                                   <option value="lightly-active">Lightly Active</option>
@@ -135,21 +137,26 @@ export function AccountPage(){
                         if (field.type == "group"){
                           return (
                               <div className="height-grouping">
-                                  <label htmlFor="">{field.label}</label>
+                                  <span className="height-label" id="height">{field.label}</span>
+                                
                                     <div className="height-inputs">
                                       <input min="0" type="number" id="height-ft" onWheel={(e) => {e.currentTarget.blur()}} 
                                         value={formValues["height-ft"]}
                                         onChange={(e) => setFormValues(prev => ({
                                               ...prev, 
                                               ["height-ft"]: e.target.value}))} disabled={!editingGoals} 
+                                        aria-describedby='height-ft-unit'
+                                        aria-labelledby="height"
                                               />
-                                              <span>ft</span>
+                                              <span id="height-ft-unit">ft</span>
                                       <input min="0" type="number" id="height-inches" onChange={(e) => setFormValues(prev => ({
                                             ...prev, 
                                             ["height-in"]: e.target.value}))} disabled={!editingGoals} onWheel={(e) => {e.currentTarget.blur()}}
                                             value={formValues["height-in"]}
+                                       aria-describedby='height-in-unit'
+                                       aria-labelledby="height"
                                             />
-                                            <span>in</span>
+                                            <span id="height-in-unit">in</span>
                                     </div>
                                   
                                 </div>
@@ -161,7 +168,7 @@ export function AccountPage(){
                           <label htmlFor={field.id}>{field.label}</label> 
                             <input id={field.id} type={field.type} value={formValues[field.id]} onChange={(e) => setFormValues((prev) => ({
                                 ...prev, 
-                                [field.id]: e.target.value}))} disabled={!editingGoals}
+                                [field.id]: e.target.value}))} aria-disabled={!editingGoals} disabled={!editingGoals}
                                 onWheel={(e) => {e.currentTarget.blur()}}/>
                         </div>
                         )
@@ -169,7 +176,7 @@ export function AccountPage(){
                       })}
                     </div>
                     <div className={`update-buttons ${!editingGoals ? '' : 'edit'}`}>
-                          <button className={`${formChanges ? "account-page-submit-form" : "disabled-account-page-submit-form"}`} type="submit" disabled={!editingGoals || !formChanges}>Save</button>    
+                          <button aria-label={editingGoals ? "Cancel editing goals" : "Edit goals"} className={`${formChanges ? "account-page-submit-form" : "disabled-account-page-submit-form"}`} type="submit" aria-disabled={!editingGoals || !formChanges} disabled={!editingGoals || !formChanges}>Save</button>    
                     </div>
                       
                 </form>
@@ -179,14 +186,14 @@ export function AccountPage(){
             <section className="account-page-family-content">
                <div className="account-page__section-header">
                 <h2>Family</h2>
-                <button onClick={() => (setEditingFamily(!editingFamily))}>{editingFamily ? "Cancel" : "Edit"}</button>
+                <button aria-label={editingFamily ? "Cancel editing family" : "Edit family"} onClick={() => (setEditingFamily(!editingFamily))}>{editingFamily ? "Cancel" : "Edit"}</button>
               </div>
 
                 <div className="family-data">
                     {familyData.map((data) => (
                         <div className="family-member">
                           <div className="icon-name-family-member">
-                              <AccountCircleIcon aria-label="profile picture" className="pfp-icon" fontSize="large"/>
+                              <AccountCircleIcon aria-hidden="true" className="pfp-icon" fontSize="large"/>
                               <span>{data.username}</span>
                           </div>
                           <button className={`remove-user ${editingFamily ? 'edit' : ''}`}>{editingFamily ? 'Remove User' : ''}</button>
@@ -194,9 +201,10 @@ export function AccountPage(){
                        
                     ))}
                     <div className={`add-family-member ${editingFamily ? 'hidden' : ''}`}>
-                       
+                       <button className="add-user">
                         <AddCircleIcon className="plus-icon" fontSize="large"/>
-                        <button className="add-user">Add User</button>
+                            Add User
+                        </button>
                    
                     </div>
                 </div>
