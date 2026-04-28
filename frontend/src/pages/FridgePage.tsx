@@ -6,6 +6,7 @@ import './FridgePage.css'
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
+import { Header } from '../components/Header.tsx'
 
 export function FridgePage(){
 
@@ -71,22 +72,7 @@ export function FridgePage(){
          />
    
          <section className="dashboard-page__content">
-          <header className="dashboard-page__header">
-          <div className="dashboard-page__header-copy">
-            <button
-              type="button"
-              className="dashboard-page__menu-button"
-              onClick={() => setIsSidebarOpen((open) => !open)}
-              aria-expanded={isSidebarOpen}
-              aria-label={isSidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
-            >
-              <span aria-hidden="true">{isSidebarOpen ? 'Hide' : 'Menu'}</span>
-            </button>
-
-            <p className="dashboard-page__eyebrow">Family Fridge</p>
-            <h1>Fridge</h1>
-          </div> 
-        </header>
+        <Header setIsSidebarOpen={setIsSidebarOpen} isSidebarOpen={isSidebarOpen} pageTitle="Fridge"></Header>
 
         <section className="food-items">
             <div className="add-food-options">
@@ -105,8 +91,8 @@ export function FridgePage(){
                         </button>
                     </div>
                     <div className={`popped-down ${poppedDownCategory.includes(category.id) ? "active" : ""}`}>
-                        <div className="food-item">Tomatoes</div>
-                        <div className="food-item">Asparagus</div>
+                        <div className="food-item">Tomatoes : qty</div>
+                        <div className="food-item">Asparagus : qty</div>
                     </div>
                    
                 </div>

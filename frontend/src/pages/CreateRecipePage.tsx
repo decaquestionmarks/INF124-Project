@@ -19,6 +19,7 @@ type Ingredient = {
 
 
 export function CreateRecipePage(){
+  // temp stuff
    const fillerIngredients = [
     {"id": 1, "title": "Yeast", "amount": 25, "unit": "g", "calories": 20},
     {"id": 2, "title": "Bread Flour", "amount": 500, "unit": "g", "calories": 1000},
@@ -39,12 +40,13 @@ export function CreateRecipePage(){
   const [addedIngredients, setAddedIngredients] = useState<Ingredient[]>([])
   const [poppedDownIngredient, setPoppedDownIngredient] = useState(0)
 
+  const [steps, setSteps] = useState("")
 
   const handleInputChange = (e) => {
       const input = e.target.value;
       setSearchInput(input);
 
-
+      // temp
       const filteredIngredients = fillerIngredients.filter((ingredient) => (
         ingredient.title.toLowerCase().includes(input.toLowerCase()) && input.length != 0
       ))
@@ -52,10 +54,10 @@ export function CreateRecipePage(){
 
 
     }
+
     const handleAddIngredient = (ingredients: Ingredient) => (
       setAddedIngredients([...addedIngredients, ingredients])
     )
-
 
 
  const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
@@ -188,11 +190,11 @@ export function CreateRecipePage(){
        
         <section className="recipe-steps">
             <h2>Steps</h2>
-            <textarea placeholder="1. Mix dry ingredients..." name="" id=""></textarea>
+            <textarea onChange={(e) => setSteps(e.target.value)} placeholder="1. Mix dry ingredients..." name="" id=""></textarea>
         </section>
 
         
-        <button onClick={handleSave} id="save-recipe">Save Recipe</button>
+        <button onClick={handleSave} className={`${addedIngredients.length == 0 && steps.length == 0 ? "disabled-button" : "save-recipe"}`} id="save-recipe" disabled={addedIngredients.length == 0 && steps.length == 0} >Save</button>
         </section>
          
         

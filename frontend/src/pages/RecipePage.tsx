@@ -5,6 +5,7 @@ import './DashboardPage.css'
 import './RecipePage.css'
 import SearchIcon from '@mui/icons-material/Search'
 import AddCircleIcon from '@mui/icons-material/AddCircle';
+import {Header} from '../components/Header.tsx'
 
 export function RecipePage(){
 
@@ -69,30 +70,13 @@ export function RecipePage(){
          />
    
          <section className="dashboard-page__content">
-          <header className="dashboard-page__header">
-          <div className="dashboard-page__header-copy">
-            <button
-              type="button"
-              className="dashboard-page__menu-button"
-              onClick={() => setIsSidebarOpen((open) => !open)}
-              aria-expanded={isSidebarOpen}
-              aria-label={isSidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
-            >
-              <span aria-hidden="true">{isSidebarOpen ? 'Hide' : 'Menu'}</span>
-            </button>
-
-            <p className="dashboard-page__eyebrow">Family Fridge</p>
-            <h1>Recipes</h1>
-          </div>
-
- 
-        </header>
+        <Header isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} pageTitle={"Recipes"}></Header>
           
           <section>
             
             <form action="" className="search-form">
                 <SearchIcon className="search-icon"></SearchIcon>
-                <input aria-label="search-box" type="search" placeholder="Search" className="search-bar" />
+                <input aria-label="search-box" type="search" placeholder="Search Recipes" className="search-bar" />
             </form>
 
           </section>

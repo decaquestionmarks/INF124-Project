@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
 import { Sidebar } from '../components/Sidebar.tsx'
 import './DashboardPage.css'
-import './RecipeDetail.css'
-import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
+import './CalorieTrackingPage.css'
+import SearchIcon from '@mui/icons-material/Search'
 import { SecondaryHeader } from '../components/Header.tsx'
+import './SearchFoodPage.css'
 
-export function RecipeDetail(){
+
+export function SearchFoodPage(){
 
  const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
     if (typeof window === 'undefined') {
@@ -15,11 +16,6 @@ export function RecipeDetail(){
 
     return window.innerWidth > 900
   })
-
-  const recipe = {
-    "title": "Sourdough"
-  }
-
 
   useEffect(() => {
     const mediaQuery = window.matchMedia('(max-width: 900px)')
@@ -61,19 +57,24 @@ export function RecipeDetail(){
          />
    
          <section className="dashboard-page__content">
-            <SecondaryHeader isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} pageTitle={recipe.title} linkBack="/recipes"></SecondaryHeader>
-            <section className="ingredients-section">
-                <h2>Ingredients</h2>
-            </section>
-            <section className="direction-section">
-                <h2>Directions</h2>
-            </section>
-          
-          
-          
-                     
+            <SecondaryHeader isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} pageTitle={"Food Finder"} linkBack='/calorie-tracking'></SecondaryHeader>
+         <section>
+            
+            <form action="" className="search-form">
+                <SearchIcon className="search-icon"></SearchIcon>
+                <input aria-label="search-box" type="search" placeholder="Search Recipes" className="search-bar" />
+            </form>
+
+          </section>
+          <section className="search-results">
+
+          </section>
+    
+
 
          </section>
+
+         
        </main>
      )
    }

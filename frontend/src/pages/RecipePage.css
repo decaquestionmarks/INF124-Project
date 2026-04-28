@@ -19,11 +19,19 @@
     font-size: 1rem;
 }
 
+.search-form:focus-within{
+    border-color: #ff8a3d;
+}
+
+.search-form input:focus{
+    border-color: #ff8a3d;
+
+}
 .search-icon{
     color: #ff8a3d;
 }
 
-.search-bar:focus{ 
+.search-bar:focus-visible{ 
     outline: none;
 }
 
