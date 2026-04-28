@@ -4,13 +4,9 @@ const {
 } = require("./modelhelpers");
 
 class Food {
-    constructor(name, owner, classification, measurementClassification, measurement, macronutrients = {}) {
+    constructor(name, classification, measurementClassification, measurement, macronutrients = {}) {
         if (typeof name !== "string" || !name.trim()) {
             throw new TypeError("name must be a non-empty string");
-        }
-
-        if (typeof owner !== "string" || !owner.trim()) {
-            throw new TypeError("owner must be a non-empty string");
         }
 
         if (typeof classification !== "string" || !classification.trim()) {
@@ -39,7 +35,6 @@ class Food {
             throw new TypeError("macronutrients must be an object");
         }
         this.name = name;
-        this.owner = owner;
         this.classification = normalizedClassification;
         this.measurementClassification = normalizedMeasurementClassification;
         this.measurement = measurement;

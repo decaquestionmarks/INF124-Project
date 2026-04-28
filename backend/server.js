@@ -1,12 +1,21 @@
-const http = require('http');
+const express = require('express');
+const recipeRouter = require('./routes/recipe');
 
-const server = http.createServer((req, res) => {
-  res.statusCode = 200;
-  res.setHeader('Content-Type', 'text/plain');
-  res.end('Hello, World!\n');
-  console.log(`Received request: ${req.method} ${req.url}`);
+const app = express();
+const PORT = 3000;
+
+// Middleware
+app.use(express.json());
+
+// Routes
+app.use('/recipes', recipeRouter);
+
+// Health check endpoint
+app.get('/', (req, res) => {
+  res.json({ message: 'Server is running' });
 });
 
-server.listen(3000, '127.0.0.1', () => {
-  console.log('Server running at http://127.0.0.1:3000');
+// Start server
+app.listen(PORT, '127.0.0.1', () => {
+  console.log(`Server running at http://127.0.0.1:${PORT}`);
 });
