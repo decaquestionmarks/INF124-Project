@@ -55,12 +55,14 @@ const searchRecipes = (query) => {
         throw new Error('Query parameter "query" is required');
     }
 
+    //MOCK: replace with Database query in production
     const normalizedQuery = query.toString().trim().toLowerCase();
     const results = mockRecipes.filter((recipe) => {
         return recipe.name.toLowerCase().includes(normalizedQuery)
             || recipe.description.toLowerCase().includes(normalizedQuery);
     });
-
+    
+    
     return { query: normalizedQuery, results, count: results.length };
 };
 
@@ -71,6 +73,7 @@ const searchRecipes = (query) => {
  * @throws {Error} - If recipe not found
  */
 const getRecipePreview = (recipeId) => {
+    //MOCK: replace with Database query in production
     const recipe = mockRecipes.find((item) => item.id === recipeId);
 
     if (!recipe) {
@@ -91,6 +94,7 @@ const getRecipePreview = (recipeId) => {
  * @throws {Error} - If recipe not found
  */
 const getRecipeById = (recipeId) => {
+    //MOCK: replace with Database query in production
     const recipe = mockRecipes.find((item) => item.id === recipeId);
 
     if (!recipe) {
