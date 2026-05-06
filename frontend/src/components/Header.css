@@ -85,3 +85,20 @@
         width: 100%;
     }
 }
+
+.secondary-title__container{
+  border-bottom: 1px solid #eadfd5;
+  padding-bottom: 1rem;
+  
+}
+
+.secondary-title{
+    margin: 0 0 0.75rem;
+    color: #111111;
+    font-family: 'Avenir Next', 'Segoe UI', sans-serif;
+    font-size: clamp(2.75rem, 4vw, 4rem);
+    font-weight: 800;
+    letter-spacing: -0.06em;
+    line-height: 0.95;
+    text-align: center;
+}

@@ -7,23 +7,24 @@ import AddCircleIcon from '@mui/icons-material/AddCircle';
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import SearchIcon from '@mui/icons-material/Search'
 import { useNavigate } from 'react-router-dom'
-
+import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
+import { SecondaryHeader } from '../components/Header.tsx'
 
 type Ingredient = {
   "id": number;
   "title": string;
   "amount": number;
   "unit": string;
-  "calories": number;
+  "caloriesPerUnit": number;
 }
 
 
 export function CreateRecipePage(){
   // temp stuff
    const fillerIngredients = [
-    {"id": 1, "title": "Yeast", "amount": 25, "unit": "g", "calories": 20},
-    {"id": 2, "title": "Bread Flour", "amount": 500, "unit": "g", "calories": 1000},
-    {"id": 3, "title": "Water", "amount": 1.5, "unit": "cups", "calories": 0},
+    {"id": 1, "title": "Yeast", "amount": 25, "unit": "g", "caloriesPerUnit": 4},
+    {"id": 2, "title": "Bread Flour", "amount": 300, "unit": "g", "caloriesPerUnit": 4},
+    {"id": 3, "title": "Water", "amount": 1.5, "unit": "cup(s)", "caloriesPerUnit": 0},
     
   ]
 
@@ -42,7 +43,7 @@ export function CreateRecipePage(){
 
   const [steps, setSteps] = useState("")
 
-  const handleInputChange = (e) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const input = e.target.value;
       setSearchInput(input);
 
@@ -56,8 +57,12 @@ export function CreateRecipePage(){
     }
 
     const handleAddIngredient = (ingredients: Ingredient) => (
-      setAddedIngredients([...addedIngredients, ingredients])
-    )
+      setAddedIngredients((prev) => 
+        prev.some((item) => item.id == ingredients.id)
+      ? prev.filter((item) => item.id !== ingredients.id )
+      : [...prev, ingredients]
+        // [...addedIngredients, ingredients])
+    ))
 
 
  const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
@@ -108,89 +113,97 @@ export function CreateRecipePage(){
          />
    
          <section className="dashboard-page__content">
-        <header className="recipe-detail-page__header">
-            <button
-              type="button"
-              className="dashboard-page__menu-button"
-              onClick={() => setIsSidebarOpen((open) => !open)}
-              aria-expanded={isSidebarOpen}
-              aria-label={isSidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
-            >
-              <span aria-hidden="true">{isSidebarOpen ? 'Hide' : 'Menu'}</span>
-            </button>
-             <div className="back-button">
-
-                <Link to="/recipes" aria-label="Back">
-                  <ArrowBackIosIcon className="back-icon"></ArrowBackIosIcon>
-                </Link>
-               
-
+          <SecondaryHeader isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} pageTitle="New Recipe" linkBack="/recipes"></SecondaryHeader>
+          <section className="recipe-title">
+                <h2 id="recipe-title-heading">Recipe Title</h2>
+                  <input aria-labelledby="recipe-title-heading" id="recipe-title" value={recipeTitle} placeholder='Chicken Alfredo' onChange={(e) => (setRecipeTitle(e.target.value))}/>
+          </section>
+          <section className="ingredients">
+            <div className="ingredients-header">
+              <h2 id="ingredients-heading">Ingredients</h2>
+              
             </div>
-            <div className="recipe-title__container">
-              <input autoFocus type="text" value={recipeTitle} onChange={(e) => (setRecipeTitle(e.target.value))}/>
-          
-            </div>
-            
-        </header>
+              
+              <ul className={`list-of-ingredients ${addedIngredients.length != 0 ? "active" : ""}`}>
+                  {addedIngredients.map((ingredients) => (
+                  <li  key={ingredients.id}>
+                    <div className="listed-item" >
+                      <span>{ingredients.title} : </span>
+                      <div className="input-amount-and-unit">
+                      <input
+                          id="ingredinet-amount"
+                          placeholder="1"
+                          type="number"
+                          onChange={(e) => {
+                            const value = Number(e.target.value)
 
-        <section className="ingredients">
-          <div className="ingredients-header">
-            <h2>Ingredients</h2>
+                            setAddedIngredients((prev) =>
+                              prev.map((i) =>
+                                i.id === ingredients.id
+                                  ? { ...i, amount: value }
+                                  : i
+                              )
+                            )
+                          }}
+                        />
+                        
+
+                        <span>{ingredients.unit}</span>
+                        </div>
+                        <span className="calculated-calories">{ingredients.amount * ingredients.caloriesPerUnit} cals</span>
+                      </div>
+                  </li>))}
+              </ul>
             
-          </div>
-            
-            <ul>
-                {addedIngredients.map((ingredients) => (
-                <li>{ingredients.title} : {ingredients.amount} {ingredients.unit}</li>))}
-            </ul>
-           
-             <section>
+          <section>
           
           </section>
-        {/* might make this a component, since we need search functionality for recipes */}
-        <div className="search-area">
-            <form action="" className="search-form">
-                <SearchIcon className="search-icon"></SearchIcon>
-              <input onChange={handleInputChange} aria-label="search-box" type="search" placeholder="Search for Ingredients"className="search-bar" />
-            </form>
-            <div className="matched-items">
-                {filteredIngredients.length == 0 && searchInput != "" ?
-                <p>No ingredients found</p> : filteredIngredients.map((ingredient) => (
-                  <div className="whole-item">
-                  <div className={`item ${poppedDownIngredient == ingredient.id ? "" : "active"}`} >
-                    <span>{ingredient.title}</span>
-                    <div className="amount-and-unit">
-                      <span>{ingredient.amount}</span>
-                      {/* <input type="text" value={ingredient.amount}/> */}
-                      <span>{ingredient.unit}</span>
-                    </div>
-                    
-                    <span> {ingredient.calories} cal</span>
-                    <div className="item-buttons">
-                      <button onClick={() => (poppedDownIngredient == (ingredient.id) ? setPoppedDownIngredient(0) : setPoppedDownIngredient(ingredient.id))}>Details</button>
-                      <button id="add-ingredient" onClick={() => handleAddIngredient(ingredient)} >Add <AddCircleIcon/></button>
-                    </div>
-                    
+              {/* might make this a component, since we need search functionality for recipes */}
+              <div aria-labelledby="ingredients-heading"  className="search-area">
+                  <form onSubmit={(e) => e.preventDefault()} className="search-form">
+                      <SearchIcon aria-hidden="true" className="search-icon"></SearchIcon>
+                    <input onChange={handleInputChange} aria-label="Search for ingredients" type="search" placeholder="Search for Ingredients"className="search-bar" />
+                  </form>
+                  <div className={`matched-items ${filteredIngredients.length != 0 ? "active" : ""}`} aria-live="polite">
+                      {filteredIngredients.length == 0 && searchInput != "" ?
+                      <p>No ingredients found</p> : filteredIngredients.map((ingredient) => (
+                        <div key={ingredient.id} className="whole-item">
+                        <div className={`item ${poppedDownIngredient == ingredient.id ? "" : "active"}`} >
+                          <span>{ingredient.title}</span>
+                          <div className="amount-and-unit">
+                              <span>{ingredient.caloriesPerUnit} cals / {ingredient.unit}</span>
+                          </div>
+                          
+                          {/* <span> {ingredient.caloriesPerUnit * ingredient.amount} cal</span> */}
+                          {/* <div className="item-buttons"> */}
+                            {/* <button onClick={() => (poppedDownIngredient == (ingredient.id) ? setPoppedDownIngredient(0) : setPoppedDownIngredient(ingredient.id))}>Details</button> */}
+                            <button id="add-ingredient" onClick={() => handleAddIngredient(ingredient)} >
+                              {addedIngredients.some((item)=> item.id === ingredient.id) ? 
+                              
+                              <RemoveCircleIcon aria-hidden="true" fontSize='medium'/> : 
+                              <AddCircleIcon aria-hidden="true" fontSize='medium'/>  
+                            }
+                            </button>
+                          
+                        </div>
+                        {/* <div className={`pop-down ${poppedDownIngredient == ingredient.id ? "active" : ""}`}>
+                          <span>Carbs: </span>
+                            <span>Protein: </span>
+                            <span>Fat: </span>
+                        </div> */}
+                        </div>
+                      ))}
                   </div>
-                  <div className={`pop-down ${poppedDownIngredient == ingredient.id ? "active" : ""}`}>
-                    <span>Carbs: </span>
-                      <span>Protein: </span>
-                      <span>Fat: </span>
-                  </div>
-                  </div>
-                ))}
-            </div>
-          
-        </div>
-     
-
+                
+              </div>
         </section>
 
 
        
         <section className="recipe-steps">
-            <h2>Steps</h2>
-            <textarea onChange={(e) => setSteps(e.target.value)} placeholder="1. Mix dry ingredients..." name="" id=""></textarea>
+          <h2 id="steps-heading">Steps</h2>
+            
+            <textarea aria-labelledby='steps-heading' onChange={(e) => setSteps(e.target.value)} placeholder="1. Mix dry ingredients..." name="" id="recipe-steps"></textarea>
         </section>
 
         

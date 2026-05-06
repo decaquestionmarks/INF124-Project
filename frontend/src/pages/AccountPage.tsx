@@ -4,12 +4,21 @@ import { useEffect, useState } from 'react'
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import { Header } from '../components/Header.tsx';
+import Person2RoundedIcon from '@mui/icons-material/Person2Rounded';
 
-
+const initialData = {
+  weightStarting: '',
+  weightCurrent: '',
+  weightGoal: '',
+  age: '',
+  activityLevel: '',
+  "height-ft": '',
+  "height-in": '',
+}
 
 const familyData = [
-    {username: "Jane Doe", pfp: "https://upload.wikimedia.org/wikipedia/commons/2/2c/Default_pfp.svg"},
-    {username : "John Doe", pfp: "https://upload.wikimedia.org/wikipedia/commons/2/2c/Default_pfp.svg"},
+    {username: "Jane Doe"},
+    {username : "John Doe"},
 ]
 
 
@@ -50,8 +59,8 @@ export function AccountPage(){
         type: "group",
       },
   ]
-    const [formValues, setFormValues] = useState<Record<string, string>>({})
-    const [originalFormValues, setOriginalFormValues] = useState(formValues)
+    const [formValues, setFormValues] = useState<Record<string, string>>(initialData)
+    const [originalFormValues, setOriginalFormValues] = useState<Record<string, string>>(initialData)
     const [editingGoals, setEditingGoals] = useState(false);
     const [editingFamily, setEditingFamily] = useState(false);
 
@@ -87,8 +96,7 @@ export function AccountPage(){
         return () => legacyMediaQuery.removeListener?.(syncSidebarState)
       }, [])
 
-      const formChanges = JSON.stringify(formValues) !== JSON.stringify(originalFormValues)
-
+      const formChanges = JSON.stringify(formValues) != JSON.stringify(originalFormValues)
 
       return (
     <main
@@ -115,14 +123,14 @@ export function AccountPage(){
                   setEditingGoals(!editingGoals))}>{editingGoals ? "Cancel" : "Edit"}</button>
               </div>
                 
-                <form autoComplete="off" action={handleSaveGoals} className="account-page__user-goals-form">
+                <form autoComplete="off" onSubmit={handleSaveGoals} className="account-page__user-goals-form">
                     <div className="account-page__user-goals-form__grid">
                       {formSchema.map((field) => {
                         if (field.type == "select"){
                           return (
-                            <div className="activity-grouping">
+                            <div key={field.id} className="activity-grouping">
                                 <label htmlFor={field.id}>{field.label}</label>
-                                <select id={field.id} name="activity-level" className={`goal-input`} aria-disabled={!editingGoals} disabled={!editingGoals} value={formValues[field.id]}
+                                <select id={field.id} name="activity-level" className={`goal-input`} disabled={!editingGoals} value={formValues[field.id]}
                                   onChange={(e) => setFormValues((prev) => ({...prev,  [field.id]: e.target.value}))}>
                                   <option value="sedentary">Sedentary</option>
                                   <option value="lightly-active">Lightly Active</option>
@@ -136,8 +144,8 @@ export function AccountPage(){
                         }
                         if (field.type == "group"){
                           return (
-                              <div className="height-grouping">
-                                  <span className="height-label" id="height">{field.label}</span>
+                              <div key={field.id} className="height-grouping">
+                                  <label className="height-label" id="height">{field.label}</label>
                                 
                                     <div className="height-inputs">
                                       <input min="0" type="number" id="height-ft" onWheel={(e) => {e.currentTarget.blur()}} 
@@ -146,17 +154,16 @@ export function AccountPage(){
                                               ...prev, 
                                               ["height-ft"]: e.target.value}))} disabled={!editingGoals} 
                                         aria-describedby='height-ft-unit'
-                                        aria-labelledby="height"
                                               />
-                                              <span id="height-ft-unit">ft</span>
-                                      <input min="0" type="number" id="height-inches" onChange={(e) => setFormValues(prev => ({
+                                      <label id="height-ft-unit">ft</label>
+                                      <input min="0" type="number" id="height-in-unit" onChange={(e) => setFormValues(prev => ({
                                             ...prev, 
                                             ["height-in"]: e.target.value}))} disabled={!editingGoals} onWheel={(e) => {e.currentTarget.blur()}}
                                             value={formValues["height-in"]}
-                                       aria-describedby='height-in-unit'
-                                       aria-labelledby="height"
+                                            aria-describedby='height-in-unit'
+                                            aria-labelledby="height"
                                             />
-                                            <span id="height-in-unit">in</span>
+                                        <label id="height-in-unit">in</label>
                                     </div>
                                   
                                 </div>
@@ -164,11 +171,12 @@ export function AccountPage(){
                                 )
                         }
                         return (
-                        <div className="single-line__user-goals">
+                        <div key={field.id} className="single-line__user-goals">
                           <label htmlFor={field.id}>{field.label}</label> 
-                            <input id={field.id} type={field.type} value={formValues[field.id]} onChange={(e) => setFormValues((prev) => ({
+                            <input id={field.id} type={field.type} value={formValues[field.id]} 
+                            onChange={(e) => setFormValues((prev) => ({
                                 ...prev, 
-                                [field.id]: e.target.value}))} aria-disabled={!editingGoals} disabled={!editingGoals}
+                                [field.id]: e.target.value}))} disabled={!editingGoals}
                                 onWheel={(e) => {e.currentTarget.blur()}}/>
                         </div>
                         )
@@ -176,7 +184,8 @@ export function AccountPage(){
                       })}
                     </div>
                     <div className={`update-buttons ${!editingGoals ? '' : 'edit'}`}>
-                          <button aria-label={editingGoals ? "Cancel editing goals" : "Edit goals"} className={`${formChanges ? "account-page-submit-form" : "disabled-account-page-submit-form"}`} type="submit" aria-disabled={!editingGoals || !formChanges} disabled={!editingGoals || !formChanges}>Save</button>    
+                          <button aria-label={editingGoals ? "Cancel editing goals" : "Edit goals"} 
+                          className={`${formChanges ? "account-page-submit-form" : "disabled-account-page-submit-form"}`} type="submit" disabled={!editingGoals || !formChanges}>Save</button>    
                     </div>
                       
                 </form>
@@ -191,19 +200,20 @@ export function AccountPage(){
 
                 <div className="family-data">
                     {familyData.map((data) => (
-                        <div className="family-member">
+                        <div key={data.username} className="family-member">
                           <div className="icon-name-family-member">
                               <AccountCircleIcon aria-hidden="true" className="pfp-icon" fontSize="large"/>
                               <span>{data.username}</span>
                           </div>
-                          <button className={`remove-user ${editingFamily ? 'edit' : ''}`}>{editingFamily ? 'Remove User' : ''}</button>
+                          <button aria-label={`Remove ${data.username}`} className={`remove-user ${editingFamily ? 'edit' : ''}`}>{editingFamily ? 'Remove User' : ''}</button>
                         </div>
                        
                     ))}
                     <div className={`add-family-member ${editingFamily ? 'hidden' : ''}`}>
-                       <button className="add-user">
-                        <AddCircleIcon className="plus-icon" fontSize="large"/>
-                            Add User
+                       <button aria-label="Add family member" className="add-user">
+                        Add User
+                        <AddCircleIcon className="plus-icon" fontSize="medium"/>
+                            
                         </button>
                    
                     </div>

@@ -4,8 +4,7 @@ import { Sidebar } from '../components/Sidebar.tsx'
 import './DashboardPage.css'
 import './FridgePage.css'
 import AddCircleIcon from '@mui/icons-material/AddCircle';
-import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
-import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
+import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownRounded';
 import { Header } from '../components/Header.tsx'
 
 export function FridgePage(){
@@ -76,27 +75,30 @@ export function FridgePage(){
 
         <section className="food-items">
             <div className="add-food-options">
-                <button className="add-option">Scan Receipt <AddCircleIcon></AddCircleIcon></button>
-                <button className="add-option">Add Item <AddCircleIcon></AddCircleIcon></button>
+                <button className="add-option">Scan Receipt <AddCircleIcon aria-hidden="true"></AddCircleIcon></button>
+                <Link className="add-option" to="/fridge/search-food">Add Item <AddCircleIcon aria-hidden="true"></AddCircleIcon></Link>
             </div>
-            {categories.map((category) => (
-                <div className="category">
-                    <div className={`food-item-heading ${poppedDownCategory.includes(category.id) ? "active" : ""}`}>
-                        <span className="category-name">{category.name}</span> 
-                        <button onClick={() => setPoppedDownCategory(
-                            poppedDownCategory.includes(category.id) ? poppedDownCategory.filter(item => item != category.id) : [...poppedDownCategory,  category.id])}>
-                            {poppedDownCategory.includes(category.id) ? 
-                            <ArrowDropDownIcon className="down-icon" fontSize="large"/> :
-                            <ArrowDropUpIcon className="down-icon" fontSize="large"/>}
-                        </button>
-                    </div>
-                    <div className={`popped-down ${poppedDownCategory.includes(category.id) ? "active" : ""}`}>
-                        <div className="food-item">Tomatoes : qty</div>
-                        <div className="food-item">Asparagus : qty</div>
-                    </div>
-                   
-                </div>
-             ))}
+              {categories.map((category) => (
+                  <div key={category.id} className="category">
+                      <div className={`food-item-heading ${poppedDownCategory.includes(category.id) ? "active" : ""}`}>
+                          <h2 className="category-name">{category.name}</h2> 
+                          <button onClick={() => setPoppedDownCategory(
+                              poppedDownCategory.includes(category.id) ? poppedDownCategory.filter(item => item != category.id) : [...poppedDownCategory,  category.id])}>
+                              <KeyboardArrowDownRoundedIcon aria-label="Expand" className={`down-icon ${poppedDownCategory.includes(category.id) ? "open" : "" }`} fontSize="large" 
+                              sx={{transition: "transform 160ms ease", transform: poppedDownCategory.includes(category.id) ? "rotate(180deg)" : "rotate(0deg"}}/>
+                              
+                          </button>
+                      </div>
+                      <div className={`popped-down ${poppedDownCategory.includes(category.id) ? "active" : ""}`}>
+                        <div className="popped-down-inner">
+                           <div className="food-item">Tomatoes : qty</div>
+                          <div className="food-item">Asparagus : qty</div>
+                        </div>
+                         
+                      </div>
+                    
+                  </div>
+              ))}
             
 
         </section>

@@ -87,10 +87,18 @@ export const router = createBrowserRouter([
     ),
   },
   {
-    path: '/search-food',
+    path: '/fridge/search-food',
     element: (
       <RequireAuth>
-        <SearchFoodPage />
+        <SearchFoodPage linkBack="/fridge"/>
+      </RequireAuth>
+    ),
+  },
+    {
+    path: '/calorie-tracking/search-food',
+    element: (
+      <RequireAuth>
+        <SearchFoodPage linkBack="/calorie-tracking"/>
       </RequireAuth>
     ),
   },

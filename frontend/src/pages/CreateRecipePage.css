@@ -3,39 +3,17 @@ input, textarea{
     font-family: 'Avenir Next', 'Segoe UI', sans-serif;
 }
 
-.create-recipe-title__container{
-    display: flex;
-    justify-content: center;
-}
-
-.recipe-title__container input{
-    margin: 0 0 0.75rem;
-    color: #111111;
-    font-family: 'Avenir Next', 'Segoe UI', sans-serif;
-    font-size: clamp(2.75rem, 4vw, 4rem);
-    font-weight: 800;
-    letter-spacing: -0.06em;
-    line-height: 0.95;
-
-    border: none;
-    cursor: pointer;
-    text-align: center;
-    max-width: 100%;
-    text-overflow: ellipsis;
-
-}
-
 
 .matched-items{
+    display: none;
     padding-top: 1rem;
-    display: flex;
+    /* display: flex; */
     flex-direction: column;
     gap: 1rem;
 }
 
-.item{
+.matched-items.active{
     display: flex;
-    align-items: center;
 }
 
 .item input{
@@ -73,12 +51,11 @@ textarea{
     width: 100%;
     background-color: white;
     border: 2px solid #eadfd5;
-    border-radius: 1rem;
+    border-radius: 10px;
     padding: .5rem;
-    margin-top: 1rem;
     color: black;
     min-height: 5rem;
-    font-size: .9rem;
+    font-size: 1rem;
     resize: none;
     field-sizing: content;
 
@@ -92,9 +69,9 @@ textarea:focus{
 .whole-item{
     cursor: pointer;
     border-radius: 1rem;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
+    color: #5a524b;
+    font-size: 1rem;
+    border: 1px solid #eadfd5;
 }
 
 .pop-down{
@@ -112,12 +89,8 @@ textarea:focus{
     padding: .5rem;
     max-height: none;
 
-
 }
 
-.whole-item{
-    border: 1px solid #deb99b;
-}
 
 .item{
     box-sizing: border-box;
@@ -125,8 +98,9 @@ textarea:focus{
     cursor: pointer;
     border-radius: 1rem 1rem 0rem 0rem;
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    background-color: #fff1e5;
+    grid-template-columns: 1fr 1fr auto;
+    background-color: #fff7ef;
+
 }
 
 
@@ -138,7 +112,7 @@ textarea:focus{
     color: #7f5e44;
     cursor: pointer;
     font-weight: 700;
-    font-size: .9rem;
+    font-size: 1rem;
     transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease;
     padding: .5rem;
     min-width: 100px;
@@ -148,6 +122,14 @@ textarea:focus{
 
 }
 
+.recipe-steps{
+    font-family: 'Avenir Next', 'Segoe UI', sans-serif;
+    color: #111111;
+    letter-spacing: -0.04em;
+    font-size: 1.8rem;
+    font-weight: 800;
+}
+
 .disabled-button{
    border: 1px solid #deb99b;
     border-radius: 999px;
@@ -155,7 +137,7 @@ textarea:focus{
     color: #7f5e44;
     cursor: pointer;
     font-weight: 700;
-    font-size: .9rem;
+    font-size: 1rem;
     transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease;
     padding: .5rem;
     min-width: 100px;
@@ -166,6 +148,19 @@ textarea:focus{
 
 }
 
+.list-of-ingredients{
+    display: none;
+    padding-left: 1rem;
+}
+
+.list-of-ingredients li{
+    margin-bottom: .5rem;
+}
+
+.list-of-ingredients.active{
+    display: block;
+    margin: 0 0 1rem 0;
+}
 
 .save-recipe:hover{
     background: #fff1e5;
@@ -179,18 +174,19 @@ textarea:focus{
     
 }
 .item-buttons button{
-    font-size: .9rem;
+    font-size: 1rem;
 }
 
 #add-ingredient{
-    margin-left: auto;
+    /* margin-left: auto;  */
 }
 
-.item.active{
+.active{
     border-radius: 1rem;
 }
 .item:hover{ 
-   background-color: #ffe8d4;
+   background-color: #fff1e5;
+
 }
 
 .save-button{
@@ -227,11 +223,6 @@ textarea:focus{
     justify-content: center;
 }
 
-
-.recipe-title__container input:focus{
-   outline: none;
-}
-
 .add-ingredient.edit{
     display: none;
 }
@@ -253,15 +244,11 @@ input, select{
     border: 1px solid #eadfd5;
     border-radius: 5px;
     padding: .25rem;
-    font-size: .9rem;
+    font-size: 1rem;
 }
 
 
 
-.ingredients{
-    border-bottom: 1px solid #eadfd5;
-    padding-bottom: 1rem;
-}
 
 .ingredients li{
     color:#5a524b;
@@ -278,4 +265,79 @@ input, select{
 .ingredients-header{
     display: flex;
     justify-content: space-between;
+}
+
+@media(max-width: 1024px){
+    .disabled-button{
+        width: 100%;
+    }
+
+    .save-recipe{
+        width: 100%;
+    }
+
+}
+
+#recipe-title-heading, #ingredients-heading, #steps-heading{
+    padding-bottom: 1rem;
+    /* border-bottom: 1px solid #eadfd5; */
+}
+
+
+.recipe-title label, .ingredients-header{
+    font-family: 'Avenir Next', 'Segoe UI', sans-serif;
+    color: #111111;
+    letter-spacing: -0.04em;
+    font-size: 1.8rem;
+    font-weight: 800;
+
+}
+
+#recipe-title{
+    border: 2px solid #eadfd5;
+    border-radius: 10px;
+    width: 100%;
+    min-height: 3rem;
+    font-size: 1rem;;
+    color: black;
+    padding: .5rem;
+
+}
+
+#recipe-title:focus{
+    outline:  #ff8a3d;
+    border-color: #ff8a3d;
+}
+
+.listed-item{
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: .5rem;
+    align-items: center;
+
+}
+
+
+
+.input-amount-and-unit{
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+}
+
+.input-amount-and-unit input{
+    color: black;
+    width: 40%;
+}
+
+.input-amount-and-unit input:focus{
+    outline: 2px solid #ff8a3d;
+
+}
+
+.calculated-calories{
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    
 }

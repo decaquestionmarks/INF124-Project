@@ -14,13 +14,30 @@ import DinnerDiningRoundedIcon from '@mui/icons-material/DinnerDiningRounded';
 import IcecreamRoundedIcon from '@mui/icons-material/IcecreamRounded';
 
 const meals = [
-  {title: "Breakfast", icon: <EggRoundedIcon className="meal-icon"/>},
-  {title: "Lunch", icon: <LunchDiningRoundedIcon className="meal-icon"/>},
-  {title: "Dinner", icon: <DinnerDiningRoundedIcon className="meal-icon"/>},
-  {title: "Snacks", icon: <IcecreamRoundedIcon className="meal-icon"/>}
+  {title: "Breakfast", icon: <EggRoundedIcon aria-hidden="true" className="meal-icon"/>},
+  {title: "Lunch", icon: <LunchDiningRoundedIcon aria-hidden="true" className="meal-icon"/>},
+  {title: "Dinner", icon: <DinnerDiningRoundedIcon aria-hidden="true" className="meal-icon"/>},
+  {title: "Snacks", icon: <IcecreamRoundedIcon aria-hidden="true" className="meal-icon"/>}
 ]
 
 export function CalorieTrackingPage(){
+  const current = new Date();
+  const [date, setDate] = useState(current)
+
+
+  const decrementDate = () => {
+    const d = new Date(date);
+    d.setDate((d.getDate() - 1));
+    setDate(d);
+  }
+
+
+
+  const incrementDate = () => {
+    const d = new Date(date);
+    d.setDate((d.getDate() + 1));
+    setDate(d);
+  }
 
  const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
     if (typeof window === 'undefined') {
@@ -72,13 +89,20 @@ export function CalorieTrackingPage(){
          <section className="dashboard-page__content">
         <Header isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} pageTitle={"Calorie Tracker"}></Header>
         <section className="nav-days">
-          <div className="dummy-item"></div>
           <div className="nav-items">
-            <button aria-label="Go to previous day"><ArrowLeftRoundedIcon className="nav-icon" sx={{fontSize: 70}}></ArrowLeftRoundedIcon></button>
-            <span>Today</span>
-            <button aria-label="Go to next day"><ArrowRightRoundedIcon className="nav-icon"  sx={{fontSize: 70}}></ArrowRightRoundedIcon></button>            
+            <button aria-label="Go to previous day" onClick={decrementDate}><ArrowLeftRoundedIcon aria-hidden="true" className="nav-icon" sx={{fontSize: 70}}></ArrowLeftRoundedIcon></button>
+            <div className="date">
+              <h2>{date.toLocaleDateString('en-us', {
+              weekday: "short",
+              month: "short",
+              day: "numeric"
+              }
+              )}</h2>
+            </div>
+            
+            <button aria-label="Go to next day" onClick={incrementDate}><ArrowRightRoundedIcon aria-hidden="true" className="nav-icon"  sx={{fontSize: 70}}></ArrowRightRoundedIcon></button>            
           </div>
-          <button className="share-button" aria-label="Share"><ShareRoundedIcon  sx={{fontSize: 30}}></ShareRoundedIcon></button>
+          {/* <button className="share-button" aria-label="Share"><ShareRoundedIcon  sx={{fontSize: 30}}></ShareRoundedIcon></button> */}
         </section>
         <section className="food-stats">
           <div className="food-stats-row">
@@ -86,46 +110,53 @@ export function CalorieTrackingPage(){
 
             <div className="stat-item">
               <span>Goal</span><br />
-              <span>?</span>
+              <output>?</output>
             </div>
              <div className="stat-item">
               <span>Remaining</span><br />
-              <span>?</span>
+              <output>?</output>
             </div>
              <div className="stat-item">
               <span>Eaten</span><br />
-              <span>?</span>
+              <output>?</output>
             </div>
           
           </div>
           <div className="food-stats-row">
              <div className="stat-item">
               <span>Carbs</span><br />
-              <span>?</span>
+              <output>?</output>
             </div>
              <div className="stat-item">
               <span>Fat</span><br />
-              <span>?</span>
+              <output>?</output>
             </div>
              <div className="stat-item">
               <span>Protein</span><br />
-              <span>?</span>
+              <output>?</output>
             </div>
 
           </div>
 
         <section className="meal-categories">
           {meals.map((m) => (
-            <div className="meal-cat">
-              <div className="meal-cat-labels">
-                 <span className="meal-icon">{m.icon}</span>
-                 <span className="meal-title">{m.title}</span>
+            <div key={m.title} className="meal-cat">
+              <div className="meal-cat-header">
+                <div className="meal-cat-labels">
+                 <h3 className="meal-title">{m.icon} {m.title}</h3>
               </div>
-             
-              <Link to="/search-food" className="add-food" aria-hidden="true">Add Food < AddCircleIcon></AddCircleIcon> </Link>
+                <Link to="/calorie-tracking/search-food" className="add-food">Add Food<AddCircleIcon></AddCircleIcon> </Link>              
+              </div>
+              
+              <div className="added-items"></div>
             </div>
-          ))}          
+            
+            
+          ))}      
+          
+
         </section>
+        
         </section>
 
 

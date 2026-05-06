@@ -1,3 +1,5 @@
+
+
 .category{
     display: flex;
     flex-direction: column;
@@ -12,6 +14,11 @@
     font-size: 1.35rem;
     letter-spacing: -0.04em;
     line-height: 1.05;
+    display: flex;
+    align-items: center;
+    margin: 0;
+    margin-left: .5rem;
+
 }
 
 .food-items{
@@ -31,15 +38,23 @@
     display: flex;
     gap: .25rem;
     font-size: .9rem;
-}
-
-.add-food-options button{
     display: inline-flex;
     align-items: center;
     background: none;
     color:#ff8a3d;
     border: none;
     cursor: pointer;
+    text-decoration: none;
+    padding: .5rem;
+    
+}
+
+.add-food-options button .add-option{
+    display: inline-flex;
+    align-items: center;
+    border: none;
+    cursor: pointer;
+    
 }
 
 .food-item-heading{
@@ -48,8 +63,7 @@
     padding: .5rem;
     background: #f2efeb;
     justify-content: space-between;
-    /* border-radius: 1.25rem; */
-    transition: ease border-radius 160ms;
+    
    
 }
 
@@ -68,9 +82,8 @@
 
 
 .popped-down{
-    
+    display: flex;
     flex-direction: column;
-    
     opacity: 0;
     max-height: 0;
     overflow: hidden;
@@ -78,20 +91,26 @@
 
 }
 
+.popped-down-inner{
+    padding: 1rem;
+}
+
 
 .popped-down.active{
-    display: flex;
-    padding: .5rem;
-    flex-direction: column;
-
     opacity: 1;
-    max-height: none;
-    
-
+    max-height: 300px;
 
 }
 
 
 .down-icon{
+     transition: transform 220ms cubic-bezier(0.4, 0, 0.2, 1);
+    transform-origin: center;
+    display: inline-block;
     color: #ff8a3d;
 }
+
+.down-icon.open{
+    transform: rotate(180deg);
+}
+
