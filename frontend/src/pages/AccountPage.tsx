@@ -2,9 +2,8 @@ import { Sidebar } from '../components/Sidebar.tsx'
 import './AccountPage.css'
 import { useEffect, useState } from 'react'
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
-import AddCircleIcon from '@mui/icons-material/AddCircle';
 import { Header } from '../components/Header.tsx';
-import Person2RoundedIcon from '@mui/icons-material/Person2Rounded';
+import AddCircleIcon from '@mui/icons-material/AddCircle';
 
 const initialData = {
   weightStarting: '',
@@ -210,8 +209,9 @@ export function AccountPage(){
                        
                     ))}
                     <div className={`add-family-member ${editingFamily ? 'hidden' : ''}`}>
+                      <input id="user-email" type="text" placeholder="someone123@gmail.com"/>
                        <button aria-label="Add family member" className="add-user">
-                        Add User
+                        Invite User
                         <AddCircleIcon className="plus-icon" fontSize="medium"/>
                             
                         </button>

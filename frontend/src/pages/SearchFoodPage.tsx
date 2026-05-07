@@ -31,7 +31,7 @@ type SearchFoodProps = {
 export function SearchFoodPage({linkBack}: SearchFoodProps){
   const navigate = useNavigate()
   const handleSave = () => (
-    navigate("/calorie-tracking")
+    navigate(linkBack)
   )
   const [addedItems, setAddedItems] = useState<string[]>([])
   const selectItem = (title: string) => {
@@ -102,7 +102,7 @@ export function SearchFoodPage({linkBack}: SearchFoodProps){
                 <form action="" onSubmit={handleSubmitSearch} className="search-form">
                   <label htmlFor="search-bar-input" className="search-label">Search Food</label>
                     <SearchIcon aria-hidden="true" className="search-icon"></SearchIcon>
-                    <input id="search-bar-input" value={userInput} onChange={(e) => setUserInput(e.target.value)} aria-label="Search Ingredients" type="search" placeholder="Search Ingredients" className="search-bar" />
+                    <input id="search-bar-input" value={userInput} onChange={(e) => setUserInput(e.target.value)} aria-label="Search Foods" type="search" placeholder="Search Foods" className="search-bar" />
                 </form>
 
               </section>

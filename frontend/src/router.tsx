@@ -11,8 +11,15 @@ import { RedirectIfAuthenticated, RequireAuth } from './auth/RouteGuards.tsx'
 import { CreateRecipePage } from './pages/CreateRecipePage.tsx'
 import { FridgePage } from './pages/FridgePage.tsx'
 import { CalorieTrackingPage } from './pages/CalorieTrackingPage.tsx'
+import { ShoppingListPage } from './pages/ShoppingCartPage.tsx'
 import { SearchFoodPage } from './pages/SearchFoodPage.tsx'
 
+const searchFoodRoutes = [
+  {path: "/fridge/search-food", linkBack: "/fridge"},
+  {path: "/calorie-tracking/search-food", linkBack: "/calorie-tracking"},
+  {path: "/fridge/search-food", linkBack: "/fridge"},
+
+]
 export const router = createBrowserRouter([
   {
     path: '/',
@@ -86,23 +93,14 @@ export const router = createBrowserRouter([
       </RequireAuth>
     ),
   },
-  {
-    path: '/fridge/search-food',
+  ...searchFoodRoutes.map((route) => ({
+    path: route.path,
     element: (
       <RequireAuth>
-        <SearchFoodPage linkBack="/fridge"/>
+        <SearchFoodPage linkBack={route.linkBack}/>
       </RequireAuth>
-    ),
-  },
-    {
-    path: '/calorie-tracking/search-food',
-    element: (
-      <RequireAuth>
-        <SearchFoodPage linkBack="/calorie-tracking"/>
-      </RequireAuth>
-    ),
-  },
-  
+    )
+  })),
   {
     path: '/account',
     element: (
@@ -112,10 +110,10 @@ export const router = createBrowserRouter([
     ),
   },
   {
-    path: '/nearby-stores',
+    path: '/shopping-list',
     element: (
       <RequireAuth>
-        <PlaceholderPage title="Nearby Stores" />
+        <ShoppingListPage/>
       </RequireAuth>
     ),
   },

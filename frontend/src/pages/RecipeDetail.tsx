@@ -89,26 +89,34 @@ export function RecipeDetail(){
          />
    
          <section className="dashboard-page__content">
-            <SecondaryHeader isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} pageTitle={title ? title : "Untitled"} linkBack="/recipes"></SecondaryHeader>
+            <SecondaryHeader isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} pageTitle={title ? title : "Mock Title"} linkBack="/recipes"></SecondaryHeader>
             <section className="ingredients-section">
                 <h2>Ingredients</h2>
                 <div className="ingredients-text">
-                  {ingredients ? ingredients.map((f, i) => (
+                  {ingredients.length != 0 ? ingredients.map((f, i) => (
                     <div key={i} className="ingredient-item">
                       <p>{f.name} - {f.measurement} {f.measurementClassification}</p>
                       <p className="missing-item">Missing Item!</p>
                     </div>
                     
                   )) :  
-                  <p>No ingredients</p>}
+                   <div className="ingredient-item">
+                      <p>Mock Ingredient - 1 unit</p>
+                      <p className="missing-item">Missing Item!</p>
+                    </div>
+                    
+                  
+                 }
                 </div>
             </section>
             <section className="direction-section">
                 <h2>Directions</h2>
                 <div className="steps-text">
-                   {steps ? steps.map((s) => (
+                   {steps.length != 0 ? steps.map((s) => (
                     <p key={s}>{s}</p>
-                  )) : <p>No directions</p>}
+                  )) : 
+                  
+                  <p>1. Mock Step</p>}
                 </div>
             </section>
          </section>

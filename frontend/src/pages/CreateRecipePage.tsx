@@ -1,10 +1,8 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
 import { Sidebar } from '../components/Sidebar.tsx'
 import './DashboardPage.css'
 import './CreateRecipePage.css'
 import AddCircleIcon from '@mui/icons-material/AddCircle';
-import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import SearchIcon from '@mui/icons-material/Search'
 import { useNavigate } from 'react-router-dom'
 import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
@@ -48,10 +46,13 @@ export function CreateRecipePage(){
       setSearchInput(input);
 
       // temp
-      const filteredIngredients = fillerIngredients.filter((ingredient) => (
+      const matchedIngredients = fillerIngredients.filter((ingredient) => (
         ingredient.title.toLowerCase().includes(input.toLowerCase()) && input.length != 0
       ))
-      setFilteredIngredients(filteredIngredients);
+
+      console.log(input)
+      console.log(filteredIngredients);
+      setFilteredIngredients(matchedIngredients);
 
 
     }
@@ -121,7 +122,6 @@ export function CreateRecipePage(){
           <section className="ingredients">
             <div className="ingredients-header">
               <h2 id="ingredients-heading">Ingredients</h2>
-              
             </div>
               
               <ul className={`list-of-ingredients ${addedIngredients.length != 0 ? "active" : ""}`}>
@@ -131,7 +131,7 @@ export function CreateRecipePage(){
                       <span>{ingredients.title} : </span>
                       <div className="input-amount-and-unit">
                       <input
-                          id="ingredinet-amount"
+                          id="ingredient-amount"
                           placeholder="1"
                           type="number"
                           onChange={(e) => {
@@ -158,15 +158,15 @@ export function CreateRecipePage(){
           <section>
           
           </section>
-              {/* might make this a component, since we need search functionality for recipes */}
               <div aria-labelledby="ingredients-heading"  className="search-area">
-                  <form onSubmit={(e) => e.preventDefault()} className="search-form">
+                  <div className="search-form">
                       <SearchIcon aria-hidden="true" className="search-icon"></SearchIcon>
-                    <input onChange={handleInputChange} aria-label="Search for ingredients" type="search" placeholder="Search for Ingredients"className="search-bar" />
-                  </form>
-                  <div className={`matched-items ${filteredIngredients.length != 0 ? "active" : ""}`} aria-live="polite">
+                      <input onChange={handleInputChange} aria-label="Search for ingredients" type="search" placeholder="Search for Ingredients"className="search-bar" />
+                  </div>
+                  <div className={`matched-items ${filteredIngredients.length != 0  || searchInput != "" ? "active" : ""}`} aria-live="polite">
                       {filteredIngredients.length == 0 && searchInput != "" ?
-                      <p>No ingredients found</p> : filteredIngredients.map((ingredient) => (
+                      <p>No ingredients found</p> 
+                      : filteredIngredients.map((ingredient) => (
                         <div key={ingredient.id} className="whole-item">
                         <div className={`item ${poppedDownIngredient == ingredient.id ? "" : "active"}`} >
                           <span>{ingredient.title}</span>
@@ -174,9 +174,6 @@ export function CreateRecipePage(){
                               <span>{ingredient.caloriesPerUnit} cals / {ingredient.unit}</span>
                           </div>
                           
-                          {/* <span> {ingredient.caloriesPerUnit * ingredient.amount} cal</span> */}
-                          {/* <div className="item-buttons"> */}
-                            {/* <button onClick={() => (poppedDownIngredient == (ingredient.id) ? setPoppedDownIngredient(0) : setPoppedDownIngredient(ingredient.id))}>Details</button> */}
                             <button id="add-ingredient" onClick={() => handleAddIngredient(ingredient)} >
                               {addedIngredients.some((item)=> item.id === ingredient.id) ? 
                               
@@ -186,11 +183,7 @@ export function CreateRecipePage(){
                             </button>
                           
                         </div>
-                        {/* <div className={`pop-down ${poppedDownIngredient == ingredient.id ? "active" : ""}`}>
-                          <span>Carbs: </span>
-                            <span>Protein: </span>
-                            <span>Fat: </span>
-                        </div> */}
+                        
                         </div>
                       ))}
                   </div>
@@ -198,21 +191,15 @@ export function CreateRecipePage(){
               </div>
         </section>
 
-
-       
         <section className="recipe-steps">
           <h2 id="steps-heading">Steps</h2>
-            
-            <textarea aria-labelledby='steps-heading' onChange={(e) => setSteps(e.target.value)} placeholder="1. Mix dry ingredients..." name="" id="recipe-steps"></textarea>
+          <textarea aria-labelledby='steps-heading' onChange={(e) => setSteps(e.target.value)} placeholder="1. Mix dry ingredients..." name="" id="recipe-steps"></textarea>
         </section>
 
         
         <button onClick={handleSave} className={`${addedIngredients.length == 0 && steps.length == 0 ? "disabled-button" : "save-recipe"}`} id="save-recipe" disabled={addedIngredients.length == 0 && steps.length == 0} >Save</button>
         </section>
-         
-        
-        
-                
+    
        </main>
      )
    }

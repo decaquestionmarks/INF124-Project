@@ -6,6 +6,59 @@ import './FridgePage.css'
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownRounded';
 import { Header } from '../components/Header.tsx'
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+
+const needed_items = [
+  {
+    id: 1,
+    title: "Milk",
+    quantity: 1,
+    unit: "gallon",
+    category: "Dairy",
+    added_by: "user",
+  },
+  {
+    id: 2,
+    title: "Bananas",
+    quantity: 6,
+    unit: "pcs",
+    category: "Produce",
+    added_by: "user",
+  },
+  {
+    id: 3,
+    title: "Apples",
+    quantity: 2,
+    unit: "pcs",
+    category: "Produce",
+    added_by: "user",
+  },
+  {
+    id: 4,
+    title: "Chicken Breast",
+    quantity: 2,
+    unit: "lbs",
+    category: "Meat",
+    added_by: "user",
+  },
+  {
+    id: 5,
+    title: "Bread",
+    quantity: 1,
+    unit: "loaf",
+    category: "Bakery",
+    added_by: "user",
+  },
+  {
+    id: 6,
+    title: "Olive Oil",
+    quantity: 1,
+    unit: "bottle",
+    category: "Pantry",
+    added_by: "user",
+  }
+];
+
 
 export function FridgePage(){
 
@@ -55,6 +108,7 @@ export function FridgePage(){
     return () => legacyMediaQuery.removeListener?.(syncSidebarState)
   }, [])
 
+
    return (
        <main
          className={`dashboard-page${isSidebarOpen ? ' dashboard-page--sidebar-open' : ' dashboard-page--sidebar-closed'}`}
@@ -76,30 +130,50 @@ export function FridgePage(){
         <section className="food-items">
             <div className="add-food-options">
                 <button className="add-option">Scan Receipt <AddCircleIcon aria-hidden="true"></AddCircleIcon></button>
-                <Link className="add-option" to="/fridge/search-food">Add Item <AddCircleIcon aria-hidden="true"></AddCircleIcon></Link>
+                <Link className="add-option" to="/fridge/search-food">Add to Fridge <AddCircleIcon aria-hidden="true"></AddCircleIcon></Link>
+                <Link className="add-list-item" to="/fridge/search-food">Add to List <AddCircleIcon aria-hidden="true"></AddCircleIcon></Link>
             </div>
               {categories.map((category) => (
                   <div key={category.id} className="category">
                       <div className={`food-item-heading ${poppedDownCategory.includes(category.id) ? "active" : ""}`}>
-                          <h2 className="category-name">{category.name}</h2> 
+                          <div className="left-items">
                           <button onClick={() => setPoppedDownCategory(
                               poppedDownCategory.includes(category.id) ? poppedDownCategory.filter(item => item != category.id) : [...poppedDownCategory,  category.id])}>
                               <KeyboardArrowDownRoundedIcon aria-label="Expand" className={`down-icon ${poppedDownCategory.includes(category.id) ? "open" : "" }`} fontSize="large" 
                               sx={{transition: "transform 160ms ease", transform: poppedDownCategory.includes(category.id) ? "rotate(180deg)" : "rotate(0deg"}}/>
                               
                           </button>
+                          <h2 className="category-name">{category.name}</h2> 
+                          </div>
+                          <div className="shopping-cart-notify">
+                            <ShoppingCartIcon/> {needed_items.filter((item) => item.category == category.name).length}
+                          </div>
+                          
                       </div>
                       <div className={`popped-down ${poppedDownCategory.includes(category.id) ? "active" : ""}`}>
                         <div className="popped-down-inner">
-                           <div className="food-item">Tomatoes : qty</div>
-                          <div className="food-item">Asparagus : qty</div>
+                          <ul className="all-fridge-items">
+                           <li className="fridge-item">
+                              Mock item - 2 units
+                            </li>
+                          {needed_items
+                            .filter (item => item.category === category.name)
+                            .map((item) => (
+                              <li key={item.id} className="needed-item">
+                                <div className="inner-needed-item">
+                                  <p>{item.title} : {item.quantity} {item.unit} </p>
+                                  <p>Added by {item.added_by}</p>
+                                </div>
+                              </li>
+                            ))}
+                          </ul>
+
                         </div>
                          
                       </div>
                     
                   </div>
               ))}
-            
 
         </section>
           

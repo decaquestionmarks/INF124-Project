@@ -21,9 +21,9 @@ const overviewCards = [
     path: '/recipes',
   },
   {
-    title: 'Nearby Stores',
-    description: 'Look up nearby options before heading out for a refill.',
-    path: '/nearby-stores',
+    title: 'Shopping List',
+    description: 'Keep track of what your family needs.',
+    path: '/shopping-list',
   },
 ]
 

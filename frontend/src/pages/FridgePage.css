@@ -17,7 +17,6 @@
     display: flex;
     align-items: center;
     margin: 0;
-    margin-left: .5rem;
 
 }
 
@@ -34,10 +33,10 @@
     gap: 1rem;
 }
 
-.add-option{
+.add-option, .add-list-item{
     display: flex;
     gap: .25rem;
-    font-size: .9rem;
+    font-size: 1rem;
     display: inline-flex;
     align-items: center;
     background: none;
@@ -60,11 +59,15 @@
 .food-item-heading{
     display: flex;
     align-items: center;
-    padding: .5rem;
+    padding: .5rem 1rem .5rem 0;
     background: #f2efeb;
     justify-content: space-between;
     
    
+}
+
+.left-items{
+    display: flex;
 }
 
 .food-item-heading.active{
@@ -112,5 +115,27 @@
 
 .down-icon.open{
     transform: rotate(180deg);
+}
+
+
+.inner-needed-item{
+    color: #ff8a3d;
+    display: flex;
+    justify-content: space-between;
+}
+
+.needed-item::marker{
+    color: #ff8a3d;
+}
+
+.all-fridge-items{
+    margin: 0;
+    padding-left: 1rem;
+}
+
+.shopping-cart-notify{
+    display: inline-flex;
+    gap: .25rem;
+    color: #ff8a3d;
 }
 
