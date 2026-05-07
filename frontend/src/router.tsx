@@ -11,7 +11,6 @@ import { RedirectIfAuthenticated, RequireAuth } from './auth/RouteGuards.tsx'
 import { CreateRecipePage } from './pages/CreateRecipePage.tsx'
 import { FridgePage } from './pages/FridgePage.tsx'
 import { CalorieTrackingPage } from './pages/CalorieTrackingPage.tsx'
-import { ShoppingListPage } from './pages/ShoppingCartPage.tsx'
 import { SearchFoodPage } from './pages/SearchFoodPage.tsx'
 
 const searchFoodRoutes = [
@@ -106,14 +105,6 @@ export const router = createBrowserRouter([
     element: (
       <RequireAuth>
         <AccountPage />
-      </RequireAuth>
-    ),
-  },
-  {
-    path: '/shopping-list',
-    element: (
-      <RequireAuth>
-        <ShoppingListPage/>
       </RequireAuth>
     ),
   },
