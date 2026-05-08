@@ -118,7 +118,7 @@ export function AccountPage(){
             <section className="account-page__user-goals-content">
               <div className="account-page__section-header">
                 <h2>Goals</h2>
-                <button onClick={() => (
+                <button className="edit-button" onClick={() => (
                   setEditingGoals(!editingGoals))}>{editingGoals ? "Cancel" : "Edit"}</button>
               </div>
                 
@@ -155,7 +155,7 @@ export function AccountPage(){
                                         aria-describedby='height-ft-unit'
                                               />
                                       <label id="height-ft-unit">ft</label>
-                                      <input min="0" type="number" id="height-in-unit" onChange={(e) => setFormValues(prev => ({
+                                      <input min="0" type="number" id="height-in" onChange={(e) => setFormValues(prev => ({
                                             ...prev, 
                                             ["height-in"]: e.target.value}))} disabled={!editingGoals} onWheel={(e) => {e.currentTarget.blur()}}
                                             value={formValues["height-in"]}
@@ -194,7 +194,7 @@ export function AccountPage(){
             <section className="account-page-family-content">
                <div className="account-page__section-header">
                 <h2>Family</h2>
-                <button aria-label={editingFamily ? "Cancel editing family" : "Edit family"} onClick={() => (setEditingFamily(!editingFamily))}>{editingFamily ? "Cancel" : "Edit"}</button>
+                <button className="edit-button" aria-label={editingFamily ? "Cancel editing family" : "Edit family"} onClick={() => (setEditingFamily(!editingFamily))}>{editingFamily ? "Cancel" : "Edit"}</button>
               </div>
 
                 <div className="family-data">

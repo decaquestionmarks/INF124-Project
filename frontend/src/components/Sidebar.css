@@ -87,7 +87,7 @@
 .app-sidebar__toggle:hover,
 .app-sidebar__toggle:focus-visible {
   background: #ffe8d4;
-  color: #ff8a3d;
+  color: var(--main-orange-color);
   box-shadow: inset 0 0 0 1px #ffbe8e;
 }
 
@@ -167,17 +167,17 @@
 .app-sidebar__link:hover,
 .app-sidebar__link:focus-visible {
   background: rgba(255, 255, 255, 0.42);
-  color: #ff8a3d;
+  color: var(--main-orange-color);
 }
 
 .app-sidebar__link--active {
   background: rgba(255, 255, 255, 0.72);
-  color: #ff8a3d;
+  color: var(--main-orange-color);
   box-shadow: inset 0 0 0 1px rgba(255, 138, 61, 0.15);
 }
 
 .app-sidebar__link--active .app-sidebar__link-icon {
-  background: #ff8a3d;
+  background: var(--main-orange-color);
   color: #ffffff;
   box-shadow: none;
 }
@@ -256,7 +256,7 @@
 .app-sidebar__sublink:hover,
 .app-sidebar__sublink:focus-visible,
 .app-sidebar__sublink--active {
-  color: #ff8a3d;
+  color: var(--main-orange-color);
 }
 
 .app-sidebar--closed {

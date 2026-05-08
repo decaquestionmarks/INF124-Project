@@ -56,8 +56,8 @@
 .signup-page__menu-button:hover,
 .signup-page__menu-button:focus-visible {
   background: #fff1e5;
-  border-color: #ff8a3d;
-  color: #ff8a3d;
+  border-color: var(--main-orange-color);
+  color: var(--main-orange-color);
 }
 
 .signup-page__title {
@@ -148,8 +148,8 @@
 .signup-page__google:hover,
 .signup-page__google:focus-visible {
   background: #fff1e5;
-  border-color: #ff8a3d;
-  color: #ff8a3d;
+  border-color: var(--main-orange-color);
+  color: var(--main-orange-color);
 }
 
 .signup-page__google:disabled {

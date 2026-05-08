@@ -40,7 +40,7 @@
 
 .add-icon{
     margin-left: 1rem;
-    color:#ff8a3d;
+    color:var(--main-orange-color);
     cursor: pointer;
     background: none;
     border: none;
@@ -83,4 +83,10 @@
 
 .search-label{
  text-indent: -9999px;   
+}
+
+@media(max-width: 1024px){
+    .save-bar button{
+        width: 100%;
+    }
 }

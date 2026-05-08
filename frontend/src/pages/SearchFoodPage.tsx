@@ -100,16 +100,17 @@ export function SearchFoodPage({linkBack}: SearchFoodProps){
 
                 
                 <form action="" onSubmit={handleSubmitSearch} className="search-form">
-                  <label htmlFor="search-bar-input" className="search-label">Search Food</label>
                     <SearchIcon aria-hidden="true" className="search-icon"></SearchIcon>
                     <input id="search-bar-input" value={userInput} onChange={(e) => setUserInput(e.target.value)} aria-label="Search Foods" type="search" placeholder="Search Foods" className="search-bar" />
                 </form>
 
               </section>
               <section className="search-results">
-                {search_results.map((result) => (
-                  <div key={result.id} className="search-item">
+                {/* <table> */}
+                {search_results.map((result) => (                  
+                  <div  onClick={() => selectItem(result.title)} key={result.id} className="search-item">
                     <div className={`search-item-heading ${addedItems.includes(result.title) ? "added" : ""}`}>
+                      
                       <span>{result.title}</span>
                     <div className="amount-and-unit">
                       <span>{result.amount}</span>
@@ -117,24 +118,31 @@ export function SearchFoodPage({linkBack}: SearchFoodProps){
                     </div>
                     
                     <span> {result.calories} cal</span>
-                    <button className="add-icon" onClick={() => selectItem(result.title)} >
+                    <button aria-label="Add item" className="add-icon"  
+                      id=""
+                      onClick={(e) => {
+                        e.stopPropagation(); 
+                        selectItem(result.title);
+                        }}>
                       {addedItems.includes(result.title) ?
                         (<RemoveCircleIcon aria-hidden="true" fontSize='medium'/>) : 
                         (<AddCircleIcon aria-hidden="true" fontSize='medium'/>)
                       }
+
                       
                       </button>
                     
                     </div>
                   </div>
                 ))}
+                {/* </table> */}
 
            
               </section>
 
 
               <div className="save-bar">
-                <button onClick={handleSave} className="save-button">Save</button>
+                <button onClick={handleSave} className="save-button">Add</button>
               </div>
     
 

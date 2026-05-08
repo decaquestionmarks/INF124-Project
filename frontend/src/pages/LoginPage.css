@@ -56,8 +56,8 @@
 .login-page__menu-button:hover,
 .login-page__menu-button:focus-visible {
   background: #fff1e5;
-  border-color: #ff8a3d;
-  color: #ff8a3d;
+  border-color: var(--main-orange-color);
+  color: var(--main-orange-color);
 }
 
 .login-page__title {
@@ -148,8 +148,8 @@
 .login-page__google:hover,
 .login-page__google:focus-visible {
   background: #fff1e5;
-  border-color: #ff8a3d;
-  color: #ff8a3d;
+  border-color: var(--main-orange-color);
+  color: var(--main-orange-color);
 }
 
 .login-page__google:disabled {

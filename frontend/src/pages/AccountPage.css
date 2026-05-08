@@ -20,11 +20,11 @@ h2{
 }
 
 .account-page__user-goals-form input:focus{
-    outline: 2px solid #ff8a3d;
+    outline: 2px solid var(--main-orange-color);
 }
 
 .account-page__user-goals-form select:focus{
-    outline: 2px solid #ff8a3d;
+    outline: 2px solid var(--main-orange-color);
 
 }
 
@@ -92,8 +92,8 @@ input[type="number"]{
 
 .account-page-submit-form:hover{
     background: #fff1e5;
-    border-color: #ff8a3d;
-    color: #ff8a3d;
+    border-color: var(--main-orange-color);
+    color: var(--main-orange-color);
 }
 
 .account-page-submit-form {
@@ -152,7 +152,7 @@ input[type="number"]{
 }
 
 .update-buttons button:focus{
-    outline: 1px solid #ff8a3d;
+    outline: 1px solid var(--main-orange-color);
 }
 
 input{
@@ -254,7 +254,7 @@ input{
 }
 
 .add-user{
-    color:#ff8a3d;
+    color:var(--main-orange-color);
     font-size: 1rem;
     padding: 0;
     background-color: white;
@@ -276,7 +276,7 @@ input{
 }
 
 .remove-user.edit{
-    color:#ff8a3d;
+    color:var(--main-orange-color);
     background-color: white;
     border: none;
     cursor: pointer;
@@ -293,11 +293,11 @@ input{
 }
 
 .add-family-member span{
-    color:#ff8a3d;
+    color:var(--main-orange-color);
 }
 
 .plus-icon, .pfp-icon{
-    color:#ff8a3d;
+    color:var(--main-orange-color);
 }
 
 
@@ -310,11 +310,13 @@ input{
 }
 
 .account-page__section-header button{
-   color: #ff8a3d;
-   background-color: white;
-   font-size: 1rem;
-   border: none;
-   cursor: pointer;
+    color: var(--main-orange-color);
+    background-color: white;
+    font-size: 1rem;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+    font-family: inherit;
 }
 
 @media(max-width: 1024px){
@@ -336,5 +338,6 @@ input{
 #user-email:focus{
 
     color: black;
-    outline: 2px solid #ff8a3d;
+    outline: 2px solid var(--main-orange-color);
 }
+

@@ -26,7 +26,7 @@
 
 
 .nav-icon{
-    color: #ff8a3d;
+    color: var(--main-orange-color);
 }
 
 .nav-days button{
@@ -36,7 +36,7 @@
 }
 
 .share-button{
-    color:#ff8a3d;
+    color:var(--main-orange-color);
     
 }
 
@@ -66,7 +66,7 @@
 .meal-cat{
     border-top: 1px solid #eaeaea;
     padding: .5rem;
-    color: #ff8a3d;
+    color: var(--main-orange-color);
 }
 
 .meal-cat-header{
@@ -94,7 +94,7 @@
 }
 
 .meal-icon{
-    color:#ff8a3d;
+    color:var(--main-orange-color);
     
 }
 
@@ -104,11 +104,12 @@
     align-items: center;
     gap: .25rem;
     background: none;
-    color: #ff8a3d;
+    color: var(--main-orange-color);
     border: none;
     cursor: pointer;
     text-decoration: none;
     font-size: 1rem;
+    font-weight: 500;
 
 
 }

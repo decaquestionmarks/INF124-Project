@@ -30,7 +30,7 @@ input, textarea{
 .item button{
     background: none;
     border: none;
-    color: #ff8a3d;
+    color: var(--main-orange-color);
     cursor: pointer;
 
     display: inline-flex;
@@ -62,8 +62,8 @@ textarea{
 }
 
 textarea:focus{
-    outline:  #ff8a3d;
-    border-color: #ff8a3d;
+    outline:  var(--main-orange-color);
+    border-color: var(--main-orange-color);
 }
 
 .whole-item{
@@ -72,6 +72,12 @@ textarea:focus{
     color: #5a524b;
     font-size: 1rem;
     border: 1px solid #eadfd5;
+}
+
+.whole-item.added{
+    background: #ffe7d3;
+    border-left: 5px solid #ffb066;
+
 }
 
 .pop-down{
@@ -94,9 +100,9 @@ textarea:focus{
 
 .item{
     box-sizing: border-box;
-    padding: .5rem;;
+    padding: .5rem .5rem .5rem 1rem;
     cursor: pointer;
-    border-radius: 1rem 1rem 0rem 0rem;
+    /* border-radius: 1rem 1rem 0rem 0rem; */
     display: grid;
     grid-template-columns: 1fr 1fr auto;
     background-color: #fff7ef;
@@ -164,8 +170,8 @@ textarea:focus{
 
 .save-recipe:hover{
     background: #fff1e5;
-    border-color: #ff8a3d;
-    color: #ff8a3d;
+    border-color: var(--main-orange-color);
+    color: var(--main-orange-color);
 }
 
 .item-buttons{
@@ -177,9 +183,6 @@ textarea:focus{
     font-size: 1rem;
 }
 
-#add-ingredient{
-    /* margin-left: auto;  */
-}
 
 .active{
     border-radius: 1rem;
@@ -205,13 +208,13 @@ textarea:focus{
 
 .save-button:hover{
     background: #fff1e5;
-    border-color: #ff8a3d;
-    color: #ff8a3d;
+    border-color: var(--main-orange-color);
+    color: var(--main-orange-color);
 }
 
 
 .add-ingredient{
-    color: #ff8a3d;
+    color: var(--main-orange-color);
     display: inline-flex;
     justify-content: center;
     gap: .25rem;
@@ -259,7 +262,7 @@ input, select{
     align-items: center;
     text-decoration: none;
     gap: .5rem;
-    color: #ff8a3d;
+    color: var(--main-orange-color);
 }
 
 .ingredients-header{
@@ -305,8 +308,8 @@ input, select{
 }
 
 #recipe-title:focus{
-    outline:  #ff8a3d;
-    border-color: #ff8a3d;
+    outline:  var(--main-orange-color);
+    border-color: var(--main-orange-color);
 }
 
 .listed-item{
@@ -331,7 +334,7 @@ input, select{
 }
 
 .input-amount-and-unit input:focus{
-    outline: 2px solid #ff8a3d;
+    outline: 2px solid var(--main-orange-color);
 
 }
 

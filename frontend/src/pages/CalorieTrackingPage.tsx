@@ -110,30 +110,30 @@ export function CalorieTrackingPage(){
 
             <div className="stat-item">
               <span>Goal</span><br />
-              <output>?</output>
+              <span>?</span>
             </div>
              <div className="stat-item">
               <span>Remaining</span><br />
-              <output>?</output>
+              <span>?</span>
             </div>
              <div className="stat-item">
               <span>Eaten</span><br />
-              <output>?</output>
+              <span>?</span>
             </div>
           
           </div>
           <div className="food-stats-row">
              <div className="stat-item">
               <span>Carbs</span><br />
-              <output>?</output>
+              <span>?</span>
             </div>
              <div className="stat-item">
               <span>Fat</span><br />
-              <output>?</output>
+              <span>?</span>
             </div>
              <div className="stat-item">
               <span>Protein</span><br />
-              <output>?</output>
+              <span>?</span>
             </div>
 
           </div>

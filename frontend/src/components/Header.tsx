@@ -28,7 +28,7 @@ export function Header({isSidebarOpen, setIsSidebarOpen, pageTitle, pageIntro=''
               className="dashboard-page__menu-button"
               onClick={() => setIsSidebarOpen((open) => !open)}
               aria-expanded={isSidebarOpen}
-              aria-label={isSidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
+              aria-label={isSidebarOpen ? 'Hide' : 'Menu'}
             >
               <span aria-hidden="true">{isSidebarOpen ? 'Hide' : 'Menu'}</span>
             </button>
@@ -55,7 +55,7 @@ export function SecondaryHeader({isSidebarOpen, setIsSidebarOpen, pageTitle, lin
               className="dashboard-page__menu-button"
               onClick={() => setIsSidebarOpen((open) => !open)}
               aria-expanded={isSidebarOpen}
-              aria-label={isSidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
+              aria-label={'Menu'}
             >
               <span aria-hidden="true">{isSidebarOpen ? 'Hide' : 'Menu'}</span>
             </button>

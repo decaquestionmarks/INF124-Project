@@ -40,7 +40,8 @@ h1{
 }
 
 .missing-item{
-    color: red;
+    color: var(--main-orange-color);
+    font-weight: 500;
 }
 
 

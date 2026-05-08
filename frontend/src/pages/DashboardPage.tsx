@@ -23,7 +23,7 @@ const overviewCards = [
   {
     title: 'Shopping List',
     description: 'Keep track of what your family needs.',
-    path: '/shopping-list',
+    path: '/fridge',
   },
 ]
 

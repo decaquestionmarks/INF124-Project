@@ -42,14 +42,14 @@
 .dashboard-page__action {
   min-width: 9.5rem;
   padding: 0.9rem 1.25rem;
-  background: #ff8a3d;
+  background: var(--main-orange-color);
   color: #ffffff;
   font-weight: 700;
 }
 
 .dashboard-page__action:hover,
 .dashboard-page__action:focus-visible {
-  background: #f2741d;
+  background: var(--button-hover-background);
 }
 
 .dashboard-page__grid {
@@ -72,7 +72,7 @@
   gap: 1.25rem;
   min-height: 12rem;
   padding: 1.35rem;
-  background: #f2efeb;
+  background: var(--card-color);
 }
 
 .dashboard-page__card h2,
@@ -99,8 +99,9 @@
 .dashboard-page__panel-link {
   align-self: flex-start;
   padding: 0.65rem 1rem;
-  border: 1px solid #e2c5ae;
-  color: #ff8a3d;
+  border: var(--button-border);
+  background: var(--button-background);
+  color: var(--main-orange-color);
   font-weight: 700;
 }
 
@@ -109,7 +110,8 @@
 .dashboard-page__panel-link:hover,
 .dashboard-page__panel-link:focus-visible {
   background: #fff3ea;
-  border-color: #ff8a3d;
+  border-color: var(--button-hover-border-text);
+  color: var(--button-hover-border-text);
 }
 
 .dashboard-page__panel {
@@ -117,7 +119,7 @@
   flex-direction: column;
   gap: 1.25rem;
   padding: 1.5rem;
-  background: #f2efeb;
+  background: var(--card-color);
 }
 
 .dashboard-page__panel-header {

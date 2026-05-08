@@ -131,7 +131,7 @@ export function RecipePage(){
             <form action="" className="search-form"  onSubmit={(e) => (e.preventDefault())}>
                 <label htmlFor="search-bar-input" className="search-label">Search Food</label>
                 <SearchIcon aria-hidden="true" className="search-icon"></SearchIcon>
-                <input id="search-bar-input" aria-label="Search for Recipes" type="search" placeholder="Search Recipes" 
+                <input id="search-bar-input" aria-label="Search Recipes" type="search" placeholder="Search Recipes" 
                 onChange={(e) => {
                   const value = e.target.value
                   setInput(value);

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Sidebar } from '../components/Sidebar.tsx'
 import './DashboardPage.css'
@@ -58,11 +58,42 @@ const needed_items = [
     added_by: "user",
   }
 ];
+const mock_items = [
+  {
+    id: 101,
+    title: "Eggs",
+    quantity: 12,
+    unit: "pcs",
+    category: "Dairy",
+    added_by: "Mom",
+  },
+  {
+    id: 102,
+    title: "Spinach",
+    quantity: 1,
+    unit: "bag",
+    category: "Produce",
+    added_by: "Dad",
+  },
+  {
+    id: 103,
+    title: "Carrots",
+    quantity: 5,
+    unit: "pcs",
+    category: "Produce",
+    added_by: "You",
+  },
+  {
+    id: 104,
+    title: "Ground Beef",
+    quantity: 1,
+    unit: "lb",
+    category: "Meat",
+    added_by: "Mom",
+  },
+];
 
-
-export function FridgePage(){
-
-    const categories = [
+ const categories = [
         {"name": "Produce", "id": 1},
         {"name": "Dairy", "id": 2},
         {"name": "Meat", "id": 3},
@@ -74,16 +105,52 @@ export function FridgePage(){
         {"name": "Condiments", "id": 9},
         {"name": "Spices and Baking", "id": 10},
     ]
-    const [poppedDownCategory, setPoppedDownCategory] = useState<number[]>([]);
 
- const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
-    if (typeof window === 'undefined') {
-      return true
+type Item = {
+      id: number,
+      title: string,
+      quantity: number, 
+      unit: string,
+      category: string,
+      added_by: string
+
     }
 
-    return window.innerWidth > 900
-  })
+function getAssociatedItems(item_list: Item[]){
+  // useMemo caches results, on rerender if all dependencies same skips calculation
+  {return useMemo(() => {
+  const mapping: Record<string, Item[]> = {};
 
+    categories.forEach(c => {
+      mapping[c.name] = [];
+    });
+
+    item_list.forEach(item => {
+      if (mapping[item.category]) {
+        mapping[item.category].push(item);
+      }
+    });
+
+    return mapping;
+  }, [item_list, categories]);
+}
+
+
+}
+
+export function FridgePage(){
+
+  const [poppedDownCategory, setPoppedDownCategory] = useState<number[]>([]);
+
+  const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
+      if (typeof window === 'undefined') {
+        return true
+      }
+
+      return window.innerWidth > 900
+    })
+
+  const [dropDownOpen, setDropDownOpen] = useState(false);
   useEffect(() => {
     const mediaQuery = window.matchMedia('(max-width: 900px)')
     const legacyMediaQuery = mediaQuery as MediaQueryList & {
@@ -108,7 +175,9 @@ export function FridgePage(){
     return () => legacyMediaQuery.removeListener?.(syncSidebarState)
   }, [])
 
-
+  const neededItemsInCategory = getAssociatedItems(needed_items);
+  const regularItemsInCategory = getAssociatedItems(mock_items)
+   
    return (
        <main
          className={`dashboard-page${isSidebarOpen ? ' dashboard-page--sidebar-open' : ' dashboard-page--sidebar-closed'}`}
@@ -129,43 +198,67 @@ export function FridgePage(){
 
         <section className="food-items">
             <div className="add-food-options">
-                <button className="add-option">Scan Receipt <AddCircleIcon aria-hidden="true"></AddCircleIcon></button>
-                <Link className="add-option" to="/fridge/search-food">Add to Fridge <AddCircleIcon aria-hidden="true"></AddCircleIcon></Link>
-                <Link className="add-list-item" to="/fridge/search-food">Add to List <AddCircleIcon aria-hidden="true"></AddCircleIcon></Link>
+              <div className="dropdown-parent">
+                <div className={`dropdown ${dropDownOpen ? "open" : ""}`}>
+                    <button className="expand-dropdown" aria-label="Add Ingredients" onClick={() => (setDropDownOpen(!dropDownOpen))}>Add Ingredients 
+                      <KeyboardArrowDownRoundedIcon sx={{transition: "transform 160ms ease", transform: dropDownOpen ? "rotate(180deg)" : "rotate(0deg"}}></KeyboardArrowDownRoundedIcon></button>
+
+                  <div className="dropdown-menu">
+                    <Link className="dropdown-option" to="/fridge/search-food">
+                      Add to Fridge <AddCircleIcon aria-hidden="true" />
+                    </Link>
+
+                    <Link className="dropdown-option" to="/fridge/search-food">
+                      Add to Shopping List <AddCircleIcon aria-hidden="true" />
+                    </Link>
+                        <Link className="dropdown-option" to="">
+                      Scan Receipt <AddCircleIcon aria-hidden="true" />
+                    </Link>
+                  </div>
+                </div>
+            </div>
+
+              
             </div>
               {categories.map((category) => (
                   <div key={category.id} className="category">
                       <div className={`food-item-heading ${poppedDownCategory.includes(category.id) ? "active" : ""}`}>
                           <div className="left-items">
-                          <button onClick={() => setPoppedDownCategory(
-                              poppedDownCategory.includes(category.id) ? poppedDownCategory.filter(item => item != category.id) : [...poppedDownCategory,  category.id])}>
-                              <KeyboardArrowDownRoundedIcon aria-label="Expand" className={`down-icon ${poppedDownCategory.includes(category.id) ? "open" : "" }`} fontSize="large" 
+                          <button aria-label="Expand" onClick={(e) => {e.stopPropagation; setPoppedDownCategory(
+                              poppedDownCategory.includes(category.id) ? poppedDownCategory.filter(item => item != category.id) : [...poppedDownCategory,  category.id])}}>
+                              <KeyboardArrowDownRoundedIcon className={`down-icon ${poppedDownCategory.includes(category.id) ? "open" : "" }`} fontSize="large" 
                               sx={{transition: "transform 160ms ease", transform: poppedDownCategory.includes(category.id) ? "rotate(180deg)" : "rotate(0deg"}}/>
-                              
                           </button>
                           <h2 className="category-name">{category.name}</h2> 
                           </div>
-                          <div className="shopping-cart-notify">
-                            <ShoppingCartIcon/> {needed_items.filter((item) => item.category == category.name).length}
-                          </div>
+                         { neededItemsInCategory[category.name].length != 0 && <div className="shopping-cart-notify">
+                            <ShoppingCartIcon/> {neededItemsInCategory[category.name].length}
+                          </div>}
                           
                       </div>
                       <div className={`popped-down ${poppedDownCategory.includes(category.id) ? "active" : ""}`}>
                         <div className="popped-down-inner">
                           <ul className="all-fridge-items">
-                           <li className="fridge-item">
-                              Mock item - 2 units
+                          {(regularItemsInCategory[category.name].map((item) => (
+                             <li key={item.id} className="fridge-item">
+                              <p>{item.title} : {item.quantity} {item.unit} </p>
                             </li>
-                          {needed_items
-                            .filter (item => item.category === category.name)
-                            .map((item) => (
+                          )))}
+
+                           { (neededItemsInCategory[category.name].map(item => (
                               <li key={item.id} className="needed-item">
                                 <div className="inner-needed-item">
                                   <p>{item.title} : {item.quantity} {item.unit} </p>
                                   <p>Added by {item.added_by}</p>
                                 </div>
                               </li>
-                            ))}
+                            )))}
+                            {regularItemsInCategory[category.name].length == 0 && neededItemsInCategory[category.name].length == 0 && (
+                               <li className="fridge-item">
+                                  <p>No ingredients</p>
+
+                              </li>
+                            )}
                           </ul>
 
                         </div>
@@ -176,9 +269,6 @@ export function FridgePage(){
               ))}
 
         </section>
-          
-
-
          </section>
        </main>
      )

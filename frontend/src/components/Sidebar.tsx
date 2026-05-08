@@ -94,8 +94,8 @@ export function Sidebar({
     >
       {/* Top row with brand and sidebar toggle button. */}
       <div className="app-sidebar__topbar">
-        <div className="app-sidebar__brand" aria-label={brand}>
-          <span className="app-sidebar__brand-full">{brand}</span>
+        <div className="app-sidebar__brand">
+          <h1 className="app-sidebar__brand-full">{brand}</h1>
         </div>
 
         <button

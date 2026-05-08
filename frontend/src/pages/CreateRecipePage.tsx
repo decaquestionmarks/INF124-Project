@@ -158,23 +158,23 @@ export function CreateRecipePage(){
           <section>
           
           </section>
-              <div aria-labelledby="ingredients-heading"  className="search-area">
+              <div className="search-area">
                   <div className="search-form">
                       <SearchIcon aria-hidden="true" className="search-icon"></SearchIcon>
-                      <input onChange={handleInputChange} aria-label="Search for ingredients" type="search" placeholder="Search for Ingredients"className="search-bar" />
+                      <input onChange={handleInputChange} aria-label="Search for ingredients" type="search" placeholder="Search for Ingredients" className="search-bar" />
                   </div>
                   <div className={`matched-items ${filteredIngredients.length != 0  || searchInput != "" ? "active" : ""}`} aria-live="polite">
                       {filteredIngredients.length == 0 && searchInput != "" ?
                       <p>No ingredients found</p> 
                       : filteredIngredients.map((ingredient) => (
-                        <div key={ingredient.id} className="whole-item">
+                        <div onClick={() => handleAddIngredient(ingredient)} key={ingredient.id} className={`whole-item ${addedIngredients.some((i) => (i.title == ingredient.title)) ? "added" : ""}`}>
                         <div className={`item ${poppedDownIngredient == ingredient.id ? "" : "active"}`} >
                           <span>{ingredient.title}</span>
                           <div className="amount-and-unit">
                               <span>{ingredient.caloriesPerUnit} cals / {ingredient.unit}</span>
                           </div>
                           
-                            <button id="add-ingredient" onClick={() => handleAddIngredient(ingredient)} >
+                            <button aria-label={addedIngredients.some((item)=> item.id === ingredient.id) ? "Remove item" : "Add item"} id="add-ingredient" onClick={(e) => {e.stopPropagation(); handleAddIngredient(ingredient);}} >
                               {addedIngredients.some((item)=> item.id === ingredient.id) ? 
                               
                               <RemoveCircleIcon aria-hidden="true" fontSize='medium'/> : 
