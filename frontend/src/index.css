@@ -17,7 +17,11 @@
   --button-hover-background: #b14903;
   --button-hover-border-text: #C85000;
   --button-border: 1px solid #deb99b;
+  --orange-icons: rgb(182, 73, 0);
   --card-color: #f9f5f1;
+  --search-results: rgb(249, 238, 228);
+  --search-results-hover: rgb(251, 230, 211);
+  --light-button-hover: #fff3ea;
 
   --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
   --heading: system-ui, 'Segoe UI', Roboto, sans-serif;

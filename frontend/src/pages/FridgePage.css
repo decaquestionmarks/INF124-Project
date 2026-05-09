@@ -140,7 +140,8 @@
 .shopping-cart-notify{
     display: inline-flex;
     gap: .25rem;
-    color: var(--main-orange-color);
+    color: var(--orange-icons);
+    padding: 2px;
 }
 
 

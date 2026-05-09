@@ -109,7 +109,7 @@
 .dashboard-page__card-link:focus-visible,
 .dashboard-page__panel-link:hover,
 .dashboard-page__panel-link:focus-visible {
-  background: #fff3ea;
+  background: var(--light-button-hover);
   border-color: var(--button-hover-border-text);
   color: var(--button-hover-border-text);
 }

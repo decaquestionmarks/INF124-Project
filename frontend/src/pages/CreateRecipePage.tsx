@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState} from 'react'
 import { Sidebar } from '../components/Sidebar.tsx'
 import './DashboardPage.css'
 import './CreateRecipePage.css'
@@ -50,8 +50,6 @@ export function CreateRecipePage(){
         ingredient.title.toLowerCase().includes(input.toLowerCase()) && input.length != 0
       ))
 
-      console.log(input)
-      console.log(filteredIngredients);
       setFilteredIngredients(matchedIngredients);
 
 
@@ -115,6 +113,7 @@ export function CreateRecipePage(){
    
          <section className="dashboard-page__content">
           <SecondaryHeader isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} pageTitle="New Recipe" linkBack="/recipes"></SecondaryHeader>
+          
           <section className="recipe-title">
                 <h2 id="recipe-title-heading">Recipe Title</h2>
                   <input aria-labelledby="recipe-title-heading" id="recipe-title" value={recipeTitle} placeholder='Chicken Alfredo' onChange={(e) => (setRecipeTitle(e.target.value))}/>

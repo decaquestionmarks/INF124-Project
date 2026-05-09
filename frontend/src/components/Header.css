@@ -21,9 +21,9 @@
     align-self: flex-start;
     min-width: 5rem;
     padding: 0.7rem 1rem;
-    border: 1px solid #deb99b;
+    border: var(--button-border);
     border-radius: 999px;
-    background: #fff7ef;
+    background: var(--button-background);
     color: #7f5e44;
     cursor: pointer;
     font-weight: 700;
@@ -35,9 +35,9 @@
 
 .dashboard-page__menu-button:hover,
 .dashboard-page__menu-button:focus-visible {
-  background: #fff1e5;
-  border-color: #ff8a3d;
-  color: #ff8a3d;
+  background: var(--light-button-hover);
+  border-color: var(--button-hover-border-text);
+  color: var(--button-hover-border-text);
 }
 
 .dashboard-page__eyebrow {

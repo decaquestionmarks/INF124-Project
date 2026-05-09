@@ -72,11 +72,14 @@ textarea:focus{
     color: #5a524b;
     font-size: 1rem;
     border: 1px solid #eadfd5;
+    background-color: var(--search-results);
+    transition: background-color 160ms ease, border 160ms ease;
 }
 
 .whole-item.added{
-    background: #ffe7d3;
-    border-left: 5px solid #ffb066;
+    background-color: var(--search-results-hover);
+    border: 1px solid var(--main-orange-color);
+    border-left: 5px solid var(--main-orange-color);
 
 }
 
@@ -105,12 +108,12 @@ textarea:focus{
     /* border-radius: 1rem 1rem 0rem 0rem; */
     display: grid;
     grid-template-columns: 1fr 1fr auto;
-    background-color: #fff7ef;
+    /* background-color: var(--search-results); */
+    transition: background-color 160ms ease;
 
 }
 
 
-/* refactor */
 .save-recipe{
     border: 1px solid #deb99b;
     border-radius: 999px;
@@ -187,9 +190,10 @@ textarea:focus{
 .active{
     border-radius: 1rem;
 }
-.item:hover{ 
-   background-color: #fff1e5;
 
+.whole-item:hover{
+    background-color: var(--search-results-hover);
+    border-color: var(--main-orange-color);
 }
 
 .save-button{
@@ -199,11 +203,11 @@ textarea:focus{
     color: #7f5e44;
     cursor: pointer;
     font-weight: 700;
-    font-size: .8rem;
-    transition: opacity 160ms ease, background-color 160ms ease, border-color 160ms easie, visibility 160ms ease, color 160ms ease;
+    font-size: 1rem;
+    transition: opacity 160ms ease, background-color 160ms ease, border-color 160ms ease, visibility 160ms ease, color 160ms ease;
     padding: .5rem;
     min-width: 100px;
-    width: 15%;
+    width: 25%;
 }
 
 .save-button:hover{
@@ -343,4 +347,50 @@ input, select{
     white-space: nowrap;
     overflow: hidden;
     
+}
+
+.stat-item{
+    color: black;
+    font-weight: 500;
+}
+
+.upload-content{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  color: #555;
+  font-size: 14px;
+}
+
+.upload-box {
+  width: 180px;
+  height: 180px;
+  border-radius: 12px;
+  background: #F2F2F2;
+  border: 1px solid #E0E0E0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  overflow: hidden;
+  transition: border-color 0.2s ease;
+}
+
+.upload-box:hover {
+  border-color: #ff8a3d;
+}
+
+.upload-preview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.upload-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  color: #555;
 }
