@@ -132,10 +132,10 @@
 .login-page__google {
   margin-top: 0.25rem;
   padding: 0.85rem;
-  border: 1px solid #deb99b;
+  border: var(--button-border);
   border-radius: 0.5rem;
   background: #fff7ef;
-  color: #7f5e44;
+  color: var(--main-orange-color);
   font-size: 1rem;
   font-family: 'Avenir Next', 'Segoe UI', sans-serif;
   cursor: pointer;
@@ -147,7 +147,8 @@
 
 .login-page__google:hover,
 .login-page__google:focus-visible {
-  background: #fff1e5;
+  /* background: #fff1e5;  */
+  background: var(--med-button-hover);
   border-color: var(--main-orange-color);
   color: var(--main-orange-color);
 }
@@ -172,7 +173,7 @@
 }
 
 .login-page__footer a {
-  color: #e5935f;
+  color: var(--main-orange-color);
   text-decoration: underline;
   text-decoration-thickness: 1px;
   text-underline-offset: 4px;

@@ -160,7 +160,7 @@ input{
 }
 
 .update-buttons button{
-    max-width: 15%;
+    max-width: 25%;
 }
 
 @media(max-width: 700px) {

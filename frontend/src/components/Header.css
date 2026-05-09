@@ -23,7 +23,9 @@
     padding: 0.7rem 1rem;
     border: var(--button-border);
     border-radius: 999px;
-    background: var(--button-background);
+    /* #fff7ef */
+    background:  #fff7ef;
+    /* var(--button-background); */
     color: #7f5e44;
     cursor: pointer;
     font-weight: 700;

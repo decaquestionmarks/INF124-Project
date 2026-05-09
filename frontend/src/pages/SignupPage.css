@@ -172,7 +172,7 @@
 }
 
 .signup-page__footer a {
-  color: #e5935f;
+  color: var(--main-orange-color);
   text-decoration: underline;
   text-decoration-thickness: 1px;
   text-underline-offset: 4px;
