@@ -5,7 +5,7 @@ import './CalorieTrackingPage.css'
 import SearchIcon from '@mui/icons-material/Search'
 import { SecondaryHeader } from '../components/Header.tsx'
 import './SearchFoodPage.css'
-import { Link, useNavigate } from 'react-router-dom'
+import {useNavigate } from 'react-router-dom'
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
 
@@ -78,7 +78,7 @@ export function SearchFoodPage({linkBack}: SearchFoodProps){
     return () => legacyMediaQuery.removeListener?.(syncSidebarState)
   }, [])
   
-  const [poppedDownIngredient, setPoppedDownIngredient] = useState(0)
+  // const [poppedDownIngredient, setPoppedDownIngredient] = useState(0)
    return (
        <main
          className={`dashboard-page${isSidebarOpen ? ' dashboard-page--sidebar-open' : ' dashboard-page--sidebar-closed'}`}

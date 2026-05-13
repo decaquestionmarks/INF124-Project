@@ -37,7 +37,7 @@ export function CreateRecipePage(){
   const [filteredIngredients, setFilteredIngredients] = useState<Ingredient[]>([])
 
   const [addedIngredients, setAddedIngredients] = useState<Ingredient[]>([])
-  const [poppedDownIngredient, setPoppedDownIngredient] = useState(0)
+  // const [poppedDownIngredient, setPoppedDownIngredient] = useState(0)
 
   const [steps, setSteps] = useState("")
 
@@ -167,7 +167,8 @@ export function CreateRecipePage(){
                       <p>No ingredients found</p> 
                       : filteredIngredients.map((ingredient) => (
                         <div onClick={() => handleAddIngredient(ingredient)} key={ingredient.id} className={`whole-item ${addedIngredients.some((i) => (i.title == ingredient.title)) ? "added" : ""}`}>
-                        <div className={`item ${poppedDownIngredient == ingredient.id ? "" : "active"}`} >
+                        {/* <div className={`item ${poppedDownIngredient == ingredient.id ? "" : "active"}`} > */}
+                          <div className='item' >
                           <span>{ingredient.title}</span>
                           <div className="amount-and-unit">
                               <span>{ingredient.caloriesPerUnit} cals / {ingredient.unit}</span>

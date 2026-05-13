@@ -6,14 +6,13 @@ import './RecipePage.css'
 import SearchIcon from '@mui/icons-material/Search'
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import {Header} from '../components/Header.tsx'
-import { dividerClasses } from '@mui/material/Divider'
-type Recipe = {
-  id: number;
-  name: string;
-  description?: string;
-  foods?: any[];
-  steps?: any[];
-}
+// type Recipe = {
+//   id: number;
+//   name: string;
+//   description?: string;
+//   foods?: any[];
+//   steps?: any[];
+// }
 
 type RecipePreview = {
   id: number;
@@ -70,41 +69,41 @@ export function RecipePage(){
 
     const [searchMode, setSearchMode] = useState(false)
     const [input, setInput] = useState("")
-    const [searchedRecipes, setSearchedRecipes] = useState<Recipe[]>([])
+    // const [searchedRecipes, setSearchedRecipes] = useState<Recipe[]>([])
     const [previews, setPreviews] = useState<RecipePreview[]>([])
    
     //  starting to connect to backend
-    // const handleSearch = async (e) => {
-    //     e.preventDefault()
-    //       try{
-    //         const end_url = `http://127.0.0.1:3000/recipes/search?query=${encodeURIComponent(input)}`
-    //         console.log(end_url)
-    //         const response = await fetch(end_url)
-    //         const data = await response.json()
+    const handleSearch = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault()
+          try{
+            const end_url = `http://127.0.0.1:3000/recipes/search?query=${encodeURIComponent(input)}`
+            console.log(end_url)
+            const response = await fetch(end_url)
+            const data = await response.json()
             
-    //         console.log("DATA", data)
-    //         const results = data.results
-    //         setSearchedRecipes(results)
-    //         setSearchMode(true)
+            console.log("DATA", data)
+            const results = data.results
+            // setSearchedRecipes(results)
+            setSearchMode(true)
 
-    //         const previewsArr = []
-    //         for (const r of results){
-    //             const resp = await fetch(`http://127.0.0.1:3000/recipes/${r.id}/preview`);
+            const previewsArr = []
+            for (const r of results){
+                const resp = await fetch(`http://127.0.0.1:3000/recipes/${r.id}/preview`);
   
-    //             const preview = await resp.json();
-    //             previewsArr.push(preview)
-    //             console.log(preview.image)
-    //         }
+                const preview = await resp.json();
+                previewsArr.push(preview)
+                console.log(preview.image)
+            }
   
             
-    //         setPreviews(previewsArr)
+            setPreviews(previewsArr)
           
             
-    //       }
-    //       catch (error) {
-    //         console.error("ERROR", error)
-    //       }
-    //     }
+          }
+          catch (error) {
+            console.error("ERROR", error)
+          }
+        }
 
 
    return (
@@ -127,8 +126,8 @@ export function RecipePage(){
           
           <section>
             
-            {/* <form action="" className="search-form" onSubmit={handleSearch}> */}
-            <form action="" className="search-form"  onSubmit={(e) => (e.preventDefault())}>
+            <form action="" className="search-form" onSubmit={handleSearch}>
+            {/* <form action="" className="search-form"  onSubmit={(e) => (e.preventDefault())}> */}
                 <label htmlFor="search-bar-input" className="search-label">Search Food</label>
                 <SearchIcon aria-hidden="true" className="search-icon"></SearchIcon>
                 <input id="search-bar-input" aria-label="Search Recipes" type="search" placeholder="Search Recipes" 

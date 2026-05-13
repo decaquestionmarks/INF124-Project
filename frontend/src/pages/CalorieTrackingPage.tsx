@@ -7,7 +7,6 @@ import AddCircleIcon from '@mui/icons-material/AddCircle';
 import {Header} from '../components/Header.tsx'
 import ArrowRightRoundedIcon from '@mui/icons-material/ArrowRightRounded';
 import ArrowLeftRoundedIcon from '@mui/icons-material/ArrowLeftRounded';
-import ShareRoundedIcon from '@mui/icons-material/ShareRounded';
 import EggRoundedIcon from '@mui/icons-material/EggRounded';
 import LunchDiningRoundedIcon from '@mui/icons-material/LunchDiningRounded';
 import DinnerDiningRoundedIcon from '@mui/icons-material/DinnerDiningRounded';

@@ -28,25 +28,25 @@ export function RecipeDetail(){
   const [steps, setSteps] = useState<string[]>([])
   const [ingredients, setIngredients] = useState<Ingredient[]>([])
 //  starting to connect to backend
-  // useEffect(() => {
-  //     async function fetchData(){
-  //       if (!id) return;
-  //       try{
-  //           const end_url = `http://127.0.0.1:3000/recipes/${encodeURIComponent(id)}`
-  //           const response = await fetch(end_url)
-  //           const data = await response.json()
-  //           setTitle(data.name)
-  //           setSteps(data.steps)
-  //           setIngredients(data.foods)
+  useEffect(() => {
+      async function fetchData(){
+        if (!id) return;
+        try{
+            const end_url = `http://127.0.0.1:3000/recipes/${encodeURIComponent(id)}`
+            const response = await fetch(end_url)
+            const data = await response.json()
+            setTitle(data.name)
+            setSteps(data.steps)
+            setIngredients(data.foods)
   
 
-  //         }
-  //         catch (error) {
-  //           console.error("ERROR RecipeDetail Fetch", error)
-  //         } 
-  //   }
-  //   fetchData()
-  // }, [id])
+          }
+          catch (error) {
+            console.error("ERROR RecipeDetail Fetch", error)
+          } 
+    }
+    fetchData()
+  }, [id])
 
 
   useEffect(() => {

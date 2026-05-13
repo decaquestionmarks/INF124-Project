@@ -23,7 +23,12 @@ const familyData = [
 
 export function AccountPage(){
 
-  const handleSaveGoals = () => (console.log("SAVE"))
+  const handleSaveGoals =  (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    setOriginalFormValues(formValues)
+    setEditingGoals(false)
+    }
+
   const formSchema = [
       {
         id: "weightStarting",
