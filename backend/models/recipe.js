@@ -1,10 +1,10 @@
 const Food = require('./food');
 
 class Recipe {
-    constructor(name, description, foods, steps) {
-        // Validate name
-        if (!name || typeof name !== 'string' || name.trim() === '') {
-            throw new Error('Name is required and must be a non-empty string');
+    constructor(id, name, description, foods, steps) {
+        // Validate ID
+        if (!id || typeof id !== 'string') {
+            throw new Error('ID is required and must be a string');
         }
 
         // Validate description
@@ -22,6 +22,7 @@ class Recipe {
             throw new Error('Steps must be an array');
         }
 
+        this.id = id;
         this.name = name.trim();
         this.description = description;
         this.foods = foods;

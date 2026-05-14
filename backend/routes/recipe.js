@@ -1,6 +1,27 @@
 const express = require('express');
 const router = express.Router();
-const { searchRecipes, getRecipePreview, getRecipeById } = require('../controllers/recipe');
+const { searchRecipes, getRecipePreview, getRecipeById, createRecipe } = require('../controllers/recipe');
+const Recipe = require('../models/recipe');
+
+/**
+ * POST /recipes
+ * Creates a recipe from the JSON request body.
+ */
+router.post('/', (req, res) => {
+    try {
+        const recipe = new Recipe(
+            req.body.name,
+            req.body.description,
+            req.body.foods,
+            req.body.steps
+        );
+
+        const createdRecipe = createRecipe(recipe);
+        res.status(201).json(createdRecipe);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+});
 
 /**
  * GET /recipes/search?query=<text>

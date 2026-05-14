@@ -1,3 +1,5 @@
+const Recipe = require('../models/recipe');
+
 // MOCK: Replace this with database-backed queries in production.
 const mockRecipes = [
     {
@@ -104,8 +106,39 @@ const getRecipeById = (recipeId) => {
     return recipe;
 };
 
+const nextID = () => {
+    const maxId = mockRecipes.reduce((highestId, recipe) => {
+        const numericId = Number.parseInt(recipe.id, 10);
+        return Number.isFinite(numericId) && numericId > highestId ? numericId : highestId;
+    }, 0);
+
+    return String(maxId + 1);
+};
+
+/**
+ * Create a recipe from a request payload
+ * @param {Recipe} recipe - Recipe object from the model
+ * @returns {object} - The created recipe with an id
+ * @throws {Error} - If the payload is missing or invalid
+ */
+const createRecipe = (recipe) => {
+    if (!(recipe instanceof Recipe)) {
+        throw new Error('Recipe payload must be a Recipe object');
+    }
+
+    const createdRecipe = {
+        id: nextID(),
+        ...recipe,
+    };
+
+    mockRecipes.push(createdRecipe);
+
+    return createdRecipe;
+};
+
 module.exports = {
     searchRecipes,
     getRecipePreview,
     getRecipeById,
+    createRecipe,
 };
