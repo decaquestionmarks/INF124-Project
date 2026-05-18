@@ -1,6 +1,65 @@
 const Recipe = require('../models/recipe');
+const express = require('express');
+const bodyParser = require('body-parser');
+const mongoose = require('mongoose');
 
+const app = express();
+const port = 3000;
+
+app.use(bodyParser.json());
+
+mongoose.connect('mongodb://localhost:27017/recipes', { useNewUrlParser: true, useUnifiedTopology: true });
+
+const db = mongoose.connection;
+db.on('error', console.error.bind(console, 'MongoDB connection error:'));
+
+db.once('open', () => {console.log('Connected to MongoDB') });
+
+const recipeSchema = new mongoose.Schema({
+    name: { type: String, required: true },
+    description: { type: String, required: true },
+    foods: [{
+        name: { type: String, required: true },
+        classification: { type: String, required: true },
+        measurementClassification: { type: String, required: true },
+        measurement: { type: Number, required: true }
+    }],
+    steps: [{ type: String, required: true }]
+});
+
+const Recipe = mongoose.model('Recipe', recipeSchema);
+
+app.get('/', (req, res) => {
+    res.send("Hello World!>");
+});
+
+app.post('/recipes', (req, res) => {
+    const newRec = new Recipe(req.body);
+
+    newRec.save((err, savedRecipe) => {
+        if (err) {
+            console.error('Error saving recipe:', err);
+            return res.status(500).json({ error: 'Failed to save recipe' });
+        }
+        res.status(201).json(savedRecipe);
+    });
+});
+
+app.get('/recipes', (req, res) => {
+    Recipe.find({}, (err, recipes) => {
+        if (err) {
+            console.error('Error fetching recipes:', err);
+            return res.status(500).json({ error: 'Failed to fetch recipes' });
+        }
+        res.status(200).send(recipes);
+    });
+});
+
+app.listen(port, () => {
+    console.log(`Server is running on http://localhost:${port}`);
+});
 // MOCK: Replace this with database-backed queries in production.
+
 const mockRecipes = [
     {
         id: '1',
