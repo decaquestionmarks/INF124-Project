@@ -207,6 +207,7 @@ export function Sidebar({
           </NavLink>
         )}
       </nav>
+      <div className="app-sidebar__footer">Copyright © 2026 Foodly</div>
     </aside>
   )
 }

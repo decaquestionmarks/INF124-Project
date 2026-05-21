@@ -97,6 +97,16 @@
   gap: 0.35rem;
 }
 
+.app-sidebar__footer {
+  margin-top: auto;
+  padding-top: 1rem;
+  color: #7f5e44;
+  font-family: 'Avenir Next', 'Segoe UI', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
 .app-sidebar__link {
   display: inline-flex;
   position: relative;
