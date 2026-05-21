@@ -70,18 +70,24 @@ export function Sidebar({
 }: SidebarProps) {
   const { user } = useAuth()
   const location = useLocation()
+  const isAuthenticated = Boolean(user)
+  const isAuthRoute = ['/login', '/signup'].includes(location.pathname)
   const [isAccountSubmenuOpen, setIsAccountSubmenuOpen] = useState(() => {
-    return ['/login', '/signup', '/account'].includes(location.pathname)
+    return isAuthenticated && ['/login', '/signup', '/account'].includes(location.pathname)
   })
 
   // Remove the useEffect that closes the submenu right when sidebar collapses
   // to avoid triggering a vertical shrink animation while the sidebar width shrinks horizontally.
 
   useEffect(() => {
-    if (isOpen && ['/login', '/signup', '/account'].includes(location.pathname)) {
+    if (
+      isAuthenticated &&
+      isOpen &&
+      ['/login', '/signup', '/account'].includes(location.pathname)
+    ) {
       setIsAccountSubmenuOpen(true)
     }
-  }, [location.pathname, isOpen])
+  }, [isAuthenticated, location.pathname, isOpen])
 
   const handleLogout = async () => {
     await signOut(auth)
@@ -115,59 +121,59 @@ export function Sidebar({
 
       {/* Main app navigation links. */}
       <nav className="app-sidebar__nav" aria-label="Main navigation">
-        {navigationItems.map((item) => {
-          const Icon = item.icon
+        {isAuthenticated ? (
+          <>
+            {navigationItems.map((item) => {
+              const Icon = item.icon
 
-          return (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              end={item.path === '/dashboard'}
-              aria-label={item.label}
-              className={({ isActive }) =>
-                `app-sidebar__link${isActive ? ' app-sidebar__link--active' : ''}`
-              }
+              return (
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  end={item.path === '/dashboard'}
+                  aria-label={item.label}
+                  className={({ isActive }) =>
+                    `app-sidebar__link${isActive ? ' app-sidebar__link--active' : ''}`
+                  }
+                >
+                  <span className="app-sidebar__link-icon" aria-hidden="true">
+                    <Icon fontSize="small" />
+                  </span>
+                  <span className="app-sidebar__link-text">{item.label}</span>
+                </NavLink>
+              )
+            })}
+
+            <div
+              className={`app-sidebar__submenu${isAccountSubmenuOpen ? ' app-sidebar__submenu--open' : ''}`}
             >
-              <span className="app-sidebar__link-icon" aria-hidden="true">
-                <Icon fontSize="small" />
-              </span>
-              <span className="app-sidebar__link-text">{item.label}</span>
-            </NavLink>
-          )
-        })}
+              <button
+                type="button"
+                className="app-sidebar__link app-sidebar__submenu-toggle"
+                onClick={() => setIsAccountSubmenuOpen((open) => !open)}
+                aria-expanded={isAccountSubmenuOpen}
+                aria-controls="account-submenu"
+                aria-label={accountNavigationItem.label}
+              >
+                <span className="app-sidebar__link-icon" aria-hidden="true">
+                  {user?.photoURL ? (
+                    <img
+                      src={user.photoURL}
+                      alt=""
+                      className="app-sidebar__avatar"
+                      referrerPolicy="no-referrer"
+                    />
+                  ) : (
+                    <AccountCircleIcon fontSize="small" />
+                  )}
+                </span>
+                <span className="app-sidebar__link-text">{accountNavigationItem.label}</span>
+                <span className="app-sidebar__submenu-chevron" aria-hidden="true">
+                  <ExpandMoreRoundedIcon fontSize="small" />
+                </span>
+              </button>
 
-        <div
-          className={`app-sidebar__submenu${isAccountSubmenuOpen ? ' app-sidebar__submenu--open' : ''}`}
-        >
-          <button
-            type="button"
-            className="app-sidebar__link app-sidebar__submenu-toggle"
-            onClick={() => setIsAccountSubmenuOpen((open) => !open)}
-            aria-expanded={isAccountSubmenuOpen}
-            aria-controls="account-submenu"
-            aria-label={accountNavigationItem.label}
-          >
-            <span className="app-sidebar__link-icon" aria-hidden="true">
-              {user?.photoURL ? (
-                <img
-                  src={user.photoURL}
-                  alt=""
-                  className="app-sidebar__avatar"
-                  referrerPolicy="no-referrer"
-                />
-              ) : (
-                <AccountCircleIcon fontSize="small" />
-              )}
-            </span>
-            <span className="app-sidebar__link-text">{accountNavigationItem.label}</span>
-            <span className="app-sidebar__submenu-chevron" aria-hidden="true">
-              <ExpandMoreRoundedIcon fontSize="small" />
-            </span>
-          </button>
-
-          <div id="account-submenu" className="app-sidebar__submenu-panel">
-            {user ? (
-              <>
+              <div id="account-submenu" className="app-sidebar__submenu-panel">
                 <NavLink
                   to={accountNavigationItem.path}
                   className={({ isActive }) =>
@@ -183,19 +189,23 @@ export function Sidebar({
                 >
                   Log out
                 </button>
-              </>
-            ) : (
-              <NavLink
-                to="/login"
-                className={({ isActive }) =>
-                  `app-sidebar__sublink${isActive || location.pathname === '/signup' ? ' app-sidebar__sublink--active' : ''}`
-                }
-              >
-                Log In/Sign up
-              </NavLink>
-            )}
-          </div>
-        </div>
+              </div>
+            </div>
+          </>
+        ) : (
+          <NavLink
+            to="/login"
+            aria-label="Log in"
+            className={({ isActive }) =>
+              `app-sidebar__link${isActive || isAuthRoute ? ' app-sidebar__link--active' : ''}`
+            }
+          >
+            <span className="app-sidebar__link-icon" aria-hidden="true">
+              <AccountCircleIcon fontSize="small" />
+            </span>
+            <span className="app-sidebar__link-text">Log in / Sign up</span>
+          </NavLink>
+        )}
       </nav>
     </aside>
   )
