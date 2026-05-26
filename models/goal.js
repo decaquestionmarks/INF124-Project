@@ -58,6 +58,10 @@ class Goal {
 		});
 	}
 
+	getFoods(){
+		return this.foods;
+	}
+
 	calculateTotals() {
 		return goalNutrients.reduce((totals, nutrient) => {
 			totals[nutrient] = this.foods.reduce((sum, food) => {
