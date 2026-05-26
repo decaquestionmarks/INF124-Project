@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const { searchRecipes, getRecipePreview, getRecipeById, createRecipe } = require('../controllers/recipe');
+const { searchRecipes, getRecipePreview, getRecipeById, createRecipe, attachRecommendedRecipes } = require('../controllers/recipe');
+const { attachUser } = require('../controllers/user');
 const Recipe = require('../../models/recipe');
 
 /**
@@ -35,6 +36,17 @@ router.get('/search', (req, res) => {
     } catch (error) {
         res.status(400).json({ error: error.message });
     }
+});
+
+/**
+ * GET /recipes/recommended
+ * Returns recipes the current user can make from their fridge items.
+ */
+router.get('/recommended', attachUser, attachRecommendedRecipes, (req, res) => {
+    res.json({
+        count: req.recommendedRecipes.length,
+        results: req.recommendedRecipes,
+    });
 });
 
 /**

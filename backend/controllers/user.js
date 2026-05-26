@@ -49,6 +49,13 @@ const attachUser = (req, res, next) => {
 	}
 };
 
+const normalizeGoalDate = (req) => req.params.date || req.query.date || new Date().toISOString().slice(0, 10);
+
+const buildFoodFromBody = (body = {}) => {
+	const { name, classification, measurementClassification, measurement, macronutrients = {} } = body;
+	return new Food(name, classification, measurementClassification, Number(measurement), macronutrients);
+};
+
 // GET /users/me/account
 const getAccount = (req, res) => {
 	const u = req.appUser;
@@ -67,7 +74,7 @@ const getAccount = (req, res) => {
 
 // GET /users/me/goal?date=YYYY-MM-DD
 const getGoalForDate = (req, res) => {
-	const date = req.query.date || new Date().toISOString().slice(0, 10);
+	const date = req.query.date || req.params.date || new Date().toISOString().slice(0, 10);
 	const goal = req.appUser.getGoal(date);
 
 	if (!goal) return res.status(404).json({ error: 'Goal not found for date' });
@@ -80,7 +87,7 @@ const getGoalForDate = (req, res) => {
 
 // GET /users/me/goal/foods?date=YYYY-MM-DD
 const getGoalFoods = (req, res) => {
-	const date = req.query.date || new Date().toISOString().slice(0, 10);
+	const date = req.query.date || req.params.date || new Date().toISOString().slice(0, 10);
 	const goal = req.appUser.getGoal(date);
 
 	if (!goal) return res.status(404).json({ error: 'Goal not found for date' });
@@ -94,10 +101,75 @@ const getFridge = (req, res) => {
 	res.json({ fridge });
 };
 
+const addGoalFood = (req, res) => {
+	const date = normalizeGoalDate(req);
+	const goal = req.appUser.getGoal(date);
+
+	if (!goal) return res.status(404).json({ error: 'Goal not found for date' });
+
+	try {
+		const food = req.body && req.body.name ? req.body : null;
+		if (!food) return res.status(400).json({ error: 'Food payload is required' });
+
+		goal.addFood(food);
+		return res.status(201).json({ date, foods: goal.getFoods() });
+	} catch (err) {
+		return res.status(400).json({ error: err.message });
+	}
+};
+
+const addFridgeItem = (req, res) => {
+	try {
+		const food = buildFoodFromBody(req.body);
+		req.appUser.addFood(food);
+		return res.status(201).json({ fridge: req.appUser.inventory });
+	} catch (err) {
+		return res.status(400).json({ error: err.message });
+	}
+};
+
+const updateAccount = (req, res) => {
+	try {
+		if (typeof req.body?.name === 'string' && req.body.name.trim()) {
+			req.appUser.name = req.body.name.trim();
+		}
+
+		return res.json({ account: { id: req.appUser.id, name: req.appUser.name, email: req.user?.email } });
+	} catch (err) {
+		return res.status(400).json({ error: err.message });
+	}
+};
+
+const updateGoal = (req, res) => {
+	const date = normalizeGoalDate(req);
+	const existingGoal = req.appUser.getGoal(date);
+
+	try {
+		const nextGoal = existingGoal || new Goal({}, []);
+
+		if (req.body?.goals && typeof req.body.goals === 'object' && !Array.isArray(req.body.goals)) {
+			nextGoal.setGoals(req.body.goals);
+		}
+
+		if (Array.isArray(req.body?.foods)) {
+			req.body.foods.forEach((food) => nextGoal.addFood(food));
+		}
+
+		req.appUser.setGoal(date, nextGoal);
+		return res.json({ date, goal: nextGoal.goals || nextGoal, progress: nextGoal.calculateProgress() });
+	} catch (err) {
+		return res.status(400).json({ error: err.message });
+	}
+};
+
 module.exports = {
 	attachUser,
 	getAccount,
 	getGoalForDate,
 	getGoalFoods,
 	getFridge,
+	addGoalFood,
+	addFridgeItem,
+	updateAccount,
+	updateGoal,
 };

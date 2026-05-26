@@ -46,6 +46,32 @@ const mockRecipes = [
     }
 ];
 
+const normalizeName = (value) => (typeof value === 'string' ? value.trim().toLowerCase() : '');
+
+const getIngredientName = (ingredient) => normalizeName(ingredient && ingredient.name);
+
+const getRecipeRecommendations = (fridgeItems = []) => {
+    const fridgeNames = new Set(
+        fridgeItems
+            .map((item) => normalizeName(item && item.name))
+            .filter(Boolean)
+    );
+
+    return mockRecipes.filter((recipe) => {
+        if (!Array.isArray(recipe.foods) || recipe.foods.length === 0) {
+            return false;
+        }
+
+        return recipe.foods.every((ingredient) => fridgeNames.has(getIngredientName(ingredient)));
+    }).map((recipe) => ({
+        id: recipe.id,
+        name: recipe.name,
+        description: recipe.description,
+        foods: recipe.foods,
+        steps: recipe.steps,
+    }));
+};
+
 /**
  * Search for recipes by query string
  * @param {string} query - Search query to match against name and description
@@ -136,9 +162,17 @@ const createRecipe = (recipe) => {
     return createdRecipe;
 };
 
+const attachRecommendedRecipes = (req, res, next) => {
+    const fridgeItems = req.appUser && Array.isArray(req.appUser.inventory) ? req.appUser.inventory : [];
+    req.recommendedRecipes = getRecipeRecommendations(fridgeItems);
+    next();
+};
+
 module.exports = {
     searchRecipes,
     getRecipePreview,
     getRecipeById,
     createRecipe,
+    attachRecommendedRecipes,
+    getRecipeRecommendations,
 };
