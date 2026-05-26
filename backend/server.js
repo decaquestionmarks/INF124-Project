@@ -1,5 +1,6 @@
 const express = require('express');
 const recipeRouter = require('./routes/recipe');
+const usersRouter = require('./routes/users');
 
 const app = express();
 const PORT = 3000;
@@ -9,6 +10,7 @@ app.use(express.json());
 
 // Routes
 app.use('/recipes', recipeRouter);
+app.use('/users', usersRouter);
 
 // Health check endpoint
 app.get('/', (req, res) => {

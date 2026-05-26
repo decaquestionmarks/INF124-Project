@@ -1,10 +1,6 @@
 const Recipe = require('../models/recipe');
-const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
-
-const app = express();
-const port = 3000;
 
 app.use(bodyParser.json());
 
@@ -28,37 +24,6 @@ const recipeSchema = new mongoose.Schema({
 });
 
 const Recipe = mongoose.model('Recipe', recipeSchema);
-
-app.get('/', (req, res) => {
-    res.send("Hello World!>");
-});
-
-app.post('/recipes', (req, res) => {
-    const newRec = new Recipe(req.body);
-
-    newRec.save((err, savedRecipe) => {
-        if (err) {
-            console.error('Error saving recipe:', err);
-            return res.status(500).json({ error: 'Failed to save recipe' });
-        }
-        res.status(201).json(savedRecipe);
-    });
-});
-
-app.get('/recipes', (req, res) => {
-    Recipe.find({}, (err, recipes) => {
-        if (err) {
-            console.error('Error fetching recipes:', err);
-            return res.status(500).json({ error: 'Failed to fetch recipes' });
-        }
-        res.status(200).send(recipes);
-    });
-});
-
-app.listen(port, () => {
-    console.log(`Server is running on http://localhost:${port}`);
-});
-// MOCK: Replace this with database-backed queries in production.
 
 const mockRecipes = [
     {
@@ -104,6 +69,32 @@ const mockRecipes = [
         ]
     }
 ];
+
+const normalizeName = (value) => (typeof value === 'string' ? value.trim().toLowerCase() : '');
+
+const getIngredientName = (ingredient) => normalizeName(ingredient && ingredient.name);
+
+const getRecipeRecommendations = (fridgeItems = []) => {
+    const fridgeNames = new Set(
+        fridgeItems
+            .map((item) => normalizeName(item && item.name))
+            .filter(Boolean)
+    );
+
+    return mockRecipes.filter((recipe) => {
+        if (!Array.isArray(recipe.foods) || recipe.foods.length === 0) {
+            return false;
+        }
+
+        return recipe.foods.every((ingredient) => fridgeNames.has(getIngredientName(ingredient)));
+    }).map((recipe) => ({
+        id: recipe.id,
+        name: recipe.name,
+        description: recipe.description,
+        foods: recipe.foods,
+        steps: recipe.steps,
+    }));
+};
 
 /**
  * Search for recipes by query string
@@ -195,9 +186,17 @@ const createRecipe = (recipe) => {
     return createdRecipe;
 };
 
+const attachRecommendedRecipes = (req, res, next) => {
+    const fridgeItems = req.appUser && Array.isArray(req.appUser.inventory) ? req.appUser.inventory : [];
+    req.recommendedRecipes = getRecipeRecommendations(fridgeItems);
+    next();
+};
+
 module.exports = {
     searchRecipes,
     getRecipePreview,
     getRecipeById,
     createRecipe,
+    attachRecommendedRecipes,
+    getRecipeRecommendations,
 };

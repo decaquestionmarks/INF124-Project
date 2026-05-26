@@ -1,7 +1,11 @@
 const Food = require('./food');
 
 class ShoppingList {
-    constructor() {
+    constructor(id) {
+        if (typeof id !== 'number') {
+			throw new TypeError('id must be a number');
+		}
+        this.id = id;
         this.foods = [];
     }
 
