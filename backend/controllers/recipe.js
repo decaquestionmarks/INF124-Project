@@ -1,4 +1,4 @@
-const Recipe = require('../models/recipe');
+const Recipe = require('../../models/recipe');
 
 // MOCK: Replace this with database-backed queries in production.
 const mockRecipes = [
