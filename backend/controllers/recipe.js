@@ -1,6 +1,30 @@
-const Recipe = require('../../models/recipe');
+const Recipe = require('../models/recipe');
+const bodyParser = require('body-parser');
+const mongoose = require('mongoose');
 
-// MOCK: Replace this with database-backed queries in production.
+app.use(bodyParser.json());
+
+mongoose.connect('mongodb://localhost:27017/recipes', { useNewUrlParser: true, useUnifiedTopology: true });
+
+const db = mongoose.connection;
+db.on('error', console.error.bind(console, 'MongoDB connection error:'));
+
+db.once('open', () => {console.log('Connected to MongoDB') });
+
+const recipeSchema = new mongoose.Schema({
+    name: { type: String, required: true },
+    description: { type: String, required: true },
+    foods: [{
+        name: { type: String, required: true },
+        classification: { type: String, required: true },
+        measurementClassification: { type: String, required: true },
+        measurement: { type: Number, required: true }
+    }],
+    steps: [{ type: String, required: true }]
+});
+
+const Recipe = mongoose.model('Recipe', recipeSchema);
+
 const mockRecipes = [
     {
         id: '1',
