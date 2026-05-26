@@ -162,6 +162,53 @@ const updateGoal = (req, res) => {
 	}
 };
 
+const deleteGoalFood = (req, res) => {
+	const date = normalizeGoalDate(req);
+	const foodName = req.params.food;
+	const goal = req.appUser.getGoal(date);
+
+	if (!goal) return res.status(404).json({ error: 'Goal not found for date' });
+	if (!foodName) return res.status(400).json({ error: 'Food name is required' });
+
+	try {
+		const initialCount = goal.foods.length;
+		goal.foods = goal.foods.filter((food) => 
+			(food && food.name && food.name.trim().toLowerCase()) !== foodName.trim().toLowerCase()
+		);
+
+		const removed = goal.foods.length < initialCount;
+		if (!removed) {
+			return res.status(404).json({ error: 'Food not found in goal' });
+		}
+
+		return res.json({ date, foods: goal.foods });
+	} catch (err) {
+		return res.status(400).json({ error: err.message });
+	}
+};
+
+const deleteFridgeFood = (req, res) => {
+	const foodName = req.params.food;
+
+	if (!foodName) return res.status(400).json({ error: 'Food name is required' });
+
+	try {
+		const initialCount = req.appUser.inventory.length;
+		req.appUser.inventory = req.appUser.inventory.filter((food) => 
+			(food && food.name && food.name.trim().toLowerCase()) !== foodName.trim().toLowerCase()
+		);
+
+		const removed = req.appUser.inventory.length < initialCount;
+		if (!removed) {
+			return res.status(404).json({ error: 'Food not found in fridge' });
+		}
+
+		return res.json({ fridge: req.appUser.inventory });
+	} catch (err) {
+		return res.status(400).json({ error: err.message });
+	}
+};
+
 module.exports = {
 	attachUser,
 	getAccount,
@@ -172,4 +219,6 @@ module.exports = {
 	addFridgeItem,
 	updateAccount,
 	updateGoal,
+	deleteGoalFood,
+	deleteFridgeFood,
 };

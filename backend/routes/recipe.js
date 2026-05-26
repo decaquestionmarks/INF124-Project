@@ -1,6 +1,6 @@
-const express = require('express');
+﻿const express = require('express');
 const router = express.Router();
-const { searchRecipes, getRecipePreview, getRecipeById, createRecipe, attachRecommendedRecipes } = require('../controllers/recipe');
+const { searchRecipes, getRecipePreview, getRecipeById, createRecipe, attachRecommendedRecipes, deleteRecipe, updateRecipe } = require('../controllers/recipe');
 const { attachUser } = require('../controllers/user');
 const Recipe = require('../../models/recipe');
 
@@ -74,11 +74,39 @@ router.get('/:id', (req, res) => {
     try {
         const recipeId = req.params.id;
 
-        // TODO: Validate the recipeId format (e.g., check if it's a valid MongoDB ObjectId)
+        // TODO: Validate the recipeId format (e.g., check if it''s a valid MongoDB ObjectId)
 
         const recipe = getRecipeById(recipeId);
         res.json(recipe);
 
+    } catch (error) {
+        res.status(404).json({ error: error.message });
+    }
+});
+
+/**
+ * PUT /recipes/:id
+ * Updates a recipe by ID with new data (name, description, foods, steps).
+ */
+router.put('/:id', (req, res) => {
+    try {
+        const recipeId = req.params.id;
+        const updated = updateRecipe(recipeId, req.body);
+        res.json(updated);
+    } catch (error) {
+        res.status(404).json({ error: error.message });
+    }
+});
+
+/**
+ * DELETE /recipes/:id
+ * Deletes a recipe by ID.
+ */
+router.delete('/:id', (req, res) => {
+    try {
+        const recipeId = req.params.id;
+        const deleted = deleteRecipe(recipeId);
+        res.json({ message: 'Recipe deleted', deleted });
     } catch (error) {
         res.status(404).json({ error: error.message });
     }

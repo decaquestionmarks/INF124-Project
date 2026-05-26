@@ -11,6 +11,8 @@ const {
 	addFridgeItem,
 	updateAccount,
 	updateGoal,
+	deleteGoalFood,
+	deleteFridgeFood,
 } = require('../controllers/user');
 
 const router = express.Router();
@@ -31,6 +33,10 @@ router.post('/me/fridge', attachUser, addFridgeItem); //auth
 
 router.put('/me/account', attachUser, updateAccount); //auth
 router.put('/me/goal/:date', attachUser, updateGoal); //auth
-router.put('/me/goal/date', attachUser, updateGoal); //auth
+router.put('/me/goal/', attachUser, updateGoal); //auth
+
+router.delete('/me/goal/:date/:food', attachUser, deleteGoalFood); //auth
+router.delete('/me/goal/:food', attachUser, deleteGoalFood); //auth
+router.delete('/me/fridge/:food', attachUser, deleteFridgeFood); //auth
 
 module.exports = router;
