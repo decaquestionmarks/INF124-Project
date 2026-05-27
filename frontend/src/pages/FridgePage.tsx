@@ -7,141 +7,64 @@ import AddCircleIcon from '@mui/icons-material/AddCircle';
 import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
 import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownRounded';
 import { Header } from '../components/Header.tsx'
-import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 
-const needed_items = [
-  {
-    id: 1,
-    title: "Milk",
-    quantity: 1,
-    unit: "gallon",
-    category: "Dairy",
-    added_by: "user",
-  },
-  {
-    id: 2,
-    title: "Bananas",
-    quantity: 6,
-    unit: "pcs",
-    category: "Produce",
-    added_by: "user",
-  },
-  {
-    id: 3,
-    title: "Apples",
-    quantity: 2,
-    unit: "pcs",
-    category: "Produce",
-    added_by: "user",
-  },
-  {
-    id: 4,
-    title: "Chicken Breast",
-    quantity: 2,
-    unit: "lbs",
-    category: "Meat",
-    added_by: "user",
-  },
-  {
-    id: 5,
-    title: "Bread",
-    quantity: 1,
-    unit: "loaf",
-    category: "Bakery",
-    added_by: "user",
-  },
-  {
-    id: 6,
-    title: "Olive Oil",
-    quantity: 1,
-    unit: "bottle",
-    category: "Pantry",
-    added_by: "user",
-  }
-];
-const mock_items = [
-  {
-    id: 101,
-    title: "Eggs",
-    quantity: 12,
-    unit: "pcs",
-    category: "Dairy",
-    added_by: "Mom",
-  },
-  {
-    id: 102,
-    title: "Spinach",
-    quantity: 1,
-    unit: "bag",
-    category: "Produce",
-    added_by: "Dad",
-  },
-  {
-    id: 103,
-    title: "Carrots",
-    quantity: 5,
-    unit: "pcs",
-    category: "Produce",
-    added_by: "You",
-  },
-  {
-    id: 104,
-    title: "Ground Beef",
-    quantity: 1,
-    unit: "lb",
-    category: "Meat",
-    added_by: "Mom",
-  },
-];
+const FOOD_CATEGORIES = [
+  "Produce",
+  "Dairy",
+  "Meat",
+  "Bakery",
+  "Pantry",
+  "Frozen",
+  "Drinks",
+  "Snacks",
+  "Spices and Baking",
+  "Condiments"
+] as const;
 
- const categories = [
-        {"name": "Produce", "id": 1},
-        {"name": "Dairy", "id": 2},
-        {"name": "Meat", "id": 3},
-        {"name": "Bakery", "id": 4},
-        {"name": "Pantry", "id": 5},
-        {"name": "Frozen", "id": 6},
-        {"name": "Drinks", "id": 7},
-        {"name": "Snacks", "id": 8},
-        {"name": "Condiments", "id": 9},
-        {"name": "Spices and Baking", "id": 10},
-    ]
+type FoodCategory = typeof FOOD_CATEGORIES[number];
 
-type Item = {
-      id: number,
-      title: string,
-      quantity: number, 
-      unit: string,
-      category: string,
-      added_by: string
+type Food = {
+  id: string;
+  name: string;
+  classification: FoodCategory;
+  measurementClassification: string;
+  measurement: number;
+  macronutrients: {
+    calories: number;
+    protein: number;
+    carbs: number;
+    fat: number;
+  };
+};
 
-    }
+function useAssociatedItems(itemList: Food[] = []) {
+  console.log("ITEM LIST: ", itemList)
+  return useMemo(() => {
+    const mapping: Record<FoodCategory, Food[]> = {
+      Produce: [],
+      Dairy: [],
+      Meat: [],
+      Bakery: [],
+      Pantry: [],
+      Frozen: [],
+      Drinks: [],
+      Snacks: [],
+      'Spices and Baking': [],
+      Condiments: [],
 
-function getAssociatedItems(item_list: Item[]){
-  // useMemo caches results, on rerender if all dependencies same skips calculation
-  {return useMemo(() => {
-  const mapping: Record<string, Item[]> = {};
+    };
 
-    categories.forEach(c => {
-      mapping[c.name] = [];
-    });
-
-    item_list.forEach(item => {
-      if (mapping[item.category]) {
-        mapping[item.category].push(item);
-      }
+    
+    itemList?.forEach?.(item => {
+      mapping[item.classification].push(item);
     });
 
     return mapping;
-  }, [item_list, categories]);
-}
-
-
+  }, [itemList]);
 }
 
 export function FridgePage(){
-
-  const [poppedDownCategory, setPoppedDownCategory] = useState<number[]>([]);
+  const [poppedDownCategory, setPoppedDownCategory] = useState<FoodCategory[]>([]);
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
       if (typeof window === 'undefined') {
@@ -152,6 +75,7 @@ export function FridgePage(){
     })
 
   const [dropDownOpen, setDropDownOpen] = useState(false);
+  
   useEffect(() => {
     const mediaQuery = window.matchMedia('(max-width: 900px)')
     const legacyMediaQuery = mediaQuery as MediaQueryList & {
@@ -176,8 +100,38 @@ export function FridgePage(){
     return () => legacyMediaQuery.removeListener?.(syncSidebarState)
   }, [])
 
-  const neededItemsInCategory = getAssociatedItems(needed_items);
-  const regularItemsInCategory = getAssociatedItems(mock_items)
+  const [foodItems, setFoodItems] = useState<Food[]>([])
+  const foodsByCategory = useAssociatedItems(foodItems);
+
+    useEffect(() => {
+    const fetchFridgeItems = async () => {
+        // getting items from users fridge
+        const res = await fetch(`http://127.0.0.1:3000/users/me/fridge`)
+        const data = await res.json();
+        console.log("DATA.fridge: ", data.fridge)
+        setFoodItems(Array.isArray(data?.fridge) ? data.fridge : []);
+        
+    }
+    fetchFridgeItems()
+  }, [])
+
+
+  const handleDeleteFood = async (id: string) => {
+        // fridge items need an id
+        console.log(id)
+        const tracked_item_id = 1
+        // need tracked fridge item to have an id, in case of duplicate food items added to fridge
+        // const res = await fetch(`http://127.0.0.1:3000/users/me/fridge/${tracked_item_id}`, 
+        // {  
+        //   headers: {'Content-type': 'application/json'},
+        //   method: "DELETE",
+        //  }
+        // )
+        // const data = await res.json();
+        // console.log("DATA.fridge: ", data.fridge)
+        // setFoodItems(Array.isArray(data?.fridge) ? data.fridge : []);
+
+  }
    
    return (
        <main
@@ -209,70 +163,61 @@ export function FridgePage(){
                       Add to Fridge <AddCircleIcon aria-hidden="true" />
                     </Link>
 
-                    <Link className="dropdown-option" to="/fridge/search-food?mode=shopping-list">
+                    {/* <Link className="dropdown-option" to="/fridge/search-food?mode=shopping-list">
                       Add to Shopping List <AddCircleIcon aria-hidden="true" />
-                    </Link>
+                    </Link> */}
                   </div>
                 </div>
             </div>
 
               
             </div>
-              {categories.map((category) => (
-                  <div key={category.id} className="category">
-                      <div className={`food-item-heading ${poppedDownCategory.includes(category.id) ? "active" : ""}`}
-                       onClick={(e) => {e.stopPropagation; setPoppedDownCategory(
-                              poppedDownCategory.includes(category.id) ? poppedDownCategory.filter(item => item != category.id) : [...poppedDownCategory,  category.id])}}>
+              {FOOD_CATEGORIES.map((category) => (
+                  <div key={category} className="category">
+                      <div className={`food-item-heading ${poppedDownCategory.includes(category) ? "active" : ""}`}
+                       onClick={(e) => {e.stopPropagation;         
+                                        setPoppedDownCategory((prev) =>
+                                          prev.includes(category)
+                                            ? prev.filter((c) => c !== category)
+                                            : [...prev, category]
+                                        );
+                              }}>
                           <div className="left-items">
-                          <button aria-label="Expand" onClick={(e) => {e.stopPropagation; setPoppedDownCategory(
-                              poppedDownCategory.includes(category.id) ? poppedDownCategory.filter(item => item != category.id) : [...poppedDownCategory,  category.id])}}>
-                              <KeyboardArrowDownRoundedIcon className={`down-icon ${poppedDownCategory.includes(category.id) ? "open" : "" }`} fontSize="large" 
-                              sx={{transition: "transform 160ms ease", transform: poppedDownCategory.includes(category.id) ? "rotate(180deg)" : "rotate(0deg"}}/>
+                          <button aria-label="Expand" onClick={(e) => {
+                                      e.stopPropagation();
+                                      setPoppedDownCategory((prev) =>
+                                        prev.includes(category)
+                                          ? prev.filter((c) => c !== category)
+                                          : [...prev, category]
+                                      );
+                                    
+                              }}>
+                              <KeyboardArrowDownRoundedIcon className={`down-icon ${poppedDownCategory.includes(category) ? "open" : "" }`} fontSize="large" 
+                              sx={{transition: "transform 160ms ease", transform: poppedDownCategory.includes(category) ? "rotate(180deg)" : "rotate(0deg"}}/>
                           </button>
-                          <h2 className="category-name">{category.name}</h2> 
+                          <h2 className="category-name">{category}</h2> 
                           </div>
-                         
-                         { neededItemsInCategory[category.name].length != 0 && <div className="shopping-cart-notify">
-                            <ShoppingCartIcon/> {neededItemsInCategory[category.name].length}
-                          </div>}
+
                           
                       </div>
-                      <div className={`popped-down ${poppedDownCategory.includes(category.id) ? "active" : ""}`}>
+                      <div className={`popped-down ${poppedDownCategory.includes(category) ? "active" : ""}`}>
                         <div className="popped-down-inner">
                           <ul className="all-fridge-items">
-                          {(regularItemsInCategory[category.name].map((item) => (
-                             <div key={item.id} className="inner-regular-item">
-
-                             
-                              <li className="fridge-item">
-                                <p>{item.title} : {item.quantity} {item.unit} </p>
-                                
-                              </li>
-                              <button className="remove-from-fridge" onClick={(e) => {
-                                      e.stopPropagation();
-                                      // make API CALL to delete
-                                    }}><RemoveCircleIcon></RemoveCircleIcon></button>
-                            </div>
-                          )))}
-                           { (neededItemsInCategory[category.name].map(item => (
-                              <li key={item.id} className="needed-item">
-                                <div className="inner-needed-item">
-                                  
-                                  <p>{item.title} : {item.quantity} {item.unit} </p>
-                                  {/* <p>Added by {item.added_by}</p> */}
-                                  <button className="add-item-from-list-to-fridge" onClick={(e) => {
-                                    e.stopPropagation();
-                                    // make API CALL to delete
-                                  }}><AddCircleIcon></AddCircleIcon></button>
-                                </div>
-                              </li>
-                            )))}
-                            {regularItemsInCategory[category.name].length == 0 && neededItemsInCategory[category.name].length == 0 && (
+                            {foodsByCategory[category].length == 0 ? (
                                <li className="fridge-item">
                                   <p>No ingredients</p>
-
                               </li>
-                            )}
+                            ) :
+                            (foodsByCategory[category].map((item => (
+                               <div key={item.id} className="inner-regular-item">
+                                <li className="fridge-item">
+                                  <p>{item.name} : {item.measurement} {item.measurementClassification} </p> 
+                                </li>
+                                <button className="remove-from-fridge" onClick={() => handleDeleteFood(item.id)}><RemoveCircleIcon></RemoveCircleIcon></button>
+                              </div>
+
+                            ))))
+                            }
                           </ul>
 
                         </div>

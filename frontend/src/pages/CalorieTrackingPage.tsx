@@ -83,13 +83,13 @@ export function CalorieTrackingPage(){
     const fetchFoodForCurrentDate = async () => {
       try{
         const res = await fetch(`http://127.0.0.1:3000/users/me/goal/foods?date=${date.toISOString().slice(0,10)}`)
-        const data = await res.json()
-
-        if (!res.ok || !data?.foods) {
-          setFoods([]); // important fallback
+        
+        if (!res.ok){
+          setFoods([]);
           return;
         }
-       setFoods(data?.foods)
+        const data = await res.json()
+        setFoods(Array.isArray(data.foods) ? data?.foods : []);
       }
       catch (err) {
           setFoods([]);
@@ -171,7 +171,7 @@ export function CalorieTrackingPage(){
             <div  className="meal-cat">
               <div className="meal-cat-header">
                 <div className="meal-cat-labels">
-                 <h3 className="meal-title">Meals</h3>
+                 <h3 className="meal-title">Tracked Foods</h3>
                 </div>
                 <Link to={`/calorie-tracking/search-food?date=${date.toISOString().slice(0,10)}`} className="add-food">Add Food<AddCircleIcon></AddCircleIcon> </Link>              
              </div>
