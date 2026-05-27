@@ -62,7 +62,7 @@
     padding: .5rem 1rem .5rem 0;
     background: var(--card-color);
     justify-content: space-between;
-    
+    cursor: pointer;
    
 }
 
@@ -123,6 +123,13 @@
     color: var(--main-orange-color);
     display: flex;
     justify-content: space-between;
+    align-items: center;
+}
+
+.inner-regular-item{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .needed-item::marker{
@@ -208,4 +215,10 @@
 
 .dropdown-option:hover {
     background-color: #fef3e9;;
+}
+
+
+.add-item-from-list-to-fridge, .remove-from-fridge{
+    color: var(--main-orange-color);
+    font-size: 1.5rem;
 }

@@ -1,0 +1,13 @@
+.list-of-ingredients li{
+    display: flex;
+}
+
+.remove-icon{
+    color: var(--main-orange-color);
+    cursor: pointer;
+}
+
+.remove-ingredient-button {
+    background: none;
+    border: none;
+}

@@ -1,11 +1,12 @@
 const Food = require('./food');
 
 class Recipe {
-    constructor(id, name, description, foods, steps) {
+    constructor(name, description, foods, steps) {
         // Validate ID
-        if (!id || typeof id !== 'string') {
-            throw new Error('ID is required and must be a string');
-        }
+        // had to comment out since creating recipe object first then adding id after
+        // if (!id || typeof id !== 'string') {
+        //     throw new Error('ID is required and must be a string');
+        // }
 
         // Validate description
         if (typeof description !== 'string') {
@@ -21,8 +22,9 @@ class Recipe {
         if (!Array.isArray(steps)) {
             throw new Error('Steps must be an array');
         }
-
-        this.id = id;
+        
+        // commented out for same reason as above
+        // this.id = id;
         this.name = name.trim();
         this.description = description;
         this.foods = foods;

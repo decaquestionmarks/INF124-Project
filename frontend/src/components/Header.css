@@ -92,6 +92,9 @@
   border-bottom: 1px solid #eadfd5;
   padding-bottom: 1rem;
   
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .secondary-title{
@@ -103,4 +106,19 @@
     letter-spacing: -0.06em;
     line-height: 0.95;
     text-align: center;
+}
+
+.header-title-input{
+   margin: 0 0 0.75rem;
+    color: #111111;
+    font-family: 'Avenir Next', 'Segoe UI', sans-serif;
+    font-size: clamp(2.75rem, 4vw, 4rem);
+    font-weight: 800;
+    letter-spacing: -0.06em;
+    line-height: 0.95;
+    text-align: center;
+}
+
+.header-title-input:focus{
+  outline: 2px solid var(--main-orange-color);
 }

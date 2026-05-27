@@ -4,15 +4,70 @@ import { Sidebar } from '../components/Sidebar.tsx'
 import './DashboardPage.css'
 import './RecipeDetail.css'
 import { SecondaryHeader } from '../components/Header.tsx'
+import {SharingComponent} from '../components/SharingComponent.tsx'
+import EditRoundedIcon from '@mui/icons-material/EditRounded';
+import DeleteRoundedIcon from '@mui/icons-material/DeleteRounded';
+import { SearchFood } from '../components/SearchFood.tsx'
 
 type Ingredient = {
-  name: string;
-  classification: string
-  measurementClassification: string
-  measurement: string
+  "name": string;
+  "measurement": number;
+  "measurementClassification": string;
+  "classification": string;
+  "caloriesPerMeasurement": number;
 }
 
+
+
 export function RecipeDetail(){
+      const {id} = useParams();
+      const [editMode, setIsEditing] = useState(false)
+      // const [originalData, setOriginalData] = useState(null);
+
+
+      const handleSaveUpdate = (async () => {
+      try{
+        if (!id){return}
+            // route missing a function
+              const end_url = `http://127.0.0.1:3000/recipes/${encodeURIComponent(id)}`
+              const response = await fetch(end_url, {
+                method: 'PUT',
+                headers: {
+                  'Content-type': 'application/json',
+                },
+                body: JSON.stringify({
+                  name: title,
+                  foods: ingredients,
+                  steps: steps,
+                  }),
+              });
+
+              console.log(response)
+              
+             setIsEditing(false)
+            }
+            catch (error) {
+              console.error("ERROR RecipeDetail Fetch", error)
+            } 
+      });
+
+        const handleDelete = (async () => {
+            try{
+               if (!id){return}
+                    // const end_url = `http://127.0.0.1:3000/recipes/${encodeURIComponent(id)}`
+                    // const response = await fetch(end_url, {method: 'DELETE'} )
+                    // problem with delete, recipe
+                  }
+                  catch (error) {
+                    console.error("ERROR RecipeDetail Fetch", error)
+                  } 
+          })
+
+          const startEdit = (() => {
+              setIsEditing(true)
+              setStepsDraft(steps.join("\n"));
+              setIsEditing(true);}
+          ) 
 
  const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
     if (typeof window === 'undefined') {
@@ -22,11 +77,18 @@ export function RecipeDetail(){
     return window.innerWidth > 900
   })
 
-  const {id} = useParams();
 
   const [title, setTitle] = useState("")
   const [steps, setSteps] = useState<string[]>([])
   const [ingredients, setIngredients] = useState<Ingredient[]>([])
+
+  // const stepsText = steps.join("\n");
+  const [stepsDraft, setStepsDraft] = useState("");
+
+  const [addedIngredients, setAddedIngredients] = useState<Ingredient[]>([
+        {name: "Mock", measurement: 0, measurementClassification: "mock", classification: "mock", caloriesPerMeasurement: 0 }
+  ])
+
 //  starting to connect to backend
   useEffect(() => {
       async function fetchData(){
@@ -90,13 +152,28 @@ export function RecipeDetail(){
    
          <section className="dashboard-page__content">
             <SecondaryHeader isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} pageTitle={title ? title : "Mock Title"} linkBack="/recipes"></SecondaryHeader>
+            <div className="selection-items">
+            <div className="edit-or-delete">
+              <EditRoundedIcon className="edit" onClick={startEdit}></EditRoundedIcon>
+              <DeleteRoundedIcon className="delete" onClick={handleDelete}></DeleteRoundedIcon>
+             </div>
+              <SharingComponent recipeId={id}></SharingComponent>
+            </div>
+             
+            
             <section className="ingredients-section">
+                {editMode ? (<SearchFood addedIngredients={addedIngredients} setAddedIngredients={setAddedIngredients}></SearchFood>) : 
+                <div className="detail-item">
                 <h2>Ingredients</h2>
                 <div className="ingredients-text">
                   {ingredients.length != 0 ? ingredients.map((f, i) => (
                     <div key={i} className="ingredient-item">
-                      <p>{f.name} - {f.measurement} {f.measurementClassification}</p>
-                      <p className="missing-item">Missing Item!</p>
+                      <div className="food-item">
+                        <p>{f.name} - {f.measurement} {f.measurementClassification}</p>
+                        {/* <p className="missing-item">Missing Item!</p> */}
+                      </div>
+                      
+                    
                     </div>
                     
                   )) :  
@@ -107,18 +184,33 @@ export function RecipeDetail(){
                     
                   
                  }
+                  </div>
                 </div>
+                }
             </section>
             <section className="direction-section">
-                <h2>Directions</h2>
+                <h2 id="directions-heading">Directions</h2>
                 <div className="steps-text">
-                   {steps.length != 0 ? steps.map((s) => (
-                    <p key={s}>{s}</p>
-                  )) : 
+                  {editMode ? (
+                    <textarea
+                      value={stepsDraft}
+                      onChange={(e) => setStepsDraft(e.target.value)}
+                    
+                    ></textarea>)
+                    :
+                   steps.length != 0 ?( steps.map((s) => (
+               
+                      (<p key={s}>{s}</p>)
+                  ))) : 
                   
-                  <p>1. Mock Step</p>}
+                 ( <p>1. Mock Step</p>)
+                  }
                 </div>
+               
             </section>
+            <div className="save-bar">
+            <button onClick={handleSaveUpdate} className={editMode ? "save-button" : "hidden-button"}>Save</button>
+            </div>
          </section>
        </main>
      )

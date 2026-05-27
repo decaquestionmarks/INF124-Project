@@ -44,7 +44,6 @@
     display: flex;
     flex-direction: column;
     gap: 1rem;
-    border-bottom: 1px solid #eaeaea;
     color: #62574c;
 }
 
@@ -65,7 +64,6 @@
 
 .meal-cat{
     border-top: 1px solid #eaeaea;
-    padding: .5rem;
     color: var(--main-orange-color);
 }
 
@@ -73,6 +71,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    border-bottom: 1px solid #eaeaea;
 }
 
 
@@ -112,4 +111,33 @@
     font-weight: 500;
 
 
+}
+
+
+.food-item{
+    padding: .25rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    /* justify-content: space-between; */
+    color: #62574c;
+}
+
+.right-item{
+    display: flex;
+    gap: 1.5rem;
+}
+
+.details{
+    color: var(--main-orange-color);
+    background: none;
+    border: none;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+.added-items{
+    margin-top: .5rem;
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
 }

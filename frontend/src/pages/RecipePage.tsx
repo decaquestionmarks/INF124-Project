@@ -31,18 +31,8 @@ export function RecipePage(){
     return window.innerWidth > 900
   })
     // MOCK recipes until API
-  const recommended_recipes = [
-    {"title": "Sourdough", "id": 1, "img": "https://caputoflour.com/cdn/shop/articles/Artisan_Sourdough_-_Stock_72dpi_0cca10f5-f4c2-458c-9b29-d88175c4b073_1024x1024.jpg?v=1775145833"},
-    {"title": "Pizza", "id": 2},
-    {"title": "Hamburger", "id": 3},
-    {"title": "Red Velvet Cake", "id": 4},
-    {"title": "Banana Bread", "id": 5},
-    {"title": "Cinnamon Rolls", "id": 6},
-        {"title": "Chicken Alfredo", "id": 7},
-    {"title": "Banana Bread", "id": 8},
-    {"title": "Cinnamon Rolls", "id": 9},
-    
-  ]
+
+
   useEffect(() => {
       const mediaQuery = window.matchMedia('(max-width: 900px)')
       const legacyMediaQuery = mediaQuery as MediaQueryList & {
@@ -69,19 +59,32 @@ export function RecipePage(){
 
     const [searchMode, setSearchMode] = useState(false)
     const [input, setInput] = useState("")
-    // const [searchedRecipes, setSearchedRecipes] = useState<Recipe[]>([])
     const [previews, setPreviews] = useState<RecipePreview[]>([])
+    const [recommendedPreviews, setRecommendedPreviews] = useState<RecipePreview[]>([])
    
+    useEffect(() => {
+        const getRecommendedPreviews = async () => {   
+        try{
+              const end_url = `http://127.0.0.1:3000/recipes/recommended`
+              const response = await fetch(end_url)
+              const data = await response.json()              
+              setRecommendedPreviews(Array.isArray(data.results) ? data.results : [])
+            }
+            catch (error) {
+              console.error("ERROR", error)
+            }
+        }
+        getRecommendedPreviews();
+    }, [])
+
     //  starting to connect to backend
     const handleSearch = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
           try{
             const end_url = `http://127.0.0.1:3000/recipes/search?query=${encodeURIComponent(input)}`
-            console.log(end_url)
             const response = await fetch(end_url)
             const data = await response.json()
             
-            console.log("DATA", data)
             const results = data.results
             // setSearchedRecipes(results)
             setSearchMode(true)
@@ -148,15 +151,15 @@ export function RecipePage(){
                   <div className="recommended-heading"><h2>Recommended</h2></div>
                     
                     <div className="recipe-row">
-                      {recommended_recipes.map((recipe) => (
+                      {recommendedPreviews.map((recipe) => (
                         <div key={recipe.id} className="recipe-card">
                           <Link className="recipe-link" to={`/recipes/${recipe.id}`}>
                           <div className="recipe-content">
                             <div className="recipe-content__heading">
-                              <h3>{recipe.title}</h3>
+                              <h3>{recipe.name}</h3>
                             </div>
                             
-                            <img className="recipe-img" src={recipe.img} alt="" />
+                            <img className="recipe-img" src={recipe.image} alt="" />
                           </div>
                           
                           </Link>
@@ -172,11 +175,11 @@ export function RecipePage(){
                     <Link className="add-recipe-link" to="/recipes/create">Add Recipe <AddCircleIcon aria-hidden="true"/></Link>
                   </div>
                     <div className="recipe-row">
-                      {recommended_recipes.map((recipe) => (
+                      {recommendedPreviews.map((recipe) => (
                         <div key={recipe.id} className="recipe-card">
                           <div className="recipe-content">
                             <div className="recipe-content__heading">
-                              <h3>{recipe.title}</h3>
+                              <h3>{recipe.name}</h3>
                             </div>
                           </div>
                           

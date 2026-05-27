@@ -1,0 +1,82 @@
+
+.food-page{
+    color: #62574c;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+
+}
+
+.amount{
+    display: grid;
+    grid-template-columns: 90px auto;
+    gap: .5rem;
+    align-items: center;
+    /* justify-content: space-between; */
+}
+
+.amount-and-label{
+    display: flex;
+    gap: .5rem;
+    align-items: center;
+}
+
+.overall-macros{
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.macros{
+    display: flex;
+    justify-content: space-between;
+}
+
+.amount-input{
+    color: #62574c;
+    width: 100px;
+}
+
+
+.amount-input:focus{
+    outline: 2px solid var(--main-orange-color);
+}
+
+.macro-row{
+    display: grid;
+    grid-template-columns: 100px auto;
+    align-items: center;
+}
+
+.save-bar{
+    display: flex;
+    justify-content: flex-end;
+}
+
+.save-bar button{
+    width: 25%;
+}
+
+
+@media(max-width: 1024px){
+    .save-bar button{
+        width: 100%;
+    }
+}
+
+.top-delete-section{
+    display: flex;
+    justify-content: flex-end;
+}
+
+.top-delete-section button{
+    background: none;
+    border: none;
+    cursor: pointer;
+
+}
+
+.trash-icon{
+    color: var(--main-orange-color);
+
+}

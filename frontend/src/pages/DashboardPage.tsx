@@ -33,10 +33,6 @@ const activityItems = [
     detail: 'Add new grocery items or scan a receipt when a restock lands.',
   },
   {
-    label: 'Family Goals',
-    detail: 'Review calorie targets and keep everyone aligned on the week ahead.',
-  },
-  {
     label: 'Recipe Planning',
     detail: 'Build a quick shortlist for dinner ideas using what is already at home.',
   },

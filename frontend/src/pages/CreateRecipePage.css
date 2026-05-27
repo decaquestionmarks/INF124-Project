@@ -54,11 +54,14 @@ textarea{
     border-radius: 10px;
     padding: .5rem;
     color: black;
-    min-height: 5rem;
     font-size: 1rem;
     resize: none;
     field-sizing: content;
 
+}
+
+.recipe-steps-text{
+    min-height: 5rem;
 }
 
 textarea:focus{
@@ -272,6 +275,7 @@ input, select{
 .ingredients-header{
     display: flex;
     justify-content: space-between;
+    align-items: center;
 }
 
 @media(max-width: 1024px){
@@ -285,9 +289,8 @@ input, select{
 
 }
 
-#recipe-title-heading, #ingredients-heading, #steps-heading{
+#recipe-title-heading, #steps-heading, #recipe-description-heading, #ingredients-heading{
     padding-bottom: 1rem;
-    /* border-bottom: 1px solid #eadfd5; */
 }
 
 
@@ -393,4 +396,22 @@ input, select{
   align-items: center;
   gap: 6px;
   color: #555;
+}
+
+.create-recipe-form{
+    display: flex;
+    gap: 1.5rem;
+    flex-direction: column;
+}
+
+.recipe-totals{
+    color: #5a524b;
+    padding: .5rem;
+    margin-bottom: 1rem;
+    line-height: 2rem;
+}
+
+.calculated-macros{
+    display: flex;
+    justify-content: space-between;
 }

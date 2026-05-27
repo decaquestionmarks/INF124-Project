@@ -140,3 +140,21 @@
     flex-wrap: wrap;
     align-items: stretch;
 }
+
+.selection-items{
+    display: flex;
+    justify-content: space-between;
+
+}
+
+.edit-or-delete{
+    display: flex;
+    gap: .5rem;
+    color: var(--main-orange-color);
+}
+
+
+.edit, .delete{
+    cursor: pointer;
+}
+

@@ -22,11 +22,18 @@ const familyData = [
 
 
 export function AccountPage(){
+ 
 
   const handleSaveGoals =  (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setOriginalFormValues(formValues)
     setEditingGoals(false)
+    // updating username/email?
+    // const res = fetch('http://127.0.0.1:3000/users/me/account', {
+    //   method: "PUT",
+    //   headers: {"Content-type": "application/json"},
+      
+    // })
     }
 
   const formSchema = [
@@ -67,6 +74,45 @@ export function AccountPage(){
     const [originalFormValues, setOriginalFormValues] = useState<Record<string, string>>(initialData)
     const [editingGoals, setEditingGoals] = useState(false);
     const [editingFamily, setEditingFamily] = useState(false);
+
+
+    useEffect(() => {
+    // getting the users account details
+        const fetchAccount = async () => {
+          try{
+            const res = await fetch('http://127.0.0.1:3000/users/me/account', {
+              method: "GET",
+              headers: {'Content-type': "application/json"}
+            });
+            
+            const data = await res.json()
+            console.log("User Account Info", data)
+
+            // setFormValues({
+            //   weightStarting: data.weightStarting ?? "",
+            //   weightCurrent: data.weightCurrent ?? "",
+            //   weightGoal: data.weightGoal ?? "",
+            //   age: data.age ?? "",
+            //   activityLevel: data.activityLevel ?? "",
+            //   "height-ft": data.heightFt ?? "",
+            //   "height-in": data.heightIn ?? "",
+            // });
+
+            //   setOriginalFormValues({
+            //     weightStarting: data.weightStarting ?? "",
+            //     weightCurrent: data.weightCurrent ?? "",
+            //     weightGoal: data.weightGoal ?? "",
+            //     age: data.age ?? "",
+            //     activityLevel: data.activityLevel ?? "",
+            //     "height-ft": data.heightFt ?? "",
+            //     "height-in": data.heightIn ?? "",
+              // });
+          } catch (err){
+            console.error("Failed loading account", err)
+          }
+        }
+        fetchAccount()
+  }, [])
 
      const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
         if (typeof window === 'undefined') {

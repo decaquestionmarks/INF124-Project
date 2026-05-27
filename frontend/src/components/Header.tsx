@@ -67,7 +67,9 @@ export function SecondaryHeader({isSidebarOpen, setIsSidebarOpen, pageTitle, lin
 
             </div>
             <div className="secondary-title__container">
-              <h1 className="secondary-title">{pageTitle}</h1>
+        
+                <h1 className="secondary-title">{pageTitle}</h1>
+        
             </div>
             
         </header>

@@ -1,29 +1,29 @@
-const Recipe = require('../models/recipe');
+const Recipe = require('../../models/recipe');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 
-app.use(bodyParser.json());
+// app.use(bodyParser.json());
 
-mongoose.connect('mongodb://localhost:27017/recipes', { useNewUrlParser: true, useUnifiedTopology: true });
+// mongoose.connect('mongodb://localhost:27017/recipes');
 
 const db = mongoose.connection;
 db.on('error', console.error.bind(console, 'MongoDB connection error:'));
 
 db.once('open', () => {console.log('Connected to MongoDB') });
 
-const recipeSchema = new mongoose.Schema({
-    name: { type: String, required: true },
-    description: { type: String, required: true },
-    foods: [{
-        name: { type: String, required: true },
-        classification: { type: String, required: true },
-        measurementClassification: { type: String, required: true },
-        measurement: { type: Number, required: true }
-    }],
-    steps: [{ type: String, required: true }]
-});
+// const recipeSchema = new mongoose.Schema({
+//     name: { type: String, required: true },
+//     description: { type: String, required: true },
+//     foods: [{
+//         name: { type: String, required: true },
+//         classification: { type: String, required: true },
+//         measurementClassification: { type: String, required: true },
+//         measurement: { type: Number, required: true }
+//     }],
+//     steps: [{ type: String, required: true }]
+// });
 
-const Recipe = mongoose.model('Recipe', recipeSchema);
+// const Recipe = mongoose.model('Recipe', recipeSchema);
 
 const mockRecipes = [
     {
@@ -191,6 +191,7 @@ const attachRecommendedRecipes = (req, res, next) => {
     req.recommendedRecipes = getRecipeRecommendations(fridgeItems);
     next();
 };
+
 
 module.exports = {
     searchRecipes,

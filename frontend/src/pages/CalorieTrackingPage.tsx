@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useEffect, useState, type JSX } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import { Sidebar } from '../components/Sidebar.tsx'
 import './DashboardPage.css'
 import './CalorieTrackingPage.css'
@@ -7,21 +7,32 @@ import AddCircleIcon from '@mui/icons-material/AddCircle';
 import {Header} from '../components/Header.tsx'
 import ArrowRightRoundedIcon from '@mui/icons-material/ArrowRightRounded';
 import ArrowLeftRoundedIcon from '@mui/icons-material/ArrowLeftRounded';
-import EggRoundedIcon from '@mui/icons-material/EggRounded';
-import LunchDiningRoundedIcon from '@mui/icons-material/LunchDiningRounded';
-import DinnerDiningRoundedIcon from '@mui/icons-material/DinnerDiningRounded';
-import IcecreamRoundedIcon from '@mui/icons-material/IcecreamRounded';
+// import EggRoundedIcon from '@mui/icons-material/EggRounded';
+// import LunchDiningRoundedIcon from '@mui/icons-material/LunchDiningRounded';
+// import DinnerDiningRoundedIcon from '@mui/icons-material/DinnerDiningRounded';
+// import IcecreamRoundedIcon from '@mui/icons-material/IcecreamRounded';
 
-const meals = [
-  {title: "Breakfast", icon: <EggRoundedIcon aria-hidden="true" className="meal-icon"/>},
-  {title: "Lunch", icon: <LunchDiningRoundedIcon aria-hidden="true" className="meal-icon"/>},
-  {title: "Dinner", icon: <DinnerDiningRoundedIcon aria-hidden="true" className="meal-icon"/>},
-  {title: "Snacks", icon: <IcecreamRoundedIcon aria-hidden="true" className="meal-icon"/>}
-]
+// const meals: {title: MealType; icon: JSX.Element}[] =[
+//   {title: "Breakfast", icon: <EggRoundedIcon aria-hidden="true" className="meal-icon"/>},
+//   {title: "Lunch", icon: <LunchDiningRoundedIcon aria-hidden="true" className="meal-icon"/>},
+//   {title: "Dinner", icon: <DinnerDiningRoundedIcon aria-hidden="true" className="meal-icon"/>},
+//   {title: "Snacks", icon: <IcecreamRoundedIcon aria-hidden="true" className="meal-icon"/>}
+// ]
+
+
 
 export function CalorieTrackingPage(){
   const current = new Date();
   const [date, setDate] = useState(current)
+  const [foods, setFoods] = useState<any[]>([])
+  const navigate = useNavigate()
+
+
+  const handleSelectFood = (name: string) => {
+      // navigate to associated food page,
+      // on page user can edit amounts and will send post
+      navigate(`/calorie-tracking/food?name=${name}&date=${date.toISOString().slice(0,10)}`)
+  }
 
 
   const decrementDate = () => {
@@ -29,8 +40,6 @@ export function CalorieTrackingPage(){
     d.setDate((d.getDate() - 1));
     setDate(d);
   }
-
-
 
   const incrementDate = () => {
     const d = new Date(date);
@@ -69,6 +78,26 @@ export function CalorieTrackingPage(){
 
     return () => legacyMediaQuery.removeListener?.(syncSidebarState)
   }, [])
+
+  useEffect(() => {
+    const fetchFoodForCurrentDate = async () => {
+      try{
+        const res = await fetch(`http://127.0.0.1:3000/users/me/goal/foods?date=${date.toISOString().slice(0,10)}`)
+        const data = await res.json()
+
+        if (!res.ok || !data?.foods) {
+          setFoods([]); // important fallback
+          return;
+        }
+       setFoods(data?.foods)
+      }
+      catch (err) {
+          setFoods([]);
+      }
+      
+    };
+    fetchFoodForCurrentDate()
+  }, [date]);
 
    return (
        <main
@@ -138,20 +167,31 @@ export function CalorieTrackingPage(){
           </div>
 
         <section className="meal-categories">
-          {meals.map((m) => (
-            <div key={m.title} className="meal-cat">
+          
+            <div  className="meal-cat">
               <div className="meal-cat-header">
                 <div className="meal-cat-labels">
-                 <h3 className="meal-title">{m.icon} {m.title}</h3>
-              </div>
-                <Link to="/calorie-tracking/search-food" className="add-food">Add Food<AddCircleIcon></AddCircleIcon> </Link>              
-              </div>
+                 <h3 className="meal-title">Meals</h3>
+                </div>
+                <Link to={`/calorie-tracking/search-food?date=${date.toISOString().slice(0,10)}`} className="add-food">Add Food<AddCircleIcon></AddCircleIcon> </Link>              
+             </div>
               
-              <div className="added-items"></div>
+              <div className="added-items">
+                 {foods.map((f) => (
+                  <div key={f.id} className="food-item">
+                    <div className="left-item">{f.name}</div>
+                    <div className="middle-item">
+                      Calories: {f.macronutrients.calories}
+                      </div>
+                      <div className="right-item">
+                        <button onClick={() => handleSelectFood(f.name)} className="details">Details</button>
+                      </div>
+                  </div>
+                  ))}
+              </div>
             </div>
-            
-            
-          ))}      
+
+                
           
 
         </section>

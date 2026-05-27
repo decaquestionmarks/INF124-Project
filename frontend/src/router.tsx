@@ -12,6 +12,7 @@ import { CreateRecipePage } from './pages/CreateRecipePage.tsx'
 import { FridgePage } from './pages/FridgePage.tsx'
 import { CalorieTrackingPage } from './pages/CalorieTrackingPage.tsx'
 import { SearchFoodPage } from './pages/SearchFoodPage.tsx'
+import { FoodPage } from './pages/FoodPage.tsx'
 
 const searchFoodRoutes = [
   {path: "/fridge/search-food", linkBack: "/fridge"},
@@ -87,9 +88,8 @@ export const router = createBrowserRouter([
     {
     path: '/recipes/:id',
     element: (
-      <RequireAuth>
+      // so users can view recipes without logging in, and for sharing purposes
         <RecipeDetail />
-      </RequireAuth>
     ),
   },
   ...searchFoodRoutes.map((route) => ({
@@ -105,6 +105,14 @@ export const router = createBrowserRouter([
     element: (
       <RequireAuth>
         <AccountPage />
+      </RequireAuth>
+    ),
+  },
+  {
+    path: '/calorie-tracking/food',
+    element: (
+      <RequireAuth>
+        <FoodPage />
       </RequireAuth>
     ),
   },

@@ -50,3 +50,64 @@ h1{
     justify-content: space-between;
     gap: 2rem;
 }
+
+
+.save-button{
+    border: 1px solid #deb99b;
+    border-radius: 999px;
+    background: #fff7ef;
+    color: #7f5e44;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 1rem;
+    transition: opacity 160ms ease, background-color 160ms ease, border-color 160ms ease, visibility 160ms ease, color 160ms ease;
+    padding: .5rem;
+    min-width: 100px;
+    width: 25%;
+}
+
+.save-button:hover{
+    background: #fff1e5;
+    border-color: var(--main-orange-color);
+    color: var(--main-orange-color);
+}
+
+
+
+.disabled-button{
+   border: 1px solid #deb99b;
+    border-radius: 999px;
+    background: #fff7ef;
+    color: #7f5e44;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 1rem;
+    transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease;
+    padding: .5rem;
+    min-width: 100px;
+    width: 25%;
+    align-self:self-end;
+    opacity: 0.6;
+    cursor: default;
+
+}
+
+.hidden-button{
+    opacity: 0;
+    max-height: 0;
+}
+
+.bottom-button{
+    display: flex;
+    justify-content: flex-end;
+}
+
+#directions-heading{
+    margin-bottom: 1rem;
+}
+
+@media(max-width: 1024px){
+    .save-bar button{
+        width: 100%;
+    }
+}

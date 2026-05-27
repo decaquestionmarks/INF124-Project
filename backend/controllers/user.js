@@ -21,10 +21,11 @@ const ensureUserExists = (uid, decodedToken = {}) => {
 		user.inventory.push({ name: 'Apple', measurementClassification: 'Pieces', measurement: 2 });
 	}
 
+
 	// Create a goal for today with a couple tracked foods
 	const today = new Date().toISOString().slice(0, 10);
 	const goal = new Goal({ calories: 2000, protein: 50 }, []);
-
+	
 	goal.addFood({ name: 'Greek Yogurt', macronutrients: { calories: 120, protein: 12 } });
 	goal.addFood({ name: 'Granola Bar', macronutrients: { calories: 180, protein: 3 } });
 
@@ -68,7 +69,6 @@ const getAccount = (req, res) => {
 	};
 
 	if (req.user && req.user.email) account.email = req.user.email;
-
 	res.json({ account });
 };
 

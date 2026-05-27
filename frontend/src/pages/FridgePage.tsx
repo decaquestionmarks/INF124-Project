@@ -4,6 +4,7 @@ import { Sidebar } from '../components/Sidebar.tsx'
 import './DashboardPage.css'
 import './FridgePage.css'
 import AddCircleIcon from '@mui/icons-material/AddCircle';
+import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
 import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownRounded';
 import { Header } from '../components/Header.tsx'
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
@@ -204,15 +205,12 @@ export function FridgePage(){
                       <KeyboardArrowDownRoundedIcon sx={{transition: "transform 160ms ease", transform: dropDownOpen ? "rotate(180deg)" : "rotate(0deg"}}></KeyboardArrowDownRoundedIcon></button>
 
                   <div className="dropdown-menu">
-                    <Link className="dropdown-option" to="/fridge/search-food">
+                    <Link className="dropdown-option" to="/fridge/search-food?mode=fridge">
                       Add to Fridge <AddCircleIcon aria-hidden="true" />
                     </Link>
 
-                    <Link className="dropdown-option" to="/fridge/search-food">
+                    <Link className="dropdown-option" to="/fridge/search-food?mode=shopping-list">
                       Add to Shopping List <AddCircleIcon aria-hidden="true" />
-                    </Link>
-                        <Link className="dropdown-option" to="">
-                      Scan Receipt <AddCircleIcon aria-hidden="true" />
                     </Link>
                   </div>
                 </div>
@@ -222,7 +220,9 @@ export function FridgePage(){
             </div>
               {categories.map((category) => (
                   <div key={category.id} className="category">
-                      <div className={`food-item-heading ${poppedDownCategory.includes(category.id) ? "active" : ""}`}>
+                      <div className={`food-item-heading ${poppedDownCategory.includes(category.id) ? "active" : ""}`}
+                       onClick={(e) => {e.stopPropagation; setPoppedDownCategory(
+                              poppedDownCategory.includes(category.id) ? poppedDownCategory.filter(item => item != category.id) : [...poppedDownCategory,  category.id])}}>
                           <div className="left-items">
                           <button aria-label="Expand" onClick={(e) => {e.stopPropagation; setPoppedDownCategory(
                               poppedDownCategory.includes(category.id) ? poppedDownCategory.filter(item => item != category.id) : [...poppedDownCategory,  category.id])}}>
@@ -231,6 +231,7 @@ export function FridgePage(){
                           </button>
                           <h2 className="category-name">{category.name}</h2> 
                           </div>
+                         
                          { neededItemsInCategory[category.name].length != 0 && <div className="shopping-cart-notify">
                             <ShoppingCartIcon/> {neededItemsInCategory[category.name].length}
                           </div>}
@@ -240,16 +241,29 @@ export function FridgePage(){
                         <div className="popped-down-inner">
                           <ul className="all-fridge-items">
                           {(regularItemsInCategory[category.name].map((item) => (
-                             <li key={item.id} className="fridge-item">
-                              <p>{item.title} : {item.quantity} {item.unit} </p>
-                            </li>
-                          )))}
+                             <div key={item.id} className="inner-regular-item">
 
+                             
+                              <li className="fridge-item">
+                                <p>{item.title} : {item.quantity} {item.unit} </p>
+                                
+                              </li>
+                              <button className="remove-from-fridge" onClick={(e) => {
+                                      e.stopPropagation();
+                                      // make API CALL to delete
+                                    }}><RemoveCircleIcon></RemoveCircleIcon></button>
+                            </div>
+                          )))}
                            { (neededItemsInCategory[category.name].map(item => (
                               <li key={item.id} className="needed-item">
                                 <div className="inner-needed-item">
+                                  
                                   <p>{item.title} : {item.quantity} {item.unit} </p>
-                                  <p>Added by {item.added_by}</p>
+                                  {/* <p>Added by {item.added_by}</p> */}
+                                  <button className="add-item-from-list-to-fridge" onClick={(e) => {
+                                    e.stopPropagation();
+                                    // make API CALL to delete
+                                  }}><AddCircleIcon></AddCircleIcon></button>
                                 </div>
                               </li>
                             )))}
