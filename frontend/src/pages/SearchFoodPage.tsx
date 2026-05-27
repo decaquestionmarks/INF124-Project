@@ -5,46 +5,73 @@ import './CalorieTrackingPage.css'
 import SearchIcon from '@mui/icons-material/Search'
 import { SecondaryHeader } from '../components/Header.tsx'
 import './SearchFoodPage.css'
-import {useNavigate } from 'react-router-dom'
+import {useLocation, useNavigate } from 'react-router-dom'
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
-
-
-
-const search_results = [
-  { id:1, title: "Flour", amount: "200", unit: "g", calories: "728" },
-  { id: 2, title: "Egg", amount: "50", unit: "g", calories: "78" },
-  { id: 3,title: "Whole Milk", amount: "240", unit: "ml", calories: "150" },
-  { id: 4, title: "Butter", amount: "14", unit: "g", calories: "102" },
-  { id: 5, title: "Sugar", amount: "100", unit: "g", calories: "387" },
-  { id:6, title: "Olive Oil", amount: "15", unit: "ml", calories: "119" },
-  { id: 7, title: "Banana", amount: "118", unit: "g", calories: "105" },
-  { id: 8, title: "Chicken Breast", amount: "100", unit: "g", calories: "165" },
-  { id:9, title: "Rice (Cooked)", amount: "150", unit: "g", calories: "195" },
-  { id: 10, title: "Spinach", amount: "30", unit: "g", calories: "7" }
-];
 
 type SearchFoodProps = {
     linkBack: string
 }
 
+type FoodResult = {
+  name: string,
+  amount: string,
+  unit: string,
+  calories: string
+}
+
+
+
 export function SearchFoodPage({linkBack}: SearchFoodProps){
+  const [searchResults, setSearchResults] = useState<FoodResult[]>([])
   const navigate = useNavigate()
-  const handleSave = () => (
-    navigate(linkBack)
-  )
+
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+  const meal = params.get('meal');
+  const date = params.get('date');
+
   const [addedItems, setAddedItems] = useState<string[]>([])
-  const selectItem = (title: string) => {
+  const selectItem = (id: string) => {
     setAddedItems((prev) => 
-      prev.includes(title) ? prev.filter((item) => item != title)
-    : [...prev, title]
+      prev.includes(id) ? prev.filter((item) => item != id)
+    : [...prev, id]
     );
   };
  const [userInput, setUserInput] = useState("")
- const handleSubmitSearch = (e: React.FormEvent) => {
+
+
+ const handleSubmitSearch = async (e: React.FormEvent) => {
     e.preventDefault()
-    console.log("make call", userInput)
+    if (!userInput.trim()) return;
+    try{
+      //make call
+      // set search results
+      setSearchResults([])
+
+    }
+    catch (error){
+      console.error("ERROR SearchFoodPage", error)
+    }
  }
+
+ const handleSave = async () => {
+  // fetch and figure out what to pass
+    // const res = fetch(`http://127.0.0.1:3000/users/me/goal/${date}/foods`,
+    //   {
+    //   method: 'POST',
+    //   headers: {'Content-type': 'application/json'},
+    //   body: JSON.stringify({
+    //       name: name,
+    //       meal: meal,
+    //   })
+    //   }
+
+    // )
+    // console.log("SAVING FOOD: ", res)
+    navigate(linkBack, 
+      {state: {meal, date, selectedFoods: addedItems}})
+  }
 
  const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
     if (typeof window === 'undefined') {
@@ -78,7 +105,6 @@ export function SearchFoodPage({linkBack}: SearchFoodProps){
     return () => legacyMediaQuery.removeListener?.(syncSidebarState)
   }, [])
   
-  // const [poppedDownIngredient, setPoppedDownIngredient] = useState(0)
    return (
        <main
          className={`dashboard-page${isSidebarOpen ? ' dashboard-page--sidebar-open' : ' dashboard-page--sidebar-closed'}`}
@@ -99,19 +125,18 @@ export function SearchFoodPage({linkBack}: SearchFoodProps){
             <section>
 
                 
-                <form action="" onSubmit={handleSubmitSearch} className="search-form">
+                <form onSubmit={handleSubmitSearch} className="search-form">
                     <SearchIcon aria-hidden="true" className="search-icon"></SearchIcon>
-                    <input id="search-bar-input" value={userInput} onChange={(e) => setUserInput(e.target.value)} aria-label="Search Foods" type="search" placeholder="Search Foods" className="search-bar" />
+                    <input id="search-bar-input" value={userInput} onChange={(e) => setUserInput(e.target.value)} aria-label="Search Foods" type="search" placeholder="Search Foods" className="search-bar" autoComplete="off" />
                 </form>
 
               </section>
               <section className="search-results">
-                {/* <table> */}
-                {search_results.map((result) => (                  
-                  <div  onClick={() => selectItem(result.title)} key={result.id} className="search-item">
-                    <div className={`search-item-heading ${addedItems.includes(result.title) ? "added" : ""}`}>
+                {searchResults.map((result) => (                  
+                  <div  onClick={() => selectItem(result.name)} key={result.name} className="search-item">
+                    <div className={`search-item-heading ${addedItems.includes(result.name) ? "added" : ""}`}>
                       
-                      <span>{result.title}</span>
+                      <span>{result.name}</span>
                     <div className="amount-and-unit">
                       <span>{result.amount}</span>
                       <span>{result.unit}</span>
@@ -119,12 +144,12 @@ export function SearchFoodPage({linkBack}: SearchFoodProps){
                     
                     <span> {result.calories} cal</span>
                     <button aria-label="Add item" className="add-icon"  
-                      id=""
+                      id="add-item-button"
                       onClick={(e) => {
                         e.stopPropagation(); 
-                        selectItem(result.title);
+                        selectItem(result.name);
                         }}>
-                      {addedItems.includes(result.title) ?
+                      {addedItems.includes(result.name) ?
                         (<RemoveCircleIcon aria-hidden="true" fontSize='medium'/>) : 
                         (<AddCircleIcon aria-hidden="true" fontSize='medium'/>)
                       }
@@ -135,7 +160,6 @@ export function SearchFoodPage({linkBack}: SearchFoodProps){
                     </div>
                   </div>
                 ))}
-                {/* </table> */}
 
            
               </section>
