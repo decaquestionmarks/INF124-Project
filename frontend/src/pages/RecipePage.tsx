@@ -87,6 +87,7 @@ export function RecipePage(){
             
             const results = data.results
             // setSearchedRecipes(results)
+            console.log("SEARCHED RECIPES: ", results)
             setSearchMode(true)
 
             const previewsArr = []
@@ -95,7 +96,6 @@ export function RecipePage(){
   
                 const preview = await resp.json();
                 previewsArr.push(preview)
-                console.log(preview.image)
             }
   
             

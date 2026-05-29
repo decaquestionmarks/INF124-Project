@@ -17,8 +17,6 @@ import { FoodPage } from './pages/FoodPage.tsx'
 const searchFoodRoutes = [
   {path: "/fridge/search-food", linkBack: "/fridge"},
   {path: "/calorie-tracking/search-food", linkBack: "/calorie-tracking"},
-  {path: "/fridge/search-food", linkBack: "/fridge"},
-
 ]
 export const router = createBrowserRouter([
   {

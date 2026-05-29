@@ -38,7 +38,6 @@ type Food = {
 };
 
 function useAssociatedItems(itemList: Food[] = []) {
-  console.log("ITEM LIST: ", itemList)
   return useMemo(() => {
     const mapping: Record<FoodCategory, Food[]> = {
       Produce: [],
@@ -116,10 +115,12 @@ export function FridgePage(){
   }, [])
 
 
+
+
   const handleDeleteFood = async (id: string) => {
         // fridge items need an id
         console.log(id)
-        const tracked_item_id = 1
+        // const tracked_item_id = 1
         // need tracked fridge item to have an id, in case of duplicate food items added to fridge
         // const res = await fetch(`http://127.0.0.1:3000/users/me/fridge/${tracked_item_id}`, 
         // {  
@@ -204,16 +205,19 @@ export function FridgePage(){
                         <div className="popped-down-inner">
                           <ul className="all-fridge-items">
                             {foodsByCategory[category].length == 0 ? (
-                               <li className="fridge-item">
+                               <li key="no-ingredients" className="fridge-item">
                                   <p>No ingredients</p>
                               </li>
                             ) :
                             (foodsByCategory[category].map((item => (
-                               <div key={item.id} className="inner-regular-item">
-                                <li className="fridge-item">
+                               <div className="inner-regular-item">
+                                <li key={item.id} className="fridge-item">
                                   <p>{item.name} : {item.measurement} {item.measurementClassification} </p> 
+                                  
                                 </li>
-                                <button className="remove-from-fridge" onClick={() => handleDeleteFood(item.id)}><RemoveCircleIcon></RemoveCircleIcon></button>
+                                <div className="fridge-item-right-item">
+                                  <button className="remove-from-fridge"  onClick={() => handleDeleteFood(item.id)}><RemoveCircleIcon className="delete-icon"></RemoveCircleIcon></button>
+                                </div>
                               </div>
 
                             ))))

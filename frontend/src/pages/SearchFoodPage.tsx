@@ -8,6 +8,119 @@ import './SearchFoodPage.css'
 import {useLocation, useNavigate } from 'react-router-dom'
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
+const mockResults: FoodResult[] = [
+  
+  {
+    name: "Chicken Breast",
+    classification: "Meat",
+    measurementClassification: "g",
+    measurement: 165,
+    macronutrients: {
+      calories: 275,
+      fat: 3.6,
+      protein: 51
+    }
+  },
+  {
+    name: "White Rice",
+    classification: "Grains",
+    measurementClassification: "cup",
+    measurement: 1,
+    macronutrients: {
+      calories: 205,
+      fat: 0.4,
+      protein: 4.3
+    }
+  },
+  {
+    name: "Banana",
+    classification: "Fruit",
+    measurementClassification: "medium",
+    measurement: 1,
+    macronutrients: {
+      calories: 105,
+      fat: 0.4,
+      protein: 1.3
+    }
+  },
+  {
+    name: "Egg (Boiled)",
+    classification: "Protein",
+    measurementClassification: "large",
+    measurement: 1,
+    macronutrients: {
+      calories: 78,
+      fat: 5.3,
+      protein: 6.3
+    }
+  },
+  {
+    name: "Greek Yogurt",
+    classification: "Dairy",
+    measurementClassification: "g",
+    measurement: 150,
+    macronutrients: {
+      calories: 120,
+      fat: 4,
+      protein: 15
+    }
+  },
+  {
+    name: "Peanut Butter",
+    classification: "Fats",
+    measurementClassification: "tbsp",
+    measurement: 2,
+    macronutrients: {
+      calories: 190,
+      fat: 16,
+      protein: 7
+    }
+  },
+  {
+    name: "Oatmeal",
+    classification: "Grains",
+    measurementClassification: "g",
+    measurement: 40,
+    macronutrients: {
+      calories: 150,
+      fat: 3,
+      protein: 5
+    }
+  },
+  {
+    name: "Salmon",
+    classification: "Meat",
+    measurementClassification: "g",
+    measurement: 100,
+    macronutrients: {
+      calories: 208,
+      fat: 13,
+      protein: 20
+    }
+  },
+  {
+    name: "Avocado",
+    classification: "Fruit",
+    measurementClassification: "medium",
+    measurement: 1,
+    macronutrients: {
+      calories: 240,
+      fat: 22,
+      protein: 3
+    }
+  },
+  {
+    name: "Whole Wheat Bread",
+    classification: "Grains",
+    measurementClassification: "slice",
+    measurement: 1,
+    macronutrients: {
+      calories: 80,
+      fat: 1,
+      protein: 4
+    }
+  }
+];
 
 type SearchFoodProps = {
     linkBack: string
@@ -15,9 +128,14 @@ type SearchFoodProps = {
 
 type FoodResult = {
   name: string,
-  amount: string,
-  unit: string,
-  calories: string
+  classification: string,
+  measurementClassification: string,
+  measurement: number,
+  macronutrients: {
+    calories: number,
+    fat: number,
+    protein: number,
+  }
 }
 
 
@@ -31,46 +149,91 @@ export function SearchFoodPage({linkBack}: SearchFoodProps){
   const meal = params.get('meal');
   const date = params.get('date');
 
-  const [addedItems, setAddedItems] = useState<string[]>([])
-  const selectItem = (id: string) => {
-    setAddedItems((prev) => 
-      prev.includes(id) ? prev.filter((item) => item != id)
-    : [...prev, id]
-    );
-  };
+  const [addedItem, setAddedItem] = useState("")
  const [userInput, setUserInput] = useState("")
 
 
- const handleSubmitSearch = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!userInput.trim()) return;
-    try{
-      //make call
-      // set search results
-      setSearchResults([])
+//  const handleSubmitSearch = async (e: React.FormEvent) => {
+//     e.preventDefault()
+//     if (!userInput.trim()) return;
+//     try{
+//       //make call
+//       // set search results
+//       setSearchResults([])
 
-    }
-    catch (error){
-      console.error("ERROR SearchFoodPage", error)
-    }
- }
+//     }
+//     catch (error){
+//       console.error("ERROR SearchFoodPage", error)
+//     }
+//  }
+const handleSubmitSearch = async (e: React.FormEvent) => {
+  e.preventDefault()
+  if (!userInput.trim()) return
 
- const handleSave = async () => {
+  try {
+    // simulate filtering
+    const filtered = mockResults.filter(food =>
+      food.name.toLowerCase().includes(userInput.toLowerCase())
+    )
+
+    setSearchResults(filtered)
+  } catch (error) {
+    console.error("ERROR SearchFoodPage", error)
+  }
+}
+
+
+ const handleLogFood = async () => {
+   
   // fetch and figure out what to pass
-    // const res = fetch(`http://127.0.0.1:3000/users/me/goal/${date}/foods`,
-    //   {
-    //   method: 'POST',
-    //   headers: {'Content-type': 'application/json'},
-    //   body: JSON.stringify({
-    //       name: name,
-    //       meal: meal,
-    //   })
-    //   }
+  console.log("HERE", linkBack)
+  if (linkBack === '/fridge'){
+    // sending temp stuff until food routes done
+    const res = await fetch(`http://127.0.0.1:3000/users/me/fridge`,
+      {
+      method: 'POST',
+      headers: {'Content-type': 'application/json'},
+      body: JSON.stringify({
+          name: addedItem,
+          classification: "Produce",
+          measurementClassification: "Mass",
+          measurement: "100",
+           macronutrients: {
+            calories: 275,
+            fat: 3.6,
+            protein: 51
+          }
 
-    // )
-    // console.log("SAVING FOOD: ", res)
+      })
+      }
+    )
+    const data = await res.json()
+    console.log("DATA:", data)
+  }
+  else if (linkBack == 'calorie-tracking') { // adding food to calorie tracker
+    // sending temp stuff until food route done
+    const res = await fetch(`http://127.0.0.1:3000/users/me/goal/${date}/foods`,
+      {
+      method: 'POST',
+      headers: {'Content-type': 'application/json'},
+      body: JSON.stringify({
+          name: addedItem,
+          classification: "Produce",
+          measurementClassification: "Mass",
+          measurement: "100",
+           macronutrients: {
+            calories: 275,
+            fat: 3.6,
+            protein: 51
+          }
+          
+      })
+      });
+      const data = await res.json()
+      console.log("DATA:", data)
+  }
     navigate(linkBack, 
-      {state: {meal, date, selectedFoods: addedItems}})
+      {state: {meal, date, addedItem}})
   }
 
  const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
@@ -133,23 +296,23 @@ export function SearchFoodPage({linkBack}: SearchFoodProps){
               </section>
               <section className="search-results">
                 {searchResults.map((result) => (                  
-                  <div  onClick={() => selectItem(result.name)} key={result.name} className="search-item">
-                    <div className={`search-item-heading ${addedItems.includes(result.name) ? "added" : ""}`}>
+                  <div onClick={() => setAddedItem(result.name)} key={result.name} className="search-item">
+                    <div className={`search-item-heading ${addedItem === result.name ? "added" : ""}`}>
                       
                       <span>{result.name}</span>
                     <div className="amount-and-unit">
-                      <span>{result.amount}</span>
-                      <span>{result.unit}</span>
+                      <span>{result.measurement}</span>
+                      <span>{result.measurementClassification}</span>
                     </div>
                     
-                    <span> {result.calories} cal</span>
+                    <span> {result.macronutrients.calories} cal</span>
                     <button aria-label="Add item" className="add-icon"  
                       id="add-item-button"
                       onClick={(e) => {
                         e.stopPropagation(); 
-                        selectItem(result.name);
+                        setAddedItem(result.name);
                         }}>
-                      {addedItems.includes(result.name) ?
+                      {(addedItem === result.name) ?
                         (<RemoveCircleIcon aria-hidden="true" fontSize='medium'/>) : 
                         (<AddCircleIcon aria-hidden="true" fontSize='medium'/>)
                       }
@@ -160,21 +323,35 @@ export function SearchFoodPage({linkBack}: SearchFoodProps){
                     </div>
                   </div>
                 ))}
-
-           
               </section>
+            {addedItem !== "" && 
+            <section className="macros-and-measurement-amount">
+                  <span className="added-item-name">{addedItem}</span>
+                    <div className="macros">
+                      <span>Calories: ?</span>
+                      <span>Carbs: ?</span>
+                      <span>Fat: ?</span>
+                      <span>Protein: ?</span>
+                      
+                    </div>
+                    <div className="serving-inputs">
+                      <label htmlFor="serving-size">Serving Size:</label>
+                      <input className="serving-size" name="serving-size" id="serving-size" type="text" />
+                      <span>unit</span>
+                    </div>
+                  <div className="save-bar">
+                    <button onClick={handleLogFood} className="save-button">Log</button>
+                  </div>
 
-
-              <div className="save-bar">
-                <button onClick={handleSave} className="save-button">Add</button>
-              </div>
-    
-
+                </section>}
 
          </section>
+   
 
          
        </main>
      )
    }
    
+
+export default SearchFoodPage

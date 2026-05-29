@@ -1,6 +1,10 @@
-.list-of-ingredients li{
-    display: flex;
+
+.listed-item{
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    color: #62574c;
 }
+
 
 .remove-icon{
     color: var(--main-orange-color);
@@ -10,4 +14,50 @@
 .remove-ingredient-button {
     background: none;
     border: none;
+}
+
+.search-food-food-item{
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    align-items: center;
+    
+}
+
+.search-food-input-and-amount{
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+}
+
+.search-food-input-and-amount input {
+    color: #62574c;
+    text-align: end;;
+}
+
+.search-food-input-and-amount input:focus{
+    outline: 2px solid var(--main-orange-color);
+}
+
+.search-food-ingredients-text{
+    display: flex;
+    flex-direction: column;
+    gap: .25rem;
+    color: #62574c;
+}
+
+.search-food-detail-item{
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.delete-ingredient-button{
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.delete-ingredient-icon{
+    color: var(--main-orange-color);
 }

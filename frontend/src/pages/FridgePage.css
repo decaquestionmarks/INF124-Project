@@ -182,6 +182,10 @@
     position: absolute;
 }
 
+.fridge-item-right-item{
+    display: flex;
+    align-items: center;
+}
 
 
 .dropdown-menu {
@@ -221,4 +225,6 @@
 .add-item-from-list-to-fridge, .remove-from-fridge{
     color: var(--main-orange-color);
     font-size: 1.5rem;
+    display: inline-flex;
+    align-items: center;
 }

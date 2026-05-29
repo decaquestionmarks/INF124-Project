@@ -36,7 +36,6 @@ h1{
 
 .ingredients-text, .steps-text{
     color: #62574c;
-    line-height: 1.75;
 }
 
 .missing-item{
@@ -52,7 +51,7 @@ h1{
 }
 
 
-.save-button{
+.save-button, .cancel-button{
     border: 1px solid #deb99b;
     border-radius: 999px;
     background: #fff7ef;
@@ -66,7 +65,7 @@ h1{
     width: 25%;
 }
 
-.save-button:hover{
+.save-button:hover, .cancel-button:hover{
     background: #fff1e5;
     border-color: var(--main-orange-color);
     color: var(--main-orange-color);
@@ -102,12 +101,22 @@ h1{
     justify-content: flex-end;
 }
 
-#directions-heading{
+#directions-heading, #recipe-detail-ingredients-heading{
     margin-bottom: 1rem;
 }
 
+.editor-actions{
+    display: flex;
+    justify-content: flex-end;
+}
+
+.right-items-editor-actions{
+    display: flex;
+    gap: 1rem;
+}
+
 @media(max-width: 1024px){
-    .save-bar button{
+    .editor-actions button{
         width: 100%;
     }
 }

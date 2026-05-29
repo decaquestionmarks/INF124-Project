@@ -162,7 +162,7 @@ textarea:focus{
 
 .list-of-ingredients{
     display: none;
-    padding-left: 1rem;
+    /* padding-left: 1rem; */
 }
 
 .list-of-ingredients li{

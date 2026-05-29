@@ -1,4 +1,4 @@
-import { useEffect, useState, type JSX } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Sidebar } from '../components/Sidebar.tsx'
 import './DashboardPage.css'
@@ -7,31 +7,41 @@ import AddCircleIcon from '@mui/icons-material/AddCircle';
 import {Header} from '../components/Header.tsx'
 import ArrowRightRoundedIcon from '@mui/icons-material/ArrowRightRounded';
 import ArrowLeftRoundedIcon from '@mui/icons-material/ArrowLeftRounded';
-// import EggRoundedIcon from '@mui/icons-material/EggRounded';
-// import LunchDiningRoundedIcon from '@mui/icons-material/LunchDiningRounded';
-// import DinnerDiningRoundedIcon from '@mui/icons-material/DinnerDiningRounded';
-// import IcecreamRoundedIcon from '@mui/icons-material/IcecreamRounded';
+import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
 
-// const meals: {title: MealType; icon: JSX.Element}[] =[
-//   {title: "Breakfast", icon: <EggRoundedIcon aria-hidden="true" className="meal-icon"/>},
-//   {title: "Lunch", icon: <LunchDiningRoundedIcon aria-hidden="true" className="meal-icon"/>},
-//   {title: "Dinner", icon: <DinnerDiningRoundedIcon aria-hidden="true" className="meal-icon"/>},
-//   {title: "Snacks", icon: <IcecreamRoundedIcon aria-hidden="true" className="meal-icon"/>}
-// ]
-
+type MacroProgress = {
+  calories: {
+    goal: number,
+    total: number,
+    remaining: number
+  };
+  carbs: number;
+  fats: number;
+  protein: number
+};
 
 
 export function CalorieTrackingPage(){
+  const [editingId, setEditingId] = useState("");
+  const [editAmount, setEditAmount] = useState("");
   const current = new Date();
   const [date, setDate] = useState(current)
   const [foods, setFoods] = useState<any[]>([])
+  const [goalProgress, setGoalProgress] = useState<MacroProgress>({
+            calories: {
+              goal: 0,
+              total: 0,
+              remaining: 0
+            },
+            carbs: 0,
+            fats: 0,
+            protein: 0
+          })
   const navigate = useNavigate()
-
-
   const handleSelectFood = (name: string) => {
-      // navigate to associated food page,
-      // on page user can edit amounts and will send post
-      navigate(`/calorie-tracking/food?name=${name}&date=${date.toISOString().slice(0,10)}`)
+      const tracked_id = 1
+      console.log("name of food to view: ", name)
+      navigate(`/calorie-tracking/food?trackedFoodId=${tracked_id}`)
   }
 
 
@@ -79,7 +89,51 @@ export function CalorieTrackingPage(){
     return () => legacyMediaQuery.removeListener?.(syncSidebarState)
   }, [])
 
+    const saveEdit = (id: string) => {
+    setFoods(prev => prev.map(
+      item => item.id === id ? {...item, measurement: Number(editAmount)} : item));
+      setEditingId("");
+      setEditAmount("");
+      // MAKE API CALL TO UPDATE ITEM
+    };
+
   useEffect(() => {
+    // gets goal for current date
+     const fetchGoalForCurrentDate = async () => {
+      try{
+        const res = await fetch(`http://127.0.0.1:3000/users/me/goal/?date=${date.toISOString().slice(0,10)}`)
+        
+        if (!res.ok){
+           
+        setGoalProgress({
+            calories: {
+              goal: 0,
+              total: 0,
+              remaining: 0,
+            },
+            carbs: 0,
+            fats: 0,
+            protein: 0,
+          });
+          return;
+
+        }
+        const data = await res.json()
+        setGoalProgress({
+            calories: {
+              goal: data.progress.calories.goal,
+              total: data.progress.calories.total,
+              remaining: data.progress.calories.remaining,
+            },
+            carbs: data.progress.carbs.total,
+            fats: data.progress.fats.total,
+            protein: data.progress.protein.total,
+          });
+      }
+      catch (err) {
+      } 
+    };
+    // gets food for current date
     const fetchFoodForCurrentDate = async () => {
       try{
         const res = await fetch(`http://127.0.0.1:3000/users/me/goal/foods?date=${date.toISOString().slice(0,10)}`)
@@ -89,6 +143,7 @@ export function CalorieTrackingPage(){
           return;
         }
         const data = await res.json()
+        console.log("FOODS DATA: ", data);
         setFoods(Array.isArray(data.foods) ? data?.foods : []);
       }
       catch (err) {
@@ -97,6 +152,7 @@ export function CalorieTrackingPage(){
       
     };
     fetchFoodForCurrentDate()
+    fetchGoalForCurrentDate()
   }, [date]);
 
    return (
@@ -138,30 +194,26 @@ export function CalorieTrackingPage(){
 
             <div className="stat-item">
               <span>Goal</span><br />
-              <span>?</span>
+              <span>{goalProgress.calories.goal}</span>
             </div>
              <div className="stat-item">
               <span>Remaining</span><br />
-              <span>?</span>
-            </div>
-             <div className="stat-item">
-              <span>Eaten</span><br />
-              <span>?</span>
+              <span>{goalProgress.calories.remaining}</span>
             </div>
           
           </div>
           <div className="food-stats-row">
              <div className="stat-item">
               <span>Carbs</span><br />
-              <span>?</span>
+              <span>{goalProgress.carbs}</span>
             </div>
              <div className="stat-item">
               <span>Fat</span><br />
-              <span>?</span>
+              <span>{goalProgress.fats}</span>
             </div>
              <div className="stat-item">
               <span>Protein</span><br />
-              <span>?</span>
+              <span>{goalProgress.protein}</span>
             </div>
 
           </div>
@@ -179,29 +231,28 @@ export function CalorieTrackingPage(){
               <div className="added-items">
                  {foods.map((f) => (
                   <div key={f.id} className="food-item">
-                    <div className="left-item">{f.name}</div>
-                    <div className="middle-item">
-                      Calories: {f.macronutrients.calories}
-                      </div>
-                      <div className="right-item">
-                        <button onClick={() => handleSelectFood(f.name)} className="details">Details</button>
-                      </div>
+                    <div className="left-item"
+                      onClick={() => {setEditingId(f.name); setEditAmount(f.amount.toString())}}>
+                        
+                      {f.name} - {editingId === f.name ? (
+                      <input autoFocus value={editAmount} 
+                        onChange={(e) => setEditAmount(e.target.value)}
+                        onKeyDown={(e) => {if (e.key === "Enter") {e.preventDefault(); saveEdit(editingId)}}}
+                        onBlur={() => {setEditAmount(""); setEditingId("")}}
+                        />) :
+                      (<div>{f.macronutrients.calories}</div>)} unit
+                    </div>
+                    <div className="right-item">
+                      <button onClick={() => handleSelectFood(f.name)} className="details">Details</button>
+                      <button className="delete-food-item"><RemoveCircleIcon className="delete-icon"></RemoveCircleIcon></button>
+                    </div>
                   </div>
                   ))}
               </div>
             </div>
-
-                
-          
-
         </section>
-        
         </section>
-
-
-         </section>
-
-         
+        </section>
        </main>
      )
    }
