@@ -210,8 +210,9 @@ export function FridgePage(){
                               </li>
                             ) :
                             (foodsByCategory[category].map((item => (
-                               <div className="inner-regular-item">
-                                <li key={item.id} className="fridge-item">
+                              // TODO: change to item.id when tracked ID added
+                               <div key={item.name} className="inner-regular-item">
+                                <li className="fridge-item">
                                   <p>{item.name} : {item.measurement} {item.measurementClassification} </p> 
                                   
                                 </li>

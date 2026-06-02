@@ -59,7 +59,7 @@ export function SearchFood({addedIngredients, setAddedIngredients}: SearchFoodPr
                       <div className="search-food-food-item">
                         <span>{f.name}</span>
                         <div className="search-food-input-and-amount">
-                            <input type="text" value={f.measurement}  onChange={(e) => {
+                            <input type="number" min="0" value={f.measurement}  onChange={(e) => {
                                 const newValue = Number(e.target.value);
 
                                 setAddedIngredients(prev =>
@@ -75,12 +75,7 @@ export function SearchFood({addedIngredients, setAddedIngredients}: SearchFoodPr
                         <button className="delete-ingredient-button" aria-label="Remove ingredient" onClick={() => handleRemoveIngredient(f.name)}>
                             <RemoveCircleRoundedIcon className="delete-ingredient-icon" aria-hidden="true" fontSize='medium'/>
                         </button>
-                      </div>
-                     
-                     <div>random</div>
-                      
-                      
-                    
+                      </div>                    
                     </div>
                     
                   )) :  

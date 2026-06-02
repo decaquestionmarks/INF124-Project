@@ -210,8 +210,9 @@ const handleSubmitSearch = async (e: React.FormEvent) => {
     const data = await res.json()
     console.log("DATA:", data)
   }
-  else if (linkBack == 'calorie-tracking') { // adding food to calorie tracker
+  else if (linkBack == '/calorie-tracking') { // adding food to calorie tracker
     // sending temp stuff until food route done
+    console.log("ADDING FOOD TO CALORIE TRACKER")
     const res = await fetch(`http://127.0.0.1:3000/users/me/goal/${date}/foods`,
       {
       method: 'POST',

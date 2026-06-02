@@ -22,7 +22,7 @@ type MacroProgress = {
 
 
 export function CalorieTrackingPage(){
-  const [editingId, setEditingId] = useState("");
+  const [editingName, setEditingName] = useState("");
   const [editAmount, setEditAmount] = useState("");
   const current = new Date();
   const [date, setDate] = useState(current)
@@ -65,6 +65,19 @@ export function CalorieTrackingPage(){
     return window.innerWidth > 900
   })
 
+  const handleDeleteFood = async (name: string) => {
+    // make API call to delete food
+    const res = await fetch(`http://localhost:3000/users/me/goal/${date.toISOString().slice(0,10)}/${name}`, {
+      method: 'DELETE',
+      headers :{
+        'Content-Type': 'application/json'
+      }
+    })
+    const data = await res.json()
+    const foods = data.foods 
+    setFoods(Array.isArray(foods) ? foods : [])
+  }
+
   useEffect(() => {
     const mediaQuery = window.matchMedia('(max-width: 900px)')
     const legacyMediaQuery = mediaQuery as MediaQueryList & {
@@ -92,7 +105,7 @@ export function CalorieTrackingPage(){
     const saveEdit = (id: string) => {
     setFoods(prev => prev.map(
       item => item.id === id ? {...item, measurement: Number(editAmount)} : item));
-      setEditingId("");
+      setEditingName("");
       setEditAmount("");
       // MAKE API CALL TO UPDATE ITEM
     };
@@ -229,22 +242,23 @@ export function CalorieTrackingPage(){
              </div>
               
               <div className="added-items">
-                 {foods.map((f) => (
-                  <div key={f.id} className="food-item">
+                {foods.length == 0 ? <p> No foods tracked for this day</p> : 
+                 foods.map((f) => (
+                  <div key={f.name} className="food-item">
                     <div className="left-item"
-                      onClick={() => {setEditingId(f.name); setEditAmount(f.amount.toString())}}>
+                      onClick={() => {setEditingName(f.name); setEditAmount(f.amount.toString())}}>
                         
-                      {f.name} - {editingId === f.name ? (
+                      {f.name} - {editingName === f.name ? (
                       <input autoFocus value={editAmount} 
                         onChange={(e) => setEditAmount(e.target.value)}
-                        onKeyDown={(e) => {if (e.key === "Enter") {e.preventDefault(); saveEdit(editingId)}}}
-                        onBlur={() => {setEditAmount(""); setEditingId("")}}
+                        onKeyDown={(e) => {if (e.key === "Enter") {e.preventDefault(); saveEdit(editingName)}}}
+                        onBlur={() => {setEditAmount(""); setEditingName("")}}
                         />) :
                       (<div>{f.macronutrients.calories}</div>)} unit
                     </div>
                     <div className="right-item">
                       <button onClick={() => handleSelectFood(f.name)} className="details">Details</button>
-                      <button className="delete-food-item"><RemoveCircleIcon className="delete-icon"></RemoveCircleIcon></button>
+                      <button className="delete-food-item" onClick={() => handleDeleteFood(f.name)}><RemoveCircleIcon className="delete-icon"></RemoveCircleIcon></button>
                     </div>
                   </div>
                   ))}

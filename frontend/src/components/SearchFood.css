@@ -61,3 +61,8 @@
 .delete-ingredient-icon{
     color: var(--main-orange-color);
 }
+
+.search-food-input-and-amount input{
+    min-width: 40px;
+    width: 25%;
+}

@@ -9,6 +9,7 @@ import EditRoundedIcon from '@mui/icons-material/EditRounded';
 import DeleteRoundedIcon from '@mui/icons-material/DeleteRounded';
 import { SearchFood } from '../components/SearchFood.tsx'
 
+
 type Ingredient = {
   "name": string;
   "measurement": number;
@@ -69,7 +70,6 @@ export function RecipeDetail(){
                   const response = await fetch(end_url, {method: 'DELETE'} )
                   console.log("RESPONSE WHEN DELETING RECIPE: ", response)
                   // deleteRecipe function not implemented in backend
-                 
                   
             }
             catch (error) {
@@ -181,7 +181,9 @@ export function RecipeDetail(){
                 <div className="detail-item">
                 <h2 id="recipe-detail-ingredients-heading">Ingredients</h2>
                 <div className="ingredients-text">
+                  
                   {ingredients.length != 0 ? ingredients.map((f, i) => (
+                    // TODO: remove conditional in production
                     <div key={i} className="ingredient-item">
                       <div className="tracked-ingredient-item">
                         <p>{f.name} - {f.measurement} {f.measurementClassification}</p>
