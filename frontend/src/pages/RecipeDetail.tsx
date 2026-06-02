@@ -8,6 +8,7 @@ import {SharingComponent} from '../components/SharingComponent.tsx'
 import EditRoundedIcon from '@mui/icons-material/EditRounded';
 import DeleteRoundedIcon from '@mui/icons-material/DeleteRounded';
 import { SearchFood } from '../components/SearchFood.tsx'
+import { apiFetch, authFetch } from '../api.ts'
 
 
 type Ingredient = {
@@ -40,9 +41,11 @@ export function RecipeDetail(){
       const handleSaveUpdate = (async () => {
       try{
         if (!id){return}
-            // route missing a function
-              const end_url = `http://127.0.0.1:3000/recipes/${encodeURIComponent(id)})}`
-              const response = await fetch(end_url, {
+              const nextSteps = stepsDraft
+                .split('\n')
+                .map((step) => step.trim())
+                .filter(Boolean)
+              const response = await authFetch(`/recipes/${encodeURIComponent(id)}`, {
                 method: 'PUT',
                 headers: {
                   'Content-type': 'application/json',
@@ -50,12 +53,13 @@ export function RecipeDetail(){
                 body: JSON.stringify({
                   name: title,
                   foods: ingredients,
-                  steps: steps,
+                  steps: nextSteps,
                   }),
               });
 
               console.log("PUT RESPONSE: ", response)
               
+             setSteps(nextSteps)
              setIsEditing(false)
             }
             catch (error) {
@@ -66,9 +70,7 @@ export function RecipeDetail(){
       const handleDelete = (async () => {
           try{
             if (!id){return}
-                // TODO: route missing a function, hookup when done
-                const end_url = `http://127.0.0.1:3000/recipes/${encodeURIComponent(id)}`
-                const response = await fetch(end_url, {method: 'DELETE'} )
+                const response = await authFetch(`/recipes/${encodeURIComponent(id)}`, {method: 'DELETE'} )
                 console.log("RESPONSE WHEN DELETING RECIPE: ", response)
                 // deleteRecipe function not implemented in backend
                 
@@ -109,8 +111,7 @@ export function RecipeDetail(){
       async function fetchData(){
         if (!id) return;
         try{
-            const end_url = `http://127.0.0.1:3000/recipes/${encodeURIComponent(id)}`
-            const response = await fetch(end_url)
+            const response = await apiFetch(`/recipes/${encodeURIComponent(id)}`)
             const data = await response.json()
             setOgSteps(Array.isArray(data.steps) ? data.steps : [])
             setOgIngredients(Array.isArray(data.foods) ? data.foods : [])

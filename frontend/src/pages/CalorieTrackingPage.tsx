@@ -9,6 +9,7 @@ import ArrowRightRoundedIcon from '@mui/icons-material/ArrowRightRounded';
 import ArrowLeftRoundedIcon from '@mui/icons-material/ArrowLeftRounded';
 import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
 import {toast} from 'react-hot-toast'
+import { authFetch } from '../api.ts'
 type MacroProgress = {
   calories: {
     goal: number,
@@ -20,13 +21,27 @@ type MacroProgress = {
   protein: number
 };
 
+type TrackedFood = {
+  id?: string;
+  name: string;
+  amount?: number | string;
+  measurement?: number;
+  macronutrients: {
+    calories?: number;
+    carbs?: number;
+    fat?: number;
+    fats?: number;
+    protein?: number;
+  };
+};
+
 
 export function CalorieTrackingPage(){
   const [editingName, setEditingName] = useState("");
   const [editAmount, setEditAmount] = useState("");
   const current = new Date();
   const [date, setDate] = useState(current)
-  const [foods, setFoods] = useState<any[]>([])
+  const [foods, setFoods] = useState<TrackedFood[]>([])
   const [goalProgress, setGoalProgress] = useState<MacroProgress>({
             calories: {
               goal: 0,
@@ -67,7 +82,7 @@ export function CalorieTrackingPage(){
   const handleDeleteFood = async (name: string) => {
     // make API call to delete food
     try {
-      const res = await fetch(`http://localhost:3000/users/me/goal/${date.toISOString().slice(0,10)}/${name}`, {
+      const res = await authFetch(`/users/me/goal/${date.toISOString().slice(0,10)}/${encodeURIComponent(name)}`, {
         method: 'DELETE',
         headers :{
           'Content-Type': 'application/json'
@@ -119,7 +134,7 @@ export function CalorieTrackingPage(){
     const saveEdit = (id: string) => {
     try{
       setFoods(prev => prev.map(
-      item => item.id === id ? {...item, measurement: Number(editAmount)} : item));
+      item => item.id === id || item.name === id ? {...item, measurement: Number(editAmount)} : item));
       // MAKE API CALL TO UPDATE ITEM
 
       // if (!res.ok){
@@ -139,7 +154,7 @@ export function CalorieTrackingPage(){
     // gets goal for current date
      const fetchGoalForCurrentDate = async () => {
       try{
-        const res = await fetch(`http://127.0.0.1:3000/users/me/goal/?date=${date.toISOString().slice(0,10)}`)
+        const res = await authFetch(`/users/me/goal/?date=${date.toISOString().slice(0,10)}`)
         
         if (!res.ok){
           throw new Error("Unable to fetch goal for current date")
@@ -157,7 +172,7 @@ export function CalorieTrackingPage(){
             protein: data.progress.protein.total ? data.progress.protein.total : 0,
           });
       }
-      catch (err) {     
+      catch {     
         setGoalProgress({
             calories: {
               goal: 0,
@@ -174,7 +189,7 @@ export function CalorieTrackingPage(){
     // gets food for current date
     const fetchFoodForCurrentDate = async () => {
       try{
-        const res = await fetch(`http://127.0.0.1:3000/users/me/goal/foods?date=${date.toISOString().slice(0,10)}`)
+        const res = await authFetch(`/users/me/goal/foods?date=${date.toISOString().slice(0,10)}`)
         
         if (!res.ok){
           setFoods([]);
@@ -184,7 +199,7 @@ export function CalorieTrackingPage(){
         console.log("FOODS DATA: ", data);
         setFoods(Array.isArray(data.foods) ? data?.foods : []);
       }
-      catch (err) {
+      catch {
           setFoods([]);
       }
       
@@ -271,7 +286,7 @@ export function CalorieTrackingPage(){
                  foods.map((f) => (
                   <div key={f.name} className="food-item">
                     <div className="left-item"
-                      onClick={() => {setEditingName(f.name); setEditAmount(f.amount)}}>
+	                      onClick={() => {setEditingName(f.name); setEditAmount(String(f.amount ?? f.measurement ?? ''))}}>
                         
                       {f.name} - {editingName === f.name ? (
                       <input autoFocus value={editAmount} 

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import { Header } from '../components/Header.tsx';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
+import { authFetch } from '../api.ts'
 
 const initialData = {
   weightStarting: '',
@@ -29,7 +30,7 @@ export function AccountPage(){
     setOriginalFormValues(formValues)
     setEditingGoals(false)
     // updating username/email?
-    // const res = fetch('http://127.0.0.1:3000/users/me/account', {
+    // const res = authFetch('/users/me/account', {
     //   method: "PUT",
     //   headers: {"Content-type": "application/json"},
       
@@ -80,7 +81,7 @@ export function AccountPage(){
     // getting the users account details
         const fetchAccount = async () => {
           try{
-            const res = await fetch('http://127.0.0.1:3000/users/me/account', {
+            const res = await authFetch('/users/me/account', {
               method: "GET",
               headers: {'Content-type': "application/json"}
             });

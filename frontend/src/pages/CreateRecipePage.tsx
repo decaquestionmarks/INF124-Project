@@ -6,6 +6,7 @@ import './CreateRecipePage.css'
 import { useNavigate } from 'react-router-dom'
 import {toast} from 'react-hot-toast'
 import { SecondaryHeader } from '../components/Header.tsx'
+import { authFetch } from '../api.ts'
 
 type Ingredient = {
   "name": string;
@@ -33,7 +34,6 @@ export function CreateRecipePage(){
   const handleSave = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try{
-      const url = `http://127.0.0.1:3000/recipes`
       const body =  JSON.stringify({
             name: recipeTitle, 
             description: recipeDescription, 
@@ -41,7 +41,7 @@ export function CreateRecipePage(){
             steps: steps.split("\n")
             .map(s=> s.trim())
           })
-      const response = await fetch(url, {
+      const response = await authFetch('/recipes', {
         method: 'POST',
         headers: {
           'Content-type': 'application/json'

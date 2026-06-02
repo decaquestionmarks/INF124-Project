@@ -9,6 +9,7 @@ import {useLocation, useNavigate } from 'react-router-dom'
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
 import {toast} from 'react-hot-toast'
+import { authFetch } from '../api.ts'
 
 // TODO remove mock foods results and search filtering
 const mockResults: FoodResult[] = [
@@ -190,7 +191,7 @@ const handleSubmitSearch = async (e: React.FormEvent) => {
     if (linkBack === '/fridge'){
       try{
         // sending temp stuff until food routes done
-        const res = await fetch(`http://127.0.0.1:3000/users/me/fridge`,
+        const res = await authFetch('/users/me/fridge',
           {
           method: 'POST',
           headers: {'Content-type': 'application/json'},
@@ -221,7 +222,8 @@ const handleSubmitSearch = async (e: React.FormEvent) => {
   else if (linkBack == '/calorie-tracking') { // adding food to calorie tracker
     // sending temp stuff until food route done
     try{
-      const res = await fetch(`http://127.0.0.1:3000/users/me/goal/${date}/foods`,
+      const goalDate = date ?? new Date().toISOString().slice(0, 10)
+      const res = await authFetch(`/users/me/goal/${goalDate}/foods`,
         {
         method: 'POST',
         headers: {'Content-type': 'application/json'},

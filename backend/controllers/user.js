@@ -37,8 +37,8 @@ const ensureUserExists = (uid, decodedToken = {}) => {
 
 // Middleware: attach application user object (from mock store) to request
 const attachUser = (req, res, next) => {
-	const decoded = req.user || {};
-	const uid = decoded.uid || decoded.sub || decoded.user_id || String(decoded.email || 'anonymous');
+	const decoded = req.user;
+	const uid = decoded?.uid || decoded?.sub || decoded?.user_id;
 
 	if (!uid) return res.status(401).json({ error: 'Unauthorized' });
 

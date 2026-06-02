@@ -8,6 +8,7 @@ import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
 import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownRounded';
 import { Header } from '../components/Header.tsx'
 import {toast} from 'react-hot-toast'
+import { authFetch } from '../api.ts'
 
 const FOOD_CATEGORIES = [
   "Produce",
@@ -106,7 +107,7 @@ export function FridgePage(){
     useEffect(() => {
     const fetchFridgeItems = async () => {
         // getting items from users fridge
-        const res = await fetch(`http://127.0.0.1:3000/users/me/fridge`)
+        const res = await authFetch('/users/me/fridge')
         const data = await res.json();
         console.log("DATA.fridge: ", data.fridge)
         setFoodItems(Array.isArray(data?.fridge) ? data.fridge : []);
@@ -118,7 +119,7 @@ export function FridgePage(){
 
   const handleDeleteFood = async (name: string) => {
       try{
-        const res = await fetch(`http://127.0.0.1:3000/users/me/fridge/${name}`, 
+        const res = await authFetch(`/users/me/fridge/${encodeURIComponent(name)}`,
         {  
           headers: {'Content-type': 'application/json'},
           method: "DELETE",
@@ -175,7 +176,7 @@ export function FridgePage(){
               {FOOD_CATEGORIES.map((category) => (
                   <div key={category} className="category">
                       <div className={`food-item-heading ${poppedDownCategory.includes(category) ? "active" : ""}`}
-                       onClick={(e) => {e.stopPropagation;         
+	                       onClick={(e) => {e.stopPropagation();
                                         setPoppedDownCategory((prev) =>
                                           prev.includes(category)
                                             ? prev.filter((c) => c !== category)

@@ -2,13 +2,14 @@
 const router = express.Router();
 const { searchRecipes, getRecipePreview, getRecipeById, createRecipe, attachRecommendedRecipes, deleteRecipe, updateRecipe } = require('../controllers/recipe');
 const { attachUser } = require('../controllers/user');
+const { requireAuth } = require('../services/auth');
 const Recipe = require('../../models/recipe');
 
 /**
  * POST /recipes
  * Creates a recipe from the JSON request body.
  */
-router.post('/', (req, res) => {
+router.post('/', requireAuth, attachUser, (req, res) => {
     try {
         const recipe = new Recipe(
             req.body.name,
@@ -17,7 +18,7 @@ router.post('/', (req, res) => {
             req.body.steps
         );
 
-        const createdRecipe = createRecipe(recipe);
+        const createdRecipe = createRecipe(recipe, req.appUser.id);
         res.status(201).json(createdRecipe);
     } catch (error) {
         res.status(400).json({ error: error.message });
@@ -42,7 +43,7 @@ router.get('/search', (req, res) => {
  * GET /recipes/recommended
  * Returns recipes the current user can make from their fridge items.
  */
-router.get('/recommended', attachUser, attachRecommendedRecipes, (req, res) => {
+router.get('/recommended', requireAuth, attachUser, attachRecommendedRecipes, (req, res) => {
     res.json({
         count: req.recommendedRecipes.length,
         results: req.recommendedRecipes,
@@ -88,13 +89,13 @@ router.get('/:id', (req, res) => {
  * PUT /recipes/:id
  * Updates a recipe by ID with new data (name, description, foods, steps).
  */
-router.put('/:id', (req, res) => {
+router.put('/:id', requireAuth, attachUser, (req, res) => {
     try {
         const recipeId = req.params.id;
-        const updated = updateRecipe(recipeId, req.body);
+        const updated = updateRecipe(recipeId, req.body, req.appUser.id);
         res.json(updated);
     } catch (error) {
-        res.status(404).json({ error: error.message });
+        res.status(error.statusCode || 404).json({ error: error.message });
     }
 });
 
@@ -102,13 +103,13 @@ router.put('/:id', (req, res) => {
  * DELETE /recipes/:id
  * Deletes a recipe by ID.
  */
-router.delete('/:id', (req, res) => {
+router.delete('/:id', requireAuth, attachUser, (req, res) => {
     try {
         const recipeId = req.params.id;
-        const deleted = deleteRecipe(recipeId);
+        const deleted = deleteRecipe(recipeId, req.appUser.id);
         res.json({ message: 'Recipe deleted', deleted });
     } catch (error) {
-        res.status(404).json({ error: error.message });
+        res.status(error.statusCode || 404).json({ error: error.message });
     }
 });
 

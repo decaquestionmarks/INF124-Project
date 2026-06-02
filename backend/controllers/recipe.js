@@ -171,19 +171,83 @@ const nextID = () => {
  * @returns {object} - The created recipe with an id
  * @throws {Error} - If the payload is missing or invalid
  */
-const createRecipe = (recipe) => {
+const createRecipe = (recipe, ownerId) => {
     if (!(recipe instanceof Recipe)) {
         throw new Error('Recipe payload must be a Recipe object');
     }
 
     const createdRecipe = {
         id: nextID(),
+        ownerId,
         ...recipe,
     };
 
     mockRecipes.push(createdRecipe);
 
     return createdRecipe;
+};
+
+const findRecipeIndex = (recipeId) => mockRecipes.findIndex((item) => item.id === recipeId);
+
+const ensureRecipeOwner = (recipe, ownerId) => {
+    if (!recipe.ownerId) {
+        const error = new Error('Recipe is read-only');
+        error.statusCode = 403;
+        throw error;
+    }
+
+    if (recipe.ownerId !== ownerId) {
+        const error = new Error('You do not have permission to modify this recipe');
+        error.statusCode = 403;
+        throw error;
+    }
+};
+
+const updateRecipe = (recipeId, updates = {}, ownerId) => {
+    const recipeIndex = findRecipeIndex(recipeId);
+
+    if (recipeIndex === -1) {
+        const error = new Error('Recipe not found');
+        error.statusCode = 404;
+        throw error;
+    }
+
+    const existingRecipe = mockRecipes[recipeIndex];
+    ensureRecipeOwner(existingRecipe, ownerId);
+
+    if (typeof updates.name === 'string' && updates.name.trim()) {
+        existingRecipe.name = updates.name.trim();
+    }
+
+    if (typeof updates.description === 'string') {
+        existingRecipe.description = updates.description;
+    }
+
+    if (Array.isArray(updates.foods)) {
+        existingRecipe.foods = updates.foods;
+    }
+
+    if (Array.isArray(updates.steps)) {
+        existingRecipe.steps = updates.steps;
+    }
+
+    mockRecipes[recipeIndex] = existingRecipe;
+    return existingRecipe;
+};
+
+const deleteRecipe = (recipeId, ownerId) => {
+    const recipeIndex = findRecipeIndex(recipeId);
+
+    if (recipeIndex === -1) {
+        const error = new Error('Recipe not found');
+        error.statusCode = 404;
+        throw error;
+    }
+
+    const recipe = mockRecipes[recipeIndex];
+    ensureRecipeOwner(recipe, ownerId);
+
+    return mockRecipes.splice(recipeIndex, 1)[0];
 };
 
 const attachRecommendedRecipes = (req, res, next) => {
@@ -200,4 +264,6 @@ module.exports = {
     createRecipe,
     attachRecommendedRecipes,
     getRecipeRecommendations,
+    updateRecipe,
+    deleteRecipe,
 };

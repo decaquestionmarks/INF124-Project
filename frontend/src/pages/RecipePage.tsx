@@ -6,6 +6,7 @@ import './RecipePage.css'
 import SearchIcon from '@mui/icons-material/Search'
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import {Header} from '../components/Header.tsx'
+import { apiFetch, authFetch } from '../api.ts'
 // type Recipe = {
 //   id: number;
 //   name: string;
@@ -65,8 +66,7 @@ export function RecipePage(){
     useEffect(() => {
         const getRecommendedPreviews = async () => {   
         try{
-              const end_url = `http://127.0.0.1:3000/recipes/recommended`
-              const response = await fetch(end_url)
+              const response = await authFetch('/recipes/recommended')
               const data = await response.json()              
               setRecommendedPreviews(Array.isArray(data.results) ? data.results : [])
             }
@@ -81,8 +81,7 @@ export function RecipePage(){
     const handleSearch = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
           try{
-            const end_url = `http://127.0.0.1:3000/recipes/search?query=${encodeURIComponent(input)}`
-            const response = await fetch(end_url)
+            const response = await apiFetch(`/recipes/search?query=${encodeURIComponent(input)}`)
             const data = await response.json()
             
             const results = data.results
@@ -92,7 +91,7 @@ export function RecipePage(){
 
             const previewsArr = []
             for (const r of results){
-                const resp = await fetch(`http://127.0.0.1:3000/recipes/${r.id}/preview`);
+                const resp = await apiFetch(`/recipes/${r.id}/preview`);
   
                 const preview = await resp.json();
                 previewsArr.push(preview)

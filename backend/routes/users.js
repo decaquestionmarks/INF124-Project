@@ -1,6 +1,6 @@
 
 const express = require('express');
-// const createAuthMiddleware = require('../services/auth');
+const { requireAuth } = require('../services/auth');
 const {
 	attachUser,
 	getAccount,
@@ -17,26 +17,25 @@ const {
 
 const router = express.Router();
 
-// NOTE: in production pass a real Firebase service account object here
-// const auth = createAuthMiddleware('Temp');
+router.use('/me', requireAuth, attachUser);
 
 // Protected user endpoints
-router.get('/me/account', attachUser, getAccount);  //auth
-router.get('/me/goal/foods', attachUser, getGoalFoods); //auth
-router.get('/me/goal/:date?', attachUser, getGoalForDate); //auth
-router.get('/me/goal', attachUser, getGoalForDate); //auth
-router.get('/me/fridge', attachUser, getFridge); //auth
+router.get('/me/account', getAccount);
+router.get('/me/goal/foods', getGoalFoods);
+router.get('/me/goal/:date?', getGoalForDate);
+router.get('/me/goal', getGoalForDate);
+router.get('/me/fridge', getFridge);
 
-router.post('/me/goal/:date/foods', attachUser, addGoalFood); //auth
-router.post('/me/goal/foods', attachUser, addGoalFood); //auth
-router.post('/me/fridge', attachUser, addFridgeItem); //auth
+router.post('/me/goal/:date/foods', addGoalFood);
+router.post('/me/goal/foods', addGoalFood);
+router.post('/me/fridge', addFridgeItem);
 
-router.put('/me/account', attachUser, updateAccount); //auth
-router.put('/me/goal/:date', attachUser, updateGoal); //auth
-router.put('/me/goal/', attachUser, updateGoal); //auth
+router.put('/me/account', updateAccount);
+router.put('/me/goal/:date', updateGoal);
+router.put('/me/goal/', updateGoal);
 
-router.delete('/me/goal/:date/:food', attachUser, deleteGoalFood); //auth
-router.delete('/me/goal/:food', attachUser, deleteGoalFood); //auth
-router.delete('/me/fridge/:food', attachUser, deleteFridgeFood); //auth
+router.delete('/me/goal/:date/:food', deleteGoalFood);
+router.delete('/me/goal/:food', deleteGoalFood);
+router.delete('/me/fridge/:food', deleteFridgeFood);
 
 module.exports = router;
