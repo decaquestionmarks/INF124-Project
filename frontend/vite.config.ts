@@ -9,11 +9,10 @@ export default defineConfig({
     registerType: 'autoUpdate',
     injectRegister: 'auto',
     devOptions: {
-      enabled: false
+      enabled: true
     },
     workbox: {
       navigateFallback: '/index.html',
-      globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
       runtimeCaching: [{
         urlPattern: ({ url }) => url.pathname.startsWith('/recipes'),
         handler: 'NetworkFirst',
@@ -26,7 +25,20 @@ export default defineConfig({
          cacheableResponse: {
                 statuses: [0, 200]
           },
-      }}
+      }},
+      {
+        urlPattern: ({ url }) => url.pathname.startsWith('/users'),
+        handler: 'NetworkFirst',
+        options: {
+          cacheName: 'api-data-cache',
+              expiration: {
+                maxEntries: 50,
+                maxAgeSeconds: 60 * 60 * 24 
+        },
+         cacheableResponse: {
+                statuses: [0, 200]
+          },
+      }},
       ]
     },
   })

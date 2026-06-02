@@ -41,7 +41,7 @@ export function RecipeDetail(){
       try{
         if (!id){return}
             // route missing a function
-              const end_url = `http://127.0.0.1:3000/recipes/${encodeURIComponent(id)}`
+              const end_url = `http://127.0.0.1:3000/recipes/${encodeURIComponent(id)})}`
               const response = await fetch(end_url, {
                 method: 'PUT',
                 headers: {
@@ -63,21 +63,22 @@ export function RecipeDetail(){
             } 
       });
 
-        const handleDelete = (async () => {
-            try{
-              if (!id){return}
-                  const end_url = `http://127.0.0.1:3000/recipes/${id}`
-                  const response = await fetch(end_url, {method: 'DELETE'} )
-                  console.log("RESPONSE WHEN DELETING RECIPE: ", response)
-                  // deleteRecipe function not implemented in backend
-                  
-            }
-            catch (error) {
-              console.error("ERROR RecipeDetail Fetch", error)
-            } 
-            finally {
-              navigate('/recipes')
-            }
+      const handleDelete = (async () => {
+          try{
+            if (!id){return}
+                // TODO: route missing a function, hookup when done
+                const end_url = `http://127.0.0.1:3000/recipes/${encodeURIComponent(id)}`
+                const response = await fetch(end_url, {method: 'DELETE'} )
+                console.log("RESPONSE WHEN DELETING RECIPE: ", response)
+                // deleteRecipe function not implemented in backend
+                
+          }
+          catch (error) {
+            console.error("ERROR RecipeDetail Fetch", error)
+          } 
+          finally {
+            navigate('/recipes')
+          }
             
           })
 
@@ -182,7 +183,7 @@ export function RecipeDetail(){
                 <h2 id="recipe-detail-ingredients-heading">Ingredients</h2>
                 <div className="ingredients-text">
                   
-                  {ingredients.length != 0 ? ingredients.map((f, i) => (
+                  {ingredients.map((f, i) => (
                     // TODO: remove conditional in production
                     <div key={i} className="ingredient-item">
                       <div className="tracked-ingredient-item">
@@ -192,14 +193,7 @@ export function RecipeDetail(){
                       
                     
                     </div>
-                    
-                  )) :  
-                   <div className="ingredient-item">
-                      <p>Mock Ingredient - 1 unit</p>
-                      <p className="missing-item">Missing Item!</p>
-                    </div>
-                    
-                  
+                  )) 
                  }
                   </div>
                 </div>
