@@ -181,7 +181,7 @@ const deleteGoalFood = (req, res) => {
 			return res.status(404).json({ error: 'Food not found in goal' });
 		}
 
-		return res.json({ date, foods: goal.foods });
+		return res.json({ date, foods: goal.foods, progress: goal.calculateProgress()});
 	} catch (err) {
 		return res.status(400).json({ error: err.message });
 	}

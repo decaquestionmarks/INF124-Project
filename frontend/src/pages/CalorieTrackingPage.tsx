@@ -8,7 +8,7 @@ import {Header} from '../components/Header.tsx'
 import ArrowRightRoundedIcon from '@mui/icons-material/ArrowRightRounded';
 import ArrowLeftRoundedIcon from '@mui/icons-material/ArrowLeftRounded';
 import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
-
+import {toast} from 'react-hot-toast'
 type MacroProgress = {
   calories: {
     goal: number,
@@ -39,9 +39,8 @@ export function CalorieTrackingPage(){
           })
   const navigate = useNavigate()
   const handleSelectFood = (name: string) => {
-      const tracked_id = 1
       console.log("name of food to view: ", name)
-      navigate(`/calorie-tracking/food?trackedFoodId=${tracked_id}`)
+      navigate(`/calorie-tracking/food?trackedFoodId=${name}`)
   }
 
 
@@ -67,15 +66,30 @@ export function CalorieTrackingPage(){
 
   const handleDeleteFood = async (name: string) => {
     // make API call to delete food
-    const res = await fetch(`http://localhost:3000/users/me/goal/${date.toISOString().slice(0,10)}/${name}`, {
-      method: 'DELETE',
-      headers :{
-        'Content-Type': 'application/json'
+    try {
+      const res = await fetch(`http://localhost:3000/users/me/goal/${date.toISOString().slice(0,10)}/${name}`, {
+        method: 'DELETE',
+        headers :{
+          'Content-Type': 'application/json'
+        }
+      })
+      if (!res.ok){
+        throw new Error("Failed to delete food item")
       }
-    })
-    const data = await res.json()
-    const foods = data.foods 
-    setFoods(Array.isArray(foods) ? foods : [])
+      const data = await res.json()
+      
+      
+      const progress = data.progress
+      const foods = data.foods
+      setGoalProgress({calories: {goal: progress.calories.goal, remaining: progress.calories.remaining, total: progress.calories.total}, carbs: progress.carbs.total, fats: progress.fats.total, protein: progress.protein.total})
+      console.log("GOAL PROGRESS: ", goalProgress)
+      setFoods(Array.isArray(foods) ? foods : [])
+      toast.success(`Deleted ${name}`)
+    }
+      catch (error) {
+        console.error("Error deleting food item: ", error)
+        toast.error("Failed to delete food item. Please try again")
+      }
   }
 
   useEffect(() => {
@@ -103,11 +117,22 @@ export function CalorieTrackingPage(){
   }, [])
 
     const saveEdit = (id: string) => {
-    setFoods(prev => prev.map(
+    try{
+      setFoods(prev => prev.map(
       item => item.id === id ? {...item, measurement: Number(editAmount)} : item));
+      // MAKE API CALL TO UPDATE ITEM
+
+      // if (!res.ok){
+      //   throw new Error("Failed to update food item")
+      // }
       setEditingName("");
       setEditAmount("");
-      // MAKE API CALL TO UPDATE ITEM
+      toast.success("Updated food item")
+    }
+    catch (error) {
+      console.error("Error updating food item: ", error)
+      toast.error("Failed to update food item. Please try again")
+    }
     };
 
   useEffect(() => {
@@ -117,7 +142,22 @@ export function CalorieTrackingPage(){
         const res = await fetch(`http://127.0.0.1:3000/users/me/goal/?date=${date.toISOString().slice(0,10)}`)
         
         if (!res.ok){
-           
+          throw new Error("Unable to fetch goal for current date")
+        }
+
+        const data = await res.json()
+        setGoalProgress({
+            calories: {
+              goal: data.progress.calories.goal ? data.progress.calories.goal : 0,
+              total: data.progress.calories.total ? data.progress.calories.total : 0,
+              remaining: data.progress.calories.remaining ? data.progress.calories.remaining: 0,
+            },
+            carbs: data.progress.carbs.total ? data.progress.carbs.total : 0,
+            fats: data.progress.fats.total ? data.progress.fats.total : 0,
+            protein: data.progress.protein.total ? data.progress.protein.total : 0,
+          });
+      }
+      catch (err) {     
         setGoalProgress({
             calories: {
               goal: 0,
@@ -129,21 +169,6 @@ export function CalorieTrackingPage(){
             protein: 0,
           });
           return;
-
-        }
-        const data = await res.json()
-        setGoalProgress({
-            calories: {
-              goal: data.progress.calories.goal,
-              total: data.progress.calories.total,
-              remaining: data.progress.calories.remaining,
-            },
-            carbs: data.progress.carbs.total,
-            fats: data.progress.fats.total,
-            protein: data.progress.protein.total,
-          });
-      }
-      catch (err) {
       } 
     };
     // gets food for current date
@@ -242,11 +267,11 @@ export function CalorieTrackingPage(){
              </div>
               
               <div className="added-items">
-                {foods.length == 0 ? <p> No foods tracked for this day</p> : 
+                {foods.length == 0 ? <p className="no-foods-tracked"> No foods tracked</p> : 
                  foods.map((f) => (
                   <div key={f.name} className="food-item">
                     <div className="left-item"
-                      onClick={() => {setEditingName(f.name); setEditAmount(f.amount.toString())}}>
+                      onClick={() => {setEditingName(f.name); setEditAmount(f.amount)}}>
                         
                       {f.name} - {editingName === f.name ? (
                       <input autoFocus value={editAmount} 

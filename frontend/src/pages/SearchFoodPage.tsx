@@ -8,6 +8,9 @@ import './SearchFoodPage.css'
 import {useLocation, useNavigate } from 'react-router-dom'
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
+import {toast} from 'react-hot-toast'
+
+// TODO remove mock foods results and search filtering
 const mockResults: FoodResult[] = [
   
   {
@@ -154,6 +157,7 @@ export function SearchFoodPage({linkBack}: SearchFoodProps){
 
 
 //  const handleSubmitSearch = async (e: React.FormEvent) => {
+  // make call to actual API here
 //     e.preventDefault()
 //     if (!userInput.trim()) return;
 //     try{
@@ -175,7 +179,6 @@ const handleSubmitSearch = async (e: React.FormEvent) => {
     const filtered = mockResults.filter(food =>
       food.name.toLowerCase().includes(userInput.toLowerCase())
     )
-
     setSearchResults(filtered)
   } catch (error) {
     console.error("ERROR SearchFoodPage", error)
@@ -184,54 +187,66 @@ const handleSubmitSearch = async (e: React.FormEvent) => {
 
 
  const handleLogFood = async () => {
-   
-  // fetch and figure out what to pass
-  console.log("HERE", linkBack)
-  if (linkBack === '/fridge'){
-    // sending temp stuff until food routes done
-    const res = await fetch(`http://127.0.0.1:3000/users/me/fridge`,
-      {
-      method: 'POST',
-      headers: {'Content-type': 'application/json'},
-      body: JSON.stringify({
-          name: addedItem,
-          classification: "Produce",
-          measurementClassification: "Mass",
-          measurement: "100",
-           macronutrients: {
-            calories: 275,
-            fat: 3.6,
-            protein: 51
-          }
+    if (linkBack === '/fridge'){
+      try{
+        // sending temp stuff until food routes done
+        const res = await fetch(`http://127.0.0.1:3000/users/me/fridge`,
+          {
+          method: 'POST',
+          headers: {'Content-type': 'application/json'},
+          body: JSON.stringify({
+              name: addedItem,
+              classification: "Produce",
+              measurementClassification: "Mass",
+              measurement: "100",
+              macronutrients: {
+                calories: 275,
+                fat: 3.6,
+                protein: 51
+              }
 
-      })
+          })
+          }
+        )
+        if (!res.ok){
+          throw new Error("Failed to add food to fridge")
+        }
+        toast.success(`Added ${addedItem} to fridge`)
       }
-    )
-    const data = await res.json()
-    console.log("DATA:", data)
+      catch (error){
+        console.error("Error adding food to fridge: ", error)
+        toast.error("Failed to add food to fridge. Please try again")
+      }
   }
   else if (linkBack == '/calorie-tracking') { // adding food to calorie tracker
     // sending temp stuff until food route done
-    console.log("ADDING FOOD TO CALORIE TRACKER")
-    const res = await fetch(`http://127.0.0.1:3000/users/me/goal/${date}/foods`,
-      {
-      method: 'POST',
-      headers: {'Content-type': 'application/json'},
-      body: JSON.stringify({
-          name: addedItem,
-          classification: "Produce",
-          measurementClassification: "Mass",
-          measurement: "100",
-           macronutrients: {
-            calories: 275,
-            fat: 3.6,
-            protein: 51
-          }
-          
-      })
-      });
-      const data = await res.json()
-      console.log("DATA:", data)
+    try{
+      const res = await fetch(`http://127.0.0.1:3000/users/me/goal/${date}/foods`,
+        {
+        method: 'POST',
+        headers: {'Content-type': 'application/json'},
+        body: JSON.stringify({
+            name: addedItem,
+            classification: "Produce",
+            measurementClassification: "Mass",
+            measurement: "100",
+            macronutrients: {
+              calories: 275,
+              fat: 3.6,
+              protein: 51
+            }
+            
+        })
+        });
+        if (!res.ok){
+          throw new Error("Failed to log food to calorie tracker")
+        }
+        toast.success(`Logged ${addedItem} to calorie tracker`)
+      }
+      catch (error) {
+        console.error("Error logging food to calorie tracker: ", error)
+        toast.error("Failed to log food. Please try again")
+      }
   }
     navigate(linkBack, 
       {state: {meal, date, addedItem}})

@@ -7,6 +7,7 @@ import AddCircleIcon from '@mui/icons-material/AddCircle';
 import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
 import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownRounded';
 import { Header } from '../components/Header.tsx'
+import {toast} from 'react-hot-toast'
 
 const FOOD_CATEGORIES = [
   "Produce",
@@ -115,19 +116,25 @@ export function FridgePage(){
   }, [])
 
 
-
-
   const handleDeleteFood = async (name: string) => {
+      try{
         const res = await fetch(`http://127.0.0.1:3000/users/me/fridge/${name}`, 
         {  
           headers: {'Content-type': 'application/json'},
           method: "DELETE",
          }
         )
+        if (!res.ok){
+          throw new Error(`Failed to delete food item: ${name}`)
+        }
         const data = await res.json();
-        console.log("DELETED FROM FRIDGE DATA: ", data)
         setFoodItems(Array.isArray(data?.fridge) ? data.fridge : []);
-
+        toast.success(`Successfully deleted ${name} from fridge`)
+      } 
+      catch (error) {
+        toast.error('Failed to delete food item. Please try again')
+        console.error("Error deleting food item: ", error)
+      }
   }
    
    return (
@@ -159,10 +166,6 @@ export function FridgePage(){
                     <Link className="dropdown-option" to="/fridge/search-food?mode=fridge">
                       Add to Fridge <AddCircleIcon aria-hidden="true" />
                     </Link>
-
-                    {/* <Link className="dropdown-option" to="/fridge/search-food?mode=shopping-list">
-                      Add to Shopping List <AddCircleIcon aria-hidden="true" />
-                    </Link> */}
                   </div>
                 </div>
             </div>

@@ -191,3 +191,8 @@
 .left-item input:focus{
     outline: 2px solid var(--main-orange-color);
 }
+
+
+.no-foods-tracked{
+    color: lightgray;
+}

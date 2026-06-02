@@ -4,7 +4,7 @@ import { SearchFood} from '../components/SearchFood.tsx'
 import './DashboardPage.css'
 import './CreateRecipePage.css'
 import { useNavigate } from 'react-router-dom'
-
+import {toast} from 'react-hot-toast'
 import { SecondaryHeader } from '../components/Header.tsx'
 
 type Ingredient = {
@@ -41,7 +41,6 @@ export function CreateRecipePage(){
             steps: steps.split("\n")
             .map(s=> s.trim())
           })
-          console.log("BODY: ", body)
       const response = await fetch(url, {
         method: 'POST',
         headers: {
@@ -50,17 +49,18 @@ export function CreateRecipePage(){
         body:
           body
       })
-      const data = await response.json()
-    console.log("Recipe post data: ", data)
+      if (!response.ok){
+        throw new Error("Failed to create recipe")
+      }
+      toast.success(`Added ${recipeTitle} to recipes`)
     }
     catch (error){
       console.error("ERROR CreatingRecipePage", error)
+      toast.error("Failed to create recipe. Please try again")
     }
     finally {
       navigate('/recipes')
     }
-
-  
   }
  
  const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
