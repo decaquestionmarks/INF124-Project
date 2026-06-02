@@ -117,20 +117,16 @@ export function FridgePage(){
 
 
 
-  const handleDeleteFood = async (id: string) => {
-        // fridge items need an id
-        console.log(id)
-        // const tracked_item_id = 1
-        // need tracked fridge item to have an id, in case of duplicate food items added to fridge
-        // const res = await fetch(`http://127.0.0.1:3000/users/me/fridge/${tracked_item_id}`, 
-        // {  
-        //   headers: {'Content-type': 'application/json'},
-        //   method: "DELETE",
-        //  }
-        // )
-        // const data = await res.json();
-        // console.log("DATA.fridge: ", data.fridge)
-        // setFoodItems(Array.isArray(data?.fridge) ? data.fridge : []);
+  const handleDeleteFood = async (name: string) => {
+        const res = await fetch(`http://127.0.0.1:3000/users/me/fridge/${name}`, 
+        {  
+          headers: {'Content-type': 'application/json'},
+          method: "DELETE",
+         }
+        )
+        const data = await res.json();
+        console.log("DELETED FROM FRIDGE DATA: ", data)
+        setFoodItems(Array.isArray(data?.fridge) ? data.fridge : []);
 
   }
    
@@ -217,7 +213,7 @@ export function FridgePage(){
                                   
                                 </li>
                                 <div className="fridge-item-right-item">
-                                  <button className="remove-from-fridge"  onClick={() => handleDeleteFood(item.id)}><RemoveCircleIcon className="delete-icon"></RemoveCircleIcon></button>
+                                  <button className="remove-from-fridge"  onClick={() => handleDeleteFood(item.name)}><RemoveCircleIcon className="delete-icon"></RemoveCircleIcon></button>
                                 </div>
                               </div>
 

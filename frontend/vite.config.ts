@@ -1,34 +1,34 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-// import {VitePWA} from 'vite-plugin-pwa'
+import {VitePWA} from 'vite-plugin-pwa'
 
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react({}), 
-  //   VitePWA({
-  //   registerType: 'autoUpdate',
-  //   injectRegister: 'auto',
-  //   devOptions: {
-  //     enabled: false
-  //   },
-  //   workbox: {
-  //     navigateFallback: '/index.html',
-  //     globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
-  //     runtimeCaching: [{
-  //       urlPattern: ({ url }) => url.pathname.startsWith('/recipes'),
-  //       handler: 'NetworkFirst',
-  //       options: {
-  //         cacheName: 'api-data-cache',
-  //             expiration: {
-  //               maxEntries: 50,
-  //               maxAgeSeconds: 60 * 60 * 24 
-  //       },
-  //        cacheableResponse: {
-  //               statuses: [0, 200]
-  //         },
-  //     }}
-  //     ]
-  //   },
-  // })
+    VitePWA({
+    registerType: 'autoUpdate',
+    injectRegister: 'auto',
+    devOptions: {
+      enabled: false
+    },
+    workbox: {
+      navigateFallback: '/index.html',
+      globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+      runtimeCaching: [{
+        urlPattern: ({ url }) => url.pathname.startsWith('/recipes'),
+        handler: 'NetworkFirst',
+        options: {
+          cacheName: 'api-data-cache',
+              expiration: {
+                maxEntries: 50,
+                maxAgeSeconds: 60 * 60 * 24 
+        },
+         cacheableResponse: {
+                statuses: [0, 200]
+          },
+      }}
+      ]
+    },
+  })
 ],
 })
