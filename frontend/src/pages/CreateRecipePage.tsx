@@ -18,14 +18,12 @@ type Ingredient = {
 
 
 export function CreateRecipePage(){
- 
+
 
   const navigate = useNavigate();
   const [recipeTitle, setRecipeTitle] = useState("My Recipe")
 
-  const [addedIngredients, setAddedIngredients] = useState<Ingredient[]>([
-      {name: "Mock", measurement: 0, measurementClassification: "mock", classification: "mock", caloriesPerMeasurement: 0 }
-    ])
+	  const [addedIngredients, setAddedIngredients] = useState<Ingredient[]>([])
   const [recipeDescription, setRecipeDescription] = useState("")
   const [steps, setSteps] = useState("")
 
@@ -33,14 +31,15 @@ export function CreateRecipePage(){
   // connect later
   const handleSave = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    try{
-      const body =  JSON.stringify({
-            name: recipeTitle, 
-            description: recipeDescription, 
-            foods: addedIngredients,
-            steps: steps.split("\n")
-            .map(s=> s.trim())
-          })
+	    try{
+	      const body =  JSON.stringify({
+	            name: recipeTitle,
+	            description: recipeDescription,
+	            foods: addedIngredients,
+	            steps: steps.split("\n")
+	            .map(s=> s.trim())
+	            .filter(Boolean)
+	          })
       const response = await authFetch('/recipes', {
         method: 'POST',
         headers: {
@@ -49,20 +48,19 @@ export function CreateRecipePage(){
         body:
           body
       })
-      if (!response.ok){
-        throw new Error("Failed to create recipe")
-      }
-      toast.success(`Added ${recipeTitle} to recipes`)
-    }
-    catch (error){
-      console.error("ERROR CreatingRecipePage", error)
-      toast.error("Failed to create recipe. Please try again")
-    }
-    finally {
-      navigate('/recipes')
-    }
-  }
- 
+	      if (!response.ok){
+	        throw new Error("Failed to create recipe")
+	      }
+	      const createdRecipe = await response.json()
+	      toast.success(`Added ${recipeTitle} to recipes`)
+	      navigate(`/recipes/${createdRecipe.id}`)
+	    }
+	    catch (error){
+	      console.error("ERROR CreatingRecipePage", error)
+	      toast.error("Failed to create recipe. Please try again")
+	    }
+	  }
+
  const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
     if (typeof window === 'undefined') {
       return true
@@ -103,13 +101,13 @@ export function CreateRecipePage(){
            isOpen={isSidebarOpen}
            onToggle={() => setIsSidebarOpen((open) => !open)}
          />
-   
+
          <div
            className={`dashboard-page__backdrop${isSidebarOpen ? ' dashboard-page__backdrop--visible' : ''}`}
            aria-hidden="true"
            onClick={() => setIsSidebarOpen(false)}
          />
-   
+
          <section className="dashboard-page__content">
           <SecondaryHeader isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} pageTitle="New Recipe" linkBack="/recipes"></SecondaryHeader>
           <form onSubmit={handleSave} className="create-recipe-form">
@@ -121,7 +119,7 @@ export function CreateRecipePage(){
               <h2 id="recipe-description-heading">Recipe Description</h2>
               <textarea aria-labelledby="recipe-description-heading" id="recipe-description" value={recipeDescription} placeholder='Alfredo pasta topped with grilled chicken' onChange={(e) => (setRecipeDescription(e.target.value))}/>
             </section>
-            
+
             <SearchFood addedIngredients={addedIngredients} setAddedIngredients={setAddedIngredients}></SearchFood>
 
           <section className="recipe-steps">
@@ -132,8 +130,8 @@ export function CreateRecipePage(){
           <button type="submit" className={`${steps.length == 0 || recipeTitle.length == 0 ? "disabled-button" : "save-recipe"}`} id="save-recipe" disabled={steps.length == 0 || recipeTitle.length == 0} >Save</button>
         </form>
         </section>
-    
+
        </main>
      )
    }
-   
+

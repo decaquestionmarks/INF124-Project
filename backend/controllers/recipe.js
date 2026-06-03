@@ -139,6 +139,29 @@ const getRecipePreview = (recipeId) => {
     };
 };
 
+const toRecipePreview = (recipe) => ({
+    id: recipe.id,
+    name: recipe.name,
+    description: recipe.description,
+    image: Array.isArray(recipe.foods) && recipe.foods.length > 0
+        ? `https://example.com/images/${recipe.foods[0].name.toLowerCase().replace(/\s+/g, '-')}.jpg`
+        : null,
+});
+
+const getRecipesForOwner = (ownerId) => {
+    if (!ownerId) {
+        const error = new Error('Owner ID is required');
+        error.statusCode = 401;
+        throw error;
+    }
+
+    const results = mockRecipes
+        .filter((recipe) => recipe.ownerId === ownerId)
+        .map(toRecipePreview);
+
+    return { results, count: results.length };
+};
+
 /**
  * Get a full recipe by ID
  * @param {string} recipeId - The recipe ID
@@ -264,6 +287,7 @@ module.exports = {
     createRecipe,
     attachRecommendedRecipes,
     getRecipeRecommendations,
+    getRecipesForOwner,
     updateRecipe,
     deleteRecipe,
 };

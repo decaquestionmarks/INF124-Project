@@ -1,6 +1,6 @@
 ﻿const express = require('express');
 const router = express.Router();
-const { searchRecipes, getRecipePreview, getRecipeById, createRecipe, attachRecommendedRecipes, deleteRecipe, updateRecipe } = require('../controllers/recipe');
+const { searchRecipes, getRecipePreview, getRecipeById, createRecipe, attachRecommendedRecipes, deleteRecipe, updateRecipe, getRecipesForOwner } = require('../controllers/recipe');
 const { attachUser } = require('../controllers/user');
 const { requireAuth } = require('../services/auth');
 const Recipe = require('../../models/recipe');
@@ -48,6 +48,18 @@ router.get('/recommended', requireAuth, attachUser, attachRecommendedRecipes, (r
         count: req.recommendedRecipes.length,
         results: req.recommendedRecipes,
     });
+});
+
+/**
+ * GET /recipes/me
+ * Returns recipe previews created by the current user.
+ */
+router.get('/me', requireAuth, attachUser, (req, res) => {
+    try {
+        res.json(getRecipesForOwner(req.appUser.id));
+    } catch (error) {
+        res.status(error.statusCode || 400).json({ error: error.message });
+    }
 });
 
 /**
