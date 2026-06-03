@@ -109,9 +109,7 @@ export function FridgePage(){
         // getting items from users fridge
         const res = await authFetch('/users/me/fridge')
         const data = await res.json();
-        console.log("DATA.fridge: ", data.fridge)
         setFoodItems(Array.isArray(data?.fridge) ? data.fridge : []);
-        
     }
     fetchFridgeItems()
   }, [])

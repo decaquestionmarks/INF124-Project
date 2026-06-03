@@ -89,6 +89,17 @@
     width: 25%;
 }
 
+.save-bar button:disabled{
+    opacity: 0.6;
+}
+
+.save-bar button:disabled:hover{
+    border-color: #deb99b;
+    background: #fff7ef;
+    color: #7f5e44;
+    cursor: disabled;
+}
+
 .search-label{
     display: none;
 }
@@ -167,4 +178,9 @@
 
 .serving-size:focus{
     outline: 2px solid var(--main-orange-color);
+}
+
+.serving-size{
+    text-align: end
+
 }

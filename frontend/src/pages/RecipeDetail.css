@@ -161,3 +161,7 @@ h1{
         width: 100%;
     }
 }
+
+.recipe-detail-summary label{
+    color: black;
+}

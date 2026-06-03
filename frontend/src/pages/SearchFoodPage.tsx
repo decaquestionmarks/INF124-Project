@@ -17,111 +17,121 @@ const mockResults: FoodResult[] = [
   {
     name: "Chicken Breast",
     classification: "Meat",
-    measurementClassification: "g",
+    measurementClassification: "Mass",
     measurement: 165,
     macronutrients: {
       calories: 275,
       fat: 3.6,
-      protein: 51
+      protein: 51,
+      carbs: 2
     }
   },
   {
     name: "White Rice",
     classification: "Grains",
-    measurementClassification: "cup",
+    measurementClassification: "Mass",
     measurement: 1,
     macronutrients: {
       calories: 205,
       fat: 0.4,
-      protein: 4.3
+      protein: 4.3,
+      carbs: 45
     }
   },
   {
     name: "Banana",
     classification: "Fruit",
-    measurementClassification: "medium",
+    measurementClassification: "Mass",
     measurement: 1,
     macronutrients: {
       calories: 105,
       fat: 0.4,
-      protein: 1.3
+      protein: 1.3,
+      carbs: 27
     }
   },
   {
     name: "Egg (Boiled)",
     classification: "Protein",
-    measurementClassification: "large",
+    measurementClassification: "Mass",
     measurement: 1,
     macronutrients: {
       calories: 78,
       fat: 5.3,
-      protein: 6.3
+      protein: 6.3,
+      carbs: 0.6
     }
   },
   {
     name: "Greek Yogurt",
     classification: "Dairy",
-    measurementClassification: "g",
+    measurementClassification: "Mass",
     measurement: 150,
     macronutrients: {
       calories: 120,
       fat: 4,
-      protein: 15
+      protein: 15,
+      carbs: 5
     }
   },
   {
     name: "Peanut Butter",
     classification: "Fats",
-    measurementClassification: "tbsp",
+    measurementClassification: "Mass",
     measurement: 2,
     macronutrients: {
       calories: 190,
       fat: 16,
-      protein: 7
+      protein: 7,
+      carbs: 7
     }
   },
   {
     name: "Oatmeal",
-    classification: "Grains",
-    measurementClassification: "g",
+    classification: "Pantry",
+    measurementClassification: "Mass",
     measurement: 40,
     macronutrients: {
       calories: 150,
       fat: 3,
-      protein: 5
+      protein: 5,
+      carbs: 27
     }
   },
   {
     name: "Salmon",
     classification: "Meat",
-    measurementClassification: "g",
+    measurementClassification: "Mass",
     measurement: 100,
     macronutrients: {
       calories: 208,
       fat: 13,
-      protein: 20
+      protein: 20,
+      carbs: 0
     }
   },
   {
     name: "Avocado",
-    classification: "Fruit",
-    measurementClassification: "medium",
+    classification: "Produce",
+    measurementClassification: "Mass",
     measurement: 1,
     macronutrients: {
       calories: 240,
       fat: 22,
-      protein: 3
+      protein: 3,
+      carbs: 13
     }
   },
   {
     name: "Whole Wheat Bread",
-    classification: "Grains",
-    measurementClassification: "slice",
+    classification: "Bakery",
+    measurementClassification: "Mass",
     measurement: 1,
     macronutrients: {
       calories: 80,
       fat: 1,
-      protein: 4
+      protein: 4,
+      carbs: 14
     }
   }
 ];
@@ -139,10 +149,9 @@ type FoodResult = {
     calories: number,
     fat: number,
     protein: number,
+    carbs: number
   }
 }
-
-
 
 export function SearchFoodPage({linkBack}: SearchFoodProps){
   const [searchResults, setSearchResults] = useState<FoodResult[]>([])
@@ -153,8 +162,9 @@ export function SearchFoodPage({linkBack}: SearchFoodProps){
   const meal = params.get('meal');
   const date = params.get('date');
 
-  const [addedItem, setAddedItem] = useState("")
- const [userInput, setUserInput] = useState("")
+  const [addedItem, setAddedItem] = useState<FoodResult | null>(null)
+  const [userInput, setUserInput] = useState("")
+  const [servingSize, setServingSize] = useState("1")
 
 
 //  const handleSubmitSearch = async (e: React.FormEvent) => {
@@ -191,28 +201,29 @@ const handleSubmitSearch = async (e: React.FormEvent) => {
     if (linkBack === '/fridge'){
       try{
         // sending temp stuff until food routes done
+        // for reference name, classification, measurementClassification, measurement, macronutrients = {}
         const res = await authFetch('/users/me/fridge',
           {
           method: 'POST',
           headers: {'Content-type': 'application/json'},
           body: JSON.stringify({
-              name: addedItem,
-              classification: "Produce",
-              measurementClassification: "Mass",
-              measurement: "100",
+              name: addedItem?.name,
+              classification: addedItem?.classification,
+              measurementClassification: addedItem?.measurementClassification,
+              measurement: addedItem?.measurement,
               macronutrients: {
-                calories: 275,
-                fat: 3.6,
-                protein: 51
+                calories: addedItem?.macronutrients.calories,
+                fat: addedItem?.macronutrients.fat,
+                protein: addedItem?.macronutrients.protein,
+                carbs: addedItem?.macronutrients.carbs
               }
-
           })
           }
         )
         if (!res.ok){
           throw new Error("Failed to add food to fridge")
         }
-        toast.success(`Added ${addedItem} to fridge`)
+        toast.success(`Added ${addedItem?.name} to fridge`)
       }
       catch (error){
         console.error("Error adding food to fridge: ", error)
@@ -231,11 +242,12 @@ const handleSubmitSearch = async (e: React.FormEvent) => {
             name: addedItem,
             classification: "Produce",
             measurementClassification: "Mass",
-            measurement: "100",
+            measurement: addedItem?.measurement,
             macronutrients: {
-              calories: 275,
-              fat: 3.6,
-              protein: 51
+              calories: addedItem?.macronutrients.calories,
+              fat: addedItem?.macronutrients.fat,
+              protein: addedItem?.macronutrients.protein,
+              carbs: addedItem?.macronutrients.carbs
             }
             
         })
@@ -243,7 +255,7 @@ const handleSubmitSearch = async (e: React.FormEvent) => {
         if (!res.ok){
           throw new Error("Failed to log food to calorie tracker")
         }
-        toast.success(`Logged ${addedItem} to calorie tracker`)
+        toast.success(`Logged ${addedItem?.name} to calorie tracker`)
       }
       catch (error) {
         console.error("Error logging food to calorie tracker: ", error)
@@ -285,6 +297,12 @@ const handleSubmitSearch = async (e: React.FormEvent) => {
 
     return () => legacyMediaQuery.removeListener?.(syncSidebarState)
   }, [])
+
+  const ratio = addedItem ? (Number(servingSize) / addedItem.measurement) : 1
+  const calories = addedItem ? addedItem.macronutrients.calories * ratio : 0
+  const protein = addedItem ? addedItem.macronutrients.protein * ratio : 0
+  const fat = addedItem ? addedItem.macronutrients.fat * ratio : 0
+  const carbs = addedItem ? addedItem.macronutrients.carbs * ratio : 0
   
    return (
        <main
@@ -314,8 +332,8 @@ const handleSubmitSearch = async (e: React.FormEvent) => {
               </section>
               <section className="search-results">
                 {searchResults.map((result) => (                  
-                  <div onClick={() => setAddedItem(result.name)} key={result.name} className="search-item">
-                    <div className={`search-item-heading ${addedItem === result.name ? "added" : ""}`}>
+                  <div onClick={() => setAddedItem(result)} key={result.name} className="search-item">
+                    <div className={`search-item-heading ${addedItem?.name === result.name ? "added" : ""}`}>
                       
                       <span>{result.name}</span>
                     <div className="amount-and-unit">
@@ -328,9 +346,9 @@ const handleSubmitSearch = async (e: React.FormEvent) => {
                       id="add-item-button"
                       onClick={(e) => {
                         e.stopPropagation(); 
-                        setAddedItem(result.name);
+                        setAddedItem(result);
                         }}>
-                      {(addedItem === result.name) ?
+                      {(addedItem?.name === result.name) ?
                         (<RemoveCircleIcon aria-hidden="true" fontSize='medium'/>) : 
                         (<AddCircleIcon aria-hidden="true" fontSize='medium'/>)
                       }
@@ -342,23 +360,23 @@ const handleSubmitSearch = async (e: React.FormEvent) => {
                   </div>
                 ))}
               </section>
-            {addedItem !== "" && 
+            {addedItem !== null && 
             <section className="macros-and-measurement-amount">
-                  <span className="added-item-name">{addedItem}</span>
+                  <span className="added-item-name">{addedItem?.name}</span>
                     <div className="macros">
-                      <span>Calories: ?</span>
-                      <span>Carbs: ?</span>
-                      <span>Fat: ?</span>
-                      <span>Protein: ?</span>
+                      <span>Calories: {calories.toFixed(1)}</span>
+                      <span>Carbs: {carbs.toFixed(1)}</span>
+                      <span>Fat: {fat.toFixed(1)}</span>
+                      <span>Protein: {protein.toFixed(1)}</span>
                       
                     </div>
                     <div className="serving-inputs">
                       <label htmlFor="serving-size">Serving Size:</label>
-                      <input className="serving-size" name="serving-size" id="serving-size" type="text" />
+                      <input className="serving-size" name="serving-size" id="serving-size" type="number" value={servingSize} min="1" onChange={(e) => {const value = e.target.value; if (Number(value) >= 1 || value === "" ){ setServingSize(e.target.value)}}}/>
                       <span>unit</span>
                     </div>
                   <div className="save-bar">
-                    <button onClick={handleLogFood} className="save-button">Log</button>
+                    <button onClick={handleLogFood} className="save-button" disabled={servingSize === ""}>Log</button>
                   </div>
 
                 </section>}

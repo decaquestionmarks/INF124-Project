@@ -127,14 +127,7 @@ export function RecipeDetail(){
   })
 
 
-
-
-  // const stepsText = steps.join("\n");
   const [stepsDraft, setStepsDraft] = useState("");
-
-  // const [addedIngredients, setAddedIngredients] = useState<Ingredient[]>([])
-
-//  starting to connect to backend
   useEffect(() => {
       async function fetchData(){
         if (!id) return;
@@ -241,7 +234,7 @@ export function RecipeDetail(){
                 <h2 id="recipe-detail-ingredients-heading">Ingredients</h2>
                 <div className="ingredients-text">
 
-                  {ingredients.map((f, i) => (
+                  {ingredients.length == 0 ? <p>No ingredients added</p> : ingredients.map((f, i) => (
                     // TODO: remove conditional in production
                     <div key={i} className="ingredient-item">
                       <div className="tracked-ingredient-item">

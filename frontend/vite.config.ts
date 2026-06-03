@@ -12,6 +12,7 @@ export default defineConfig({
       enabled: true
     },
     workbox: {
+      disableDevLogs: true,
       navigateFallback: '/index.html',
       runtimeCaching: [{
         urlPattern: ({ url }) => url.pathname.startsWith('/recipes'),
