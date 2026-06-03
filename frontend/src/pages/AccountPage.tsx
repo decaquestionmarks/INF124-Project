@@ -30,11 +30,6 @@ export function AccountPage(){
     setOriginalFormValues(formValues)
     setEditingGoals(false)
     // updating username/email?
-    // const res = authFetch('/users/me/account', {
-    //   method: "PUT",
-    //   headers: {"Content-type": "application/json"},
-      
-    // })
     }
 
   const formSchema = [
@@ -76,44 +71,28 @@ export function AccountPage(){
     const [editingGoals, setEditingGoals] = useState(false);
     const [editingFamily, setEditingFamily] = useState(false);
 
-
+  // TODO: connect these to backend
     useEffect(() => {
     // getting the users account details
         const fetchAccount = async () => {
-          try{
-            const res = await authFetch('/users/me/account', {
-              method: "GET",
-              headers: {'Content-type': "application/json"}
-            });
-            
-            const data = await res.json()
-            console.log("User Account Info", data)
-
-            // setFormValues({
-            //   weightStarting: data.weightStarting ?? "",
-            //   weightCurrent: data.weightCurrent ?? "",
-            //   weightGoal: data.weightGoal ?? "",
-            //   age: data.age ?? "",
-            //   activityLevel: data.activityLevel ?? "",
-            //   "height-ft": data.heightFt ?? "",
-            //   "height-in": data.heightIn ?? "",
-            // });
-
-            //   setOriginalFormValues({
-            //     weightStarting: data.weightStarting ?? "",
-            //     weightCurrent: data.weightCurrent ?? "",
-            //     weightGoal: data.weightGoal ?? "",
-            //     age: data.age ?? "",
-            //     activityLevel: data.activityLevel ?? "",
-            //     "height-ft": data.heightFt ?? "",
-            //     "height-in": data.heightIn ?? "",
-              // });
-          } catch (err){
-            console.error("Failed loading account", err)
-          }
+         // fetch account data
         }
         fetchAccount()
   }, [])
+
+
+  useEffect(() => {
+    // getting the users family details
+        const fetchFamily = async () => {
+          // fetch family data from backend
+        }
+        fetchFamily()
+  }, [])
+
+  // TODO: connect these to backend
+  const handleInviteUser = () => {}
+
+  const handleRemoveUser = (username: string) => {}
 
      const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
         if (typeof window === 'undefined') {
@@ -271,6 +250,7 @@ export function AccountPage(){
                     </div>
                 </div>
             </section>
+            
             
         </section>   
       

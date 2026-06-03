@@ -92,12 +92,9 @@ export function CalorieTrackingPage(){
         throw new Error("Failed to delete food item")
       }
       const data = await res.json()
-      
-      
       const progress = data.progress
       const foods = data.foods
       setGoalProgress({calories: {goal: progress.calories.goal, remaining: progress.calories.remaining, total: progress.calories.total}, carbs: progress.carbs.total, fats: progress.fats.total, protein: progress.protein.total})
-      console.log("GOAL PROGRESS: ", goalProgress)
       setFoods(Array.isArray(foods) ? foods : [])
       toast.success(`Deleted ${name}`)
     }
@@ -131,17 +128,32 @@ export function CalorieTrackingPage(){
     return () => legacyMediaQuery.removeListener?.(syncSidebarState)
   }, [])
 
-    const saveEdit = (id: string) => {
+    const saveEdit = async () => {
     try{
-      setFoods(prev => prev.map(
-      item => item.id === id || item.name === id ? {...item, measurement: Number(editAmount)} : item));
-      // MAKE API CALL TO UPDATE ITEM
+      // TODO: connect to backend for updating single food item
+      // const updatedFoods = foods.map((f) => {
+      //   if (f.name === editingName){
+      //     return {...f, amount: editAmount}
+      //   }
+      //   return f;
+      // })
+      // const res = await authFetch(`/users/me/goal/${date.toISOString().slice(0,10)}`, { // editing single food item requires sending entire food list for the day, so endpoint is same as adding food item
+      //   method: 'PUT',
+      //   headers: {
+      //     'Content-Type': 'application/json'
+      //   },
+      //   body: JSON.stringify({
+      //     foods: updatedFoods
+      //   })
+      // })
+      // const data = await res.json()
 
       // if (!res.ok){
       //   throw new Error("Failed to update food item")
       // }
       setEditingName("");
       setEditAmount("");
+      // setFoods(Array.isArray(data.foods) ? data.foods : [])
       toast.success("Updated food item")
     }
     catch (error) {
@@ -291,10 +303,10 @@ export function CalorieTrackingPage(){
                       {f.name} - {editingName === f.name ? (
                       <input autoFocus value={editAmount} 
                         onChange={(e) => setEditAmount(e.target.value)}
-                        onKeyDown={(e) => {if (e.key === "Enter") {e.preventDefault(); saveEdit(editingName)}}}
+                        onKeyDown={(e) => {if (e.key === "Enter") {e.preventDefault(); saveEdit()}}}
                         onBlur={() => {setEditAmount(""); setEditingName("")}}
                         />) :
-                      (<div>{f.macronutrients.calories}</div>)} unit
+                      (<div>{f.macronutrients?.calories}</div>)}
                     </div>
                     <div className="right-item">
                       <button onClick={() => handleSelectFood(f.name)} className="details">Details</button>

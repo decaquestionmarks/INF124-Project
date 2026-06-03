@@ -200,8 +200,7 @@ const handleSubmitSearch = async (e: React.FormEvent) => {
  const handleLogFood = async () => {
     if (linkBack === '/fridge'){
       try{
-        // sending temp stuff until food routes done
-        // for reference name, classification, measurementClassification, measurement, macronutrients = {}
+      
         const res = await authFetch('/users/me/fridge',
           {
           method: 'POST',
@@ -223,6 +222,7 @@ const handleSubmitSearch = async (e: React.FormEvent) => {
         if (!res.ok){
           throw new Error("Failed to add food to fridge")
         }
+
         toast.success(`Added ${addedItem?.name} to fridge`)
       }
       catch (error){
@@ -231,7 +231,6 @@ const handleSubmitSearch = async (e: React.FormEvent) => {
       }
   }
   else if (linkBack == '/calorie-tracking') { // adding food to calorie tracker
-    // sending temp stuff until food route done
     try{
       const goalDate = date ?? new Date().toISOString().slice(0, 10)
       const res = await authFetch(`/users/me/goal/${goalDate}/foods`,
@@ -239,7 +238,7 @@ const handleSubmitSearch = async (e: React.FormEvent) => {
         method: 'POST',
         headers: {'Content-type': 'application/json'},
         body: JSON.stringify({
-            name: addedItem,
+            name: addedItem?.name,
             classification: "Produce",
             measurementClassification: "Mass",
             measurement: addedItem?.measurement,
