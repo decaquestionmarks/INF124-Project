@@ -25,8 +25,14 @@ class User {
 		if (!(food instanceof Food)) {
 			throw new TypeError('food must be a Food object');
 		}
-
-		this.inventory.push(food);
+		// combines duplicate food item amounts
+		const existingFood = this.inventory.find((f) => f.name === food.name.trim());
+		if (existingFood){
+			existingFood.measurement = Number((Number(existingFood.measurement) + Number(food.measurement)).toFixed(1))
+		}
+		else{
+			this.inventory.push(food);
+		}
 	}
 
 	removeFood(name) {

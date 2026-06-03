@@ -209,7 +209,7 @@ const handleSubmitSearch = async (e: React.FormEvent) => {
               name: addedItem?.name,
               classification: addedItem?.classification,
               measurementClassification: addedItem?.measurementClassification,
-              measurement: addedItem?.measurement,
+              measurement: servingSize,
               macronutrients: {
                 calories: addedItem?.macronutrients.calories,
                 fat: addedItem?.macronutrients.fat,
@@ -239,14 +239,14 @@ const handleSubmitSearch = async (e: React.FormEvent) => {
         headers: {'Content-type': 'application/json'},
         body: JSON.stringify({
             name: addedItem?.name,
-            classification: "Produce",
+            // classification: "Produce",
             measurementClassification: "Mass",
-            measurement: addedItem?.measurement,
+            measurement: Number(servingSize),
             macronutrients: {
-              calories: addedItem?.macronutrients.calories,
-              fat: addedItem?.macronutrients.fat,
-              protein: addedItem?.macronutrients.protein,
-              carbs: addedItem?.macronutrients.carbs
+              calories: calories,
+              // fat: addedItem?.macronutrients.fat,
+              protein: protein,
+              // carbs: addedItem?.macronutrients.carbs
             }
             
         })
@@ -298,10 +298,10 @@ const handleSubmitSearch = async (e: React.FormEvent) => {
   }, [])
 
   const ratio = addedItem ? (Number(servingSize) / addedItem.measurement) : 1
-  const calories = addedItem ? addedItem.macronutrients.calories * ratio : 0
-  const protein = addedItem ? addedItem.macronutrients.protein * ratio : 0
-  const fat = addedItem ? addedItem.macronutrients.fat * ratio : 0
-  const carbs = addedItem ? addedItem.macronutrients.carbs * ratio : 0
+  const calories = addedItem ? Number(((addedItem.macronutrients.calories) * ratio).toFixed(1)) : 0
+  const protein = addedItem ? Number((addedItem.macronutrients.protein * ratio).toFixed(1)) : 0
+  const fat = addedItem ? Number((addedItem.macronutrients.fat * ratio).toFixed(1)) : 0
+  const carbs = addedItem ? Number((addedItem.macronutrients.carbs * ratio).toFixed(1)) : 0
   
    return (
        <main
@@ -363,10 +363,10 @@ const handleSubmitSearch = async (e: React.FormEvent) => {
             <section className="macros-and-measurement-amount">
                   <span className="added-item-name">{addedItem?.name}</span>
                     <div className="macros">
-                      <span>Calories: {calories.toFixed(1)}</span>
-                      <span>Carbs: {carbs.toFixed(1)}</span>
-                      <span>Fat: {fat.toFixed(1)}</span>
-                      <span>Protein: {protein.toFixed(1)}</span>
+                      <span>Calories: {calories}</span>
+                      <span>Carbs: {carbs}</span>
+                      <span>Fat: {fat}</span>
+                      <span>Protein: {protein}</span>
                       
                     </div>
                     <div className="serving-inputs">

@@ -22,15 +22,14 @@ type MacroProgress = {
 };
 
 type TrackedFood = {
-  id?: string;
   name: string;
-  amount?: number | string;
-  measurement?: number;
+  amount: number | string;
+  measurement: number;
+  measurementClassification: string;
   macronutrients: {
     calories?: number;
     carbs?: number;
     fat?: number;
-    fats?: number;
     protein?: number;
   };
 };
@@ -173,6 +172,7 @@ export function CalorieTrackingPage(){
         }
 
         const data = await res.json()
+        console.log("GETTING GOAL FOR DATE: ", data)
         setGoalProgress({
             calories: {
               goal: data.progress.calories.goal ? data.progress.calories.goal : 0,
@@ -262,12 +262,17 @@ export function CalorieTrackingPage(){
               <span>{goalProgress.calories.goal}</span>
             </div>
              <div className="stat-item">
+              <span>Total</span><br />
+              <span>{goalProgress.calories.total}</span>
+            </div>
+             <div className="stat-item">
               <span>Remaining</span><br />
               <span>{goalProgress.calories.remaining}</span>
             </div>
+            
           
           </div>
-          <div className="food-stats-row">
+          <div className="food-stats-bottom-row">
              <div className="stat-item">
               <span>Carbs</span><br />
               <span>{goalProgress.carbs}</span>
@@ -282,7 +287,7 @@ export function CalorieTrackingPage(){
             </div>
 
           </div>
-
+              </section>
         <section className="meal-categories">
           
             <div  className="meal-cat">
@@ -301,13 +306,20 @@ export function CalorieTrackingPage(){
 	                      onClick={() => {setEditingName(f.name); setEditAmount(String(f.amount ?? f.measurement ?? ''))}}>
                         
                       {f.name} - {editingName === f.name ? (
-                      <input autoFocus value={editAmount} 
-                        onChange={(e) => setEditAmount(e.target.value)}
-                        onKeyDown={(e) => {if (e.key === "Enter") {e.preventDefault(); saveEdit()}}}
-                        onBlur={() => {setEditAmount(""); setEditingName("")}}
-                        />) :
-                      (<div>{f.macronutrients?.calories}</div>)}
+                        <div className="calorie-tracking-edit-input">
+                        <input autoFocus value={editAmount} 
+                          onChange={(e) => setEditAmount(e.target.value)}
+                          onKeyDown={(e) => {if (e.key === "Enter") {e.preventDefault(); saveEdit()}}}
+                          onBlur={() => {setEditAmount(""); setEditingName("")}}
+                          /> 
+                        <p> {f.measurementClassification}</p>
+                        </div>)
+                        
+                        :
+                        // TODO: CHANGE THIS TO AMOUNT
+                      (<div>{f.measurement} {f.measurementClassification}</div>)}
                     </div>
+                    {/* (<div>{f.macronutrients?.calories} calories</div>) */}
                     <div className="right-item">
                       <button onClick={() => handleSelectFood(f.name)} className="details">Details</button>
                       <button className="delete-food-item" onClick={() => handleDeleteFood(f.name)}><RemoveCircleIcon className="delete-icon"></RemoveCircleIcon></button>
@@ -318,7 +330,7 @@ export function CalorieTrackingPage(){
             </div>
         </section>
         </section>
-        </section>
+   
        </main>
      )
    }

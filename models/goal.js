@@ -41,6 +41,7 @@ class Goal {
 	}
 
 	addFood(food) {
+		// combines amounts if duplicate foods
 		if (food === null || typeof food !== 'object') {
 			throw new TypeError('food must be an object');
 		}
@@ -49,7 +50,16 @@ class Goal {
 			throw new TypeError('food.macronutrients must be an object');
 		}
 
-		this.foods.push(food);
+		// combine duplicate food amounts and macros
+		const existingFood = (this.foods.find((f) => f.name===food.name));
+		if (existingFood){
+			existingFood.measurement = Number((Number(existingFood.measurement) + Number(food.measurement)).toFixed(1))
+			existingFood.macronutrients.calories = Number((Number(existingFood.macronutrients.calories) + Number(food.macronutrients.calories)).toFixed(1))
+			existingFood.macronutrients.protein = Number((Number(existingFood.macronutrients.protein) + Number(food.macronutrients.protein)).toFixed(1))
+		}
+		else{
+			this.foods.push(food);
+		}
 	}
 
 	addFoods(foods) {

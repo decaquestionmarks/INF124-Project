@@ -42,16 +42,24 @@
 
 .food-stats{
     display: flex;
+    /* justify-content: center; */
+    align-items: center;
     flex-direction: column;
     gap: 1rem;
     color: #62574c;
 }
 
 .food-stats-row{
+    display: grid;
+    width: 70%;
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.food-stats-bottom-row{
     display: flex;
-    justify-content: center;
+    width: 50%;
     align-items: center;
-    gap: 5rem;
+    justify-content: space-around;
 }
 
 .stat-item{
@@ -195,4 +203,10 @@
 
 .no-foods-tracked{
     color: lightgray;
+}
+
+.calorie-tracking-edit-input{
+    display: flex;
+    gap: .5rem;
+    align-items: center;
 }

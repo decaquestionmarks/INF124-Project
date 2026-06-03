@@ -26,8 +26,8 @@ const ensureUserExists = (uid, decodedToken = {}) => {
 	const today = new Date().toISOString().slice(0, 10);
 	const goal = new Goal({ calories: 2000, protein: 50 }, []);
 	
-	goal.addFood({ name: 'Greek Yogurt', macronutrients: { calories: 120, protein: 12 } });
-	goal.addFood({ name: 'Granola Bar', macronutrients: { calories: 180, protein: 3 } });
+	goal.addFood({ name: 'Greek Yogurt', measurement: 100.0, measurementClassification: 'Mass', macronutrients: { calories: 120, protein: 12 } });
+	goal.addFood({ name: 'Granola Bar',  measurement: 100.0, measurementClassification: 'Mass',macronutrients: { calories: 180, protein: 3 } });
 
 	user.setGoal(today, goal);
 
@@ -37,8 +37,8 @@ const ensureUserExists = (uid, decodedToken = {}) => {
 
 // Middleware: attach application user object (from mock store) to request
 const attachUser = (req, res, next) => {
-	const decoded = req.user;
-	const uid = decoded?.uid || decoded?.sub || decoded?.user_id;
+	const decoded = req.user || {};
+	const uid = decoded.uid || decoded.sub || decoded.user_id || String(decoded.email || 'anonymous');
 
 	if (!uid) return res.status(401).json({ error: 'Unauthorized' });
 
@@ -112,7 +112,7 @@ const addGoalFood = (req, res) => {
 		if (!food) return res.status(400).json({ error: 'Food payload is required' });
 
 		goal.addFood(food);
-		return res.status(201).json({ date, foods: goal.getFoods() });
+		return res.status(201).json({ date, foods: goal.getFoods()});
 	} catch (err) {
 		return res.status(400).json({ error: err.message });
 	}
@@ -156,7 +156,7 @@ const updateGoal = (req, res) => {
 		}
 
 		req.appUser.setGoal(date, nextGoal);
-		return res.json({ date, goal: nextGoal.goals || nextGoal, progress: nextGoal.calculateProgress() });
+		return res.json({ date, goal: nextGoal.goals || nextGoal });
 	} catch (err) {
 		return res.status(400).json({ error: err.message });
 	}
@@ -180,7 +180,6 @@ const deleteGoalFood = (req, res) => {
 		if (!removed) {
 			return res.status(404).json({ error: 'Food not found in goal' });
 		}
-
 		return res.json({ date, foods: goal.foods, progress: goal.calculateProgress()});
 	} catch (err) {
 		return res.status(400).json({ error: err.message });
