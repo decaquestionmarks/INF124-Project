@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react'
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import { Header } from '../components/Header.tsx';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
-import { authFetch } from '../api.ts'
 
 const initialData = {
   weightStarting: '',
@@ -90,9 +89,13 @@ export function AccountPage(){
   }, [])
 
   // TODO: connect these to backend
-  const handleInviteUser = () => {}
+  const handleInviteUser = () => {
+    setEditingFamily(false)
+  }
 
-  const handleRemoveUser = (username: string) => {}
+  const handleRemoveUser = (_username: string) => {
+    setEditingFamily(false)
+  }
 
      const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
         if (typeof window === 'undefined') {
@@ -235,13 +238,13 @@ export function AccountPage(){
                               <AccountCircleIcon aria-hidden="true" className="pfp-icon" fontSize="large"/>
                               <span>{data.username}</span>
                           </div>
-                          <button aria-label={`Remove ${data.username}`} className={`remove-user ${editingFamily ? 'edit' : ''}`}>{editingFamily ? 'Remove User' : ''}</button>
+                          <button aria-label={`Remove ${data.username}`} className={`remove-user ${editingFamily ? 'edit' : ''}`} onClick={() => handleRemoveUser(data.username)}>{editingFamily ? 'Remove User' : ''}</button>
                         </div>
                        
                     ))}
                     <div className={`add-family-member ${editingFamily ? 'hidden' : ''}`}>
                       <input id="user-email" type="text" placeholder="someone123@gmail.com"/>
-                       <button aria-label="Add family member" className="add-user">
+                       <button aria-label="Add family member" className="add-user" onClick={handleInviteUser}>
                         Invite User
                         <AddCircleIcon className="plus-icon" fontSize="medium"/>
                             
