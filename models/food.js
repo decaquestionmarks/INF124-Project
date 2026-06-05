@@ -1,45 +1,69 @@
+const mongoose = require('../backend/node_modules/mongoose');
 const {
     foodclassifcations: foodClassifications,
-    measurementclassifications: measurementClassifications
-} = require("./modelhelpers");
+    measurementclassifications: measurementClassifications,
+} = require('./modelhelpers');
 
-class Food {
-    constructor(name, classification, measurementClassification, measurement, macronutrients = {}) {
-        if (typeof name !== "string" || !name.trim()) {
-            throw new TypeError("name must be a non-empty string");
-        }
+const macronutrientSchema = new mongoose.Schema(
+    {
+        calories: { type: Number, default: 0 },
+        protein: { type: Number, default: 0 },
+        carbs: { type: Number, default: 0 },
+        fat: { type: Number, default: 0 },
+        fiber: { type: Number, default: 0 },
+        sugar: { type: Number, default: 0 },
+        calcium: { type: Number, default: 0 },
+        iron: { type: Number, default: 0 },
+        potassium: { type: Number, default: 0 },
+        sodium: { type: Number, default: 0 },
+    },
+    { _id: false }
+);
 
-        if (typeof classification !== "string" || !classification.trim()) {
-            throw new TypeError("classification must be a non-empty string");
-        }
+const foodSchema = new mongoose.Schema(
+    {
+        name: { type: String, required: true, trim: true },
+        classification: {
+            type: String,
+            required: true,
+            trim: true,
+            enum: foodClassifications,
+        },
+        measurementClassification: {
+            type: String,
+            required: true,
+            trim: true,
+            enum: measurementClassifications,
+        },
+        measurement: { type: Number, required: true },
+        macronutrients: { type: macronutrientSchema, default: () => ({}) },
+    },
+    { timestamps: true }
+);
 
-        const normalizedClassification = classification.trim();
-        if (!foodClassifications.includes(normalizedClassification)) {
-            throw new TypeError(`classification must be one of: ${foodClassifications.join(", ")}`);
-        }
+foodSchema.statics.normalizeName = (value) => (typeof value === 'string' ? value.trim().toLowerCase() : '');
 
-        if (typeof measurementClassification !== "string" || !measurementClassification.trim()) {
-            throw new TypeError("measurementClassification must be a non-empty string");
-        }
+foodSchema.methods.toFoodObject = function toFoodObject() {
+    return {
+        id: this._id.toString(),
+        name: this.name,
+        classification: this.classification,
+        measurementClassification: this.measurementClassification,
+        measurement: this.measurement,
+        macronutrients: this.macronutrients ? { ...this.macronutrients } : {},
+    };
+};
 
-        const normalizedMeasurementClassification = measurementClassification.trim();
-        if (!measurementClassifications.includes(normalizedMeasurementClassification)) {
-            throw new TypeError(`measurementClassification must be one of: ${measurementClassifications.join(", ")}`);
-        }
+foodSchema.statics.fromInput = function fromInput(input = {}) {
+    return new this({
+        name: input.name,
+        classification: input.classification,
+        measurementClassification: input.measurementClassification,
+        measurement: Number(input.measurement),
+        macronutrients: input.macronutrients || {},
+    });
+};
 
-        if (typeof measurement !== "number" || !Number.isFinite(measurement)) {
-            throw new TypeError("measurement must be a finite number");
-        }
-
-        if (macronutrients === null || typeof macronutrients !== "object" || Array.isArray(macronutrients)) {
-            throw new TypeError("macronutrients must be an object");
-        }
-        this.name = name;
-        this.classification = normalizedClassification;
-        this.measurementClassification = normalizedMeasurementClassification;
-        this.measurement = measurement;
-        this.macronutrients = macronutrients;
-    }
-}
+const Food = mongoose.models.Food || mongoose.model('Food', foodSchema);
 
 module.exports = Food;
