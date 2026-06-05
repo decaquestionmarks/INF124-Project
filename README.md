@@ -1,3 +1,6 @@
+## **C4 Diagrams, Wireframes, and Use Cases:**
+https://www.figma.com/design/hJ7MhmfuWZqQtOxp8rggw1/inf-124-ui?node-id=0-1&t=XNAMsZyE89Rxtz0n-1
+
 # Nutrition Tracker
 
 Nutrition Tracker is a family-centered nutrition and meal management application concept being developed for INF 124. The project combines food logging, calorie and macro tracking, shared household organization, recipe discovery, and personalized recommendations into a single experience. Instead of making users jump between separate apps for nutrition, groceries, recipes, and family coordination, this project aims to bring those workflows together in one place.
