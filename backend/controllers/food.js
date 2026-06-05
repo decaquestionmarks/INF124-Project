@@ -105,7 +105,7 @@ const ensureSeeded = async () => {
 const getAllFoods = async () => {
     if (isMongoReady()) {
         await ensureSeeded();
-        const foods = await FoodModel.find({}).sort({ name: 1 });
+        const foods = await FoodModel.find({}).lean().sort({ name: 1 });
         return foods.map(toFoodObject);
     }
 
@@ -131,7 +131,7 @@ const searchFoods = async (query = '') => {
                 { classification: { $regex: normalizedQuery, $options: 'i' } },
                 { measurementClassification: { $regex: normalizedQuery, $options: 'i' } },
             ],
-        }).sort({ name: 1 });
+        }).lean().sort({ name: 1 });
 
         return foods.map(toFoodObject);
     }
@@ -169,7 +169,7 @@ const getFoodByIdentifier = async (identifier) => {
                 { name: new RegExp(`^${normalizedIdentifier}$`, 'i') },
                 { _id: mongoose.isValidObjectId(normalizedIdentifier) ? normalizedIdentifier : null },
             ],
-        });
+        }).lean();
 
         if (food) {
             return toFoodObject(food);

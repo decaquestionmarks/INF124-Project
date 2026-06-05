@@ -29,7 +29,7 @@ const getRecipeRecommendations = (fridgeItems = []) => {
             .filter(Boolean)
     );
 
-    return RecipeModel.find({}).then((recipes) => recipes.filter((recipe) => {
+    return RecipeModel.find({}).lean().then((recipes) => recipes.filter((recipe) => {
         if (!Array.isArray(recipe.foods) || recipe.foods.length === 0) {
             return false;
         }
@@ -61,7 +61,7 @@ const searchRecipes = (query) => {
             { name: { $regex: normalizedQuery, $options: 'i' } },
             { description: { $regex: normalizedQuery, $options: 'i' } },
         ],
-    }).then((results) => ({
+    }).lean().then((results) => ({
         query: normalizedQuery,
         results: results.map((recipe) => recipe.toObject()),
         count: results.length,
@@ -75,7 +75,7 @@ const searchRecipes = (query) => {
  * @throws {Error} - If recipe not found
  */
 const getRecipePreview = (recipeId) => {
-    return RecipeModel.findById(recipeId).then((recipe) => {
+    return RecipeModel.findById(recipeId).lean().then((recipe) => {
         if (!recipe) {
             throw new Error('Recipe not found');
         }
@@ -104,7 +104,7 @@ const getRecipesForOwner = (ownerId) => {
         throw error;
     }
 
-    return RecipeModel.find({ ownerId })
+    return RecipeModel.find({ ownerId }).lean()
         .then((results) => ({ results: results.map(toRecipePreview), count: results.length }));
 };
 
@@ -115,12 +115,12 @@ const getRecipesForOwner = (ownerId) => {
  * @throws {Error} - If recipe not found
  */
 const getRecipeById = (recipeId) => {
-    return RecipeModel.findById(recipeId).then((recipe) => {
+    return RecipeModel.findById(recipeId).lean().then((recipe) => {
         if (!recipe) {
             throw new Error('Recipe not found');
         }
 
-        return recipe.toObject();
+        return recipe;
     });
 };
 
