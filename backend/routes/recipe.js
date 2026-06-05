@@ -10,7 +10,7 @@ const Recipe = require('../../models/recipe');
  * Creates a recipe from the JSON request body.
  */
 router.post('/', requireAuth, attachUser, (req, res) => {
-    try {
+    (async () => {
         const recipe = new Recipe(
             req.body.name,
             req.body.description,
@@ -18,11 +18,11 @@ router.post('/', requireAuth, attachUser, (req, res) => {
             req.body.steps
         );
 
-        const createdRecipe = createRecipe(recipe, req.appUser.id);
+        const createdRecipe = await createRecipe(recipe, req.appUser.id);
         res.status(201).json(createdRecipe);
-    } catch (error) {
+    })().catch((error) => {
         res.status(400).json({ error: error.message });
-    }
+    });
 });
 
 /**
@@ -30,13 +30,13 @@ router.post('/', requireAuth, attachUser, (req, res) => {
  * Returns recipes matching the query by name or description.
  */
 router.get('/search', (req, res) => {
-    try {
+    (async () => {
         const query = req.query.query;
-        const result = searchRecipes(query);
+        const result = await searchRecipes(query);
         res.json(result);
-    } catch (error) {
+    })().catch((error) => {
         res.status(400).json({ error: error.message });
-    }
+    });
 });
 
 /**
@@ -55,11 +55,11 @@ router.get('/recommended', requireAuth, attachUser, attachRecommendedRecipes, (r
  * Returns recipe previews created by the current user.
  */
 router.get('/me', requireAuth, attachUser, (req, res) => {
-    try {
-        res.json(getRecipesForOwner(req.appUser.id));
-    } catch (error) {
+    (async () => {
+        res.json(await getRecipesForOwner(req.appUser.id));
+    })().catch((error) => {
         res.status(error.statusCode || 400).json({ error: error.message });
-    }
+    });
 });
 
 /**
@@ -67,13 +67,13 @@ router.get('/me', requireAuth, attachUser, (req, res) => {
  * Returns lightweight preview data for a recipe card/list view.
  */
 router.get('/:id/preview', (req, res) => {
-    try {
+    (async () => {
         const recipeId = req.params.id;
-        const preview = getRecipePreview(recipeId);
+        const preview = await getRecipePreview(recipeId);
         res.json(preview);
-    } catch (error) {
+    })().catch((error) => {
         res.status(404).json({ error: error.message });
-    }
+    });
 });
 
 /**
@@ -84,17 +84,13 @@ router.get('/:id/preview', (req, res) => {
  * @returns {object} The recipe object or 404 error
  */
 router.get('/:id', (req, res) => {
-    try {
+    (async () => {
         const recipeId = req.params.id;
-
-        // TODO: Validate the recipeId format (e.g., check if it''s a valid MongoDB ObjectId)
-
-        const recipe = getRecipeById(recipeId);
+        const recipe = await getRecipeById(recipeId);
         res.json(recipe);
-
-    } catch (error) {
+    })().catch((error) => {
         res.status(404).json({ error: error.message });
-    }
+    });
 });
 
 /**
@@ -102,13 +98,13 @@ router.get('/:id', (req, res) => {
  * Updates a recipe by ID with new data (name, description, foods, steps).
  */
 router.put('/:id', requireAuth, attachUser, (req, res) => {
-    try {
+    (async () => {
         const recipeId = req.params.id;
-        const updated = updateRecipe(recipeId, req.body, req.appUser.id);
+        const updated = await updateRecipe(recipeId, req.body, req.appUser.id);
         res.json(updated);
-    } catch (error) {
+    })().catch((error) => {
         res.status(error.statusCode || 404).json({ error: error.message });
-    }
+    });
 });
 
 /**
@@ -116,13 +112,13 @@ router.put('/:id', requireAuth, attachUser, (req, res) => {
  * Deletes a recipe by ID.
  */
 router.delete('/:id', requireAuth, attachUser, (req, res) => {
-    try {
+    (async () => {
         const recipeId = req.params.id;
-        const deleted = deleteRecipe(recipeId, req.appUser.id);
+        const deleted = await deleteRecipe(recipeId, req.appUser.id);
         res.json({ message: 'Recipe deleted', deleted });
-    } catch (error) {
+    })().catch((error) => {
         res.status(error.statusCode || 404).json({ error: error.message });
-    }
+    });
 });
 
 module.exports = router;

@@ -1,74 +1,22 @@
 const Recipe = require('../../models/recipe');
-const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 
-// app.use(bodyParser.json());
+const recipeSchema = new mongoose.Schema({
+    name: { type: String, required: true },
+    description: { type: String, required: true },
+    foods: [{
+        name: { type: String, required: true },
+        classification: { type: String, required: true },
+        measurementClassification: { type: String, required: true },
+        measurement: { type: Number, required: true }
+    }],
+    steps: [{ type: String, required: true }],
+    ownerId: { type: String, required: true }
+}, {
+    timestamps: true
+});
 
-// mongoose.connect('mongodb://localhost:27017/recipes');
-
-const db = mongoose.connection;
-db.on('error', console.error.bind(console, 'MongoDB connection error:'));
-
-db.once('open', () => {console.log('Connected to MongoDB') });
-
-// const recipeSchema = new mongoose.Schema({
-//     name: { type: String, required: true },
-//     description: { type: String, required: true },
-//     foods: [{
-//         name: { type: String, required: true },
-//         classification: { type: String, required: true },
-//         measurementClassification: { type: String, required: true },
-//         measurement: { type: Number, required: true }
-//     }],
-//     steps: [{ type: String, required: true }]
-// });
-
-// const Recipe = mongoose.model('Recipe', recipeSchema);
-
-const mockRecipes = [
-    {
-        id: '1',
-        name: 'Mock Recipe',
-        description: 'This is a mock recipe for testing purposes.',
-        foods: [
-            {
-                name: 'Mock Food',
-                classification: 'Mock Classification',
-                measurementClassification: 'lbs',
-                measurement: 1.0
-            }
-        ],
-        steps: [
-            'Step 1: Preheat the oven to 350°F.',
-            'Step 2: Mix the ingredients together.',
-            'Step 3: Bake for 30 minutes.'
-        ]
-    },
-    {
-        id: '2',
-        name: 'Chicken Stir Fry',
-        description: 'Quick weeknight Mock stir fry with vegetables.',
-        foods: [
-            {
-                name: 'Chicken Breast',
-                classification: 'Protein',
-                measurementClassification: 'lbs',
-                measurement: 1.5
-            },
-            {
-                name: 'Broccoli',
-                classification: 'Vegetable',
-                measurementClassification: 'cups',
-                measurement: 2
-            }
-        ],
-        steps: [
-            'Step 1: Slice chicken and vegetables.',
-            'Step 2: Stir fry chicken until cooked.',
-            'Step 3: Add vegetables and sauce, then serve.'
-        ]
-    }
-];
+const RecipeModel = mongoose.models.Recipe || mongoose.model('Recipe', recipeSchema);
 
 const normalizeName = (value) => (typeof value === 'string' ? value.trim().toLowerCase() : '');
 
@@ -81,19 +29,19 @@ const getRecipeRecommendations = (fridgeItems = []) => {
             .filter(Boolean)
     );
 
-    return mockRecipes.filter((recipe) => {
+    return RecipeModel.find({}).then((recipes) => recipes.filter((recipe) => {
         if (!Array.isArray(recipe.foods) || recipe.foods.length === 0) {
             return false;
         }
 
         return recipe.foods.every((ingredient) => fridgeNames.has(getIngredientName(ingredient)));
     }).map((recipe) => ({
-        id: recipe.id,
+        id: recipe._id.toString(),
         name: recipe.name,
         description: recipe.description,
         foods: recipe.foods,
         steps: recipe.steps,
-    }));
+    })));
 };
 
 /**
@@ -107,15 +55,17 @@ const searchRecipes = (query) => {
         throw new Error('Query parameter "query" is required');
     }
 
-    //MOCK: replace with Database query in production
     const normalizedQuery = query.toString().trim().toLowerCase();
-    const results = mockRecipes.filter((recipe) => {
-        return recipe.name.toLowerCase().includes(normalizedQuery)
-            || recipe.description.toLowerCase().includes(normalizedQuery);
-    });
-    
-    
-    return { query: normalizedQuery, results, count: results.length };
+    return RecipeModel.find({
+        $or: [
+            { name: { $regex: normalizedQuery, $options: 'i' } },
+            { description: { $regex: normalizedQuery, $options: 'i' } },
+        ],
+    }).then((results) => ({
+        query: normalizedQuery,
+        results: results.map((recipe) => recipe.toObject()),
+        count: results.length,
+    }));
 };
 
 /**
@@ -125,22 +75,21 @@ const searchRecipes = (query) => {
  * @throws {Error} - If recipe not found
  */
 const getRecipePreview = (recipeId) => {
-    //MOCK: replace with Database query in production
-    const recipe = mockRecipes.find((item) => item.id === recipeId);
+    return RecipeModel.findById(recipeId).then((recipe) => {
+        if (!recipe) {
+            throw new Error('Recipe not found');
+        }
 
-    if (!recipe) {
-        throw new Error('Recipe not found');
-    }
-
-    return {
-        id: recipe.id,
-        name: recipe.name,
-        image: recipe.foods.length > 0 ? `https://example.com/images/${recipe.foods[0].name.toLowerCase().replace(/\s+/g, '-')}.jpg` : null,
-    };
+        return {
+            id: recipe._id.toString(),
+            name: recipe.name,
+            image: recipe.foods.length > 0 ? `https://example.com/images/${recipe.foods[0].name.toLowerCase().replace(/\s+/g, '-')}.jpg` : null,
+        };
+    });
 };
 
 const toRecipePreview = (recipe) => ({
-    id: recipe.id,
+    id: recipe._id ? recipe._id.toString() : recipe.id,
     name: recipe.name,
     description: recipe.description,
     image: Array.isArray(recipe.foods) && recipe.foods.length > 0
@@ -155,11 +104,8 @@ const getRecipesForOwner = (ownerId) => {
         throw error;
     }
 
-    const results = mockRecipes
-        .filter((recipe) => recipe.ownerId === ownerId)
-        .map(toRecipePreview);
-
-    return { results, count: results.length };
+    return RecipeModel.find({ ownerId })
+        .then((results) => ({ results: results.map(toRecipePreview), count: results.length }));
 };
 
 /**
@@ -169,23 +115,17 @@ const getRecipesForOwner = (ownerId) => {
  * @throws {Error} - If recipe not found
  */
 const getRecipeById = (recipeId) => {
-    //MOCK: replace with Database query in production
-    const recipe = mockRecipes.find((item) => item.id === recipeId);
+    return RecipeModel.findById(recipeId).then((recipe) => {
+        if (!recipe) {
+            throw new Error('Recipe not found');
+        }
 
-    if (!recipe) {
-        throw new Error('Recipe not found');
-    }
-
-    return recipe;
+        return recipe.toObject();
+    });
 };
 
 const nextID = () => {
-    const maxId = mockRecipes.reduce((highestId, recipe) => {
-        const numericId = Number.parseInt(recipe.id, 10);
-        return Number.isFinite(numericId) && numericId > highestId ? numericId : highestId;
-    }, 0);
-
-    return String(maxId + 1);
+    return new mongoose.Types.ObjectId().toString();
 };
 
 /**
@@ -199,18 +139,16 @@ const createRecipe = (recipe, ownerId) => {
         throw new Error('Recipe payload must be a Recipe object');
     }
 
-    const createdRecipe = {
-        id: nextID(),
+    const createdRecipe = new RecipeModel({
         ownerId,
-        ...recipe,
-    };
+        name: recipe.name,
+        description: recipe.description,
+        foods: recipe.foods,
+        steps: recipe.steps,
+    });
 
-    mockRecipes.push(createdRecipe);
-
-    return createdRecipe;
+    return createdRecipe.save().then((savedRecipe) => savedRecipe.toObject());
 };
-
-const findRecipeIndex = (recipeId) => mockRecipes.findIndex((item) => item.id === recipeId);
 
 const ensureRecipeOwner = (recipe, ownerId) => {
     if (!recipe.ownerId) {
@@ -227,56 +165,56 @@ const ensureRecipeOwner = (recipe, ownerId) => {
 };
 
 const updateRecipe = (recipeId, updates = {}, ownerId) => {
-    const recipeIndex = findRecipeIndex(recipeId);
+    return RecipeModel.findById(recipeId).then((existingRecipe) => {
+        if (!existingRecipe) {
+            const error = new Error('Recipe not found');
+            error.statusCode = 404;
+            throw error;
+        }
 
-    if (recipeIndex === -1) {
-        const error = new Error('Recipe not found');
-        error.statusCode = 404;
-        throw error;
-    }
+        ensureRecipeOwner(existingRecipe, ownerId);
 
-    const existingRecipe = mockRecipes[recipeIndex];
-    ensureRecipeOwner(existingRecipe, ownerId);
+        if (typeof updates.name === 'string' && updates.name.trim()) {
+            existingRecipe.name = updates.name.trim();
+        }
 
-    if (typeof updates.name === 'string' && updates.name.trim()) {
-        existingRecipe.name = updates.name.trim();
-    }
+        if (typeof updates.description === 'string') {
+            existingRecipe.description = updates.description;
+        }
 
-    if (typeof updates.description === 'string') {
-        existingRecipe.description = updates.description;
-    }
+        if (Array.isArray(updates.foods)) {
+            existingRecipe.foods = updates.foods;
+        }
 
-    if (Array.isArray(updates.foods)) {
-        existingRecipe.foods = updates.foods;
-    }
+        if (Array.isArray(updates.steps)) {
+            existingRecipe.steps = updates.steps;
+        }
 
-    if (Array.isArray(updates.steps)) {
-        existingRecipe.steps = updates.steps;
-    }
-
-    mockRecipes[recipeIndex] = existingRecipe;
-    return existingRecipe;
+        return existingRecipe.save().then((savedRecipe) => savedRecipe.toObject());
+    });
 };
 
 const deleteRecipe = (recipeId, ownerId) => {
-    const recipeIndex = findRecipeIndex(recipeId);
+    return RecipeModel.findById(recipeId).then((recipe) => {
+        if (!recipe) {
+            const error = new Error('Recipe not found');
+            error.statusCode = 404;
+            throw error;
+        }
 
-    if (recipeIndex === -1) {
-        const error = new Error('Recipe not found');
-        error.statusCode = 404;
-        throw error;
-    }
-
-    const recipe = mockRecipes[recipeIndex];
-    ensureRecipeOwner(recipe, ownerId);
-
-    return mockRecipes.splice(recipeIndex, 1)[0];
+        ensureRecipeOwner(recipe, ownerId);
+        return recipe.deleteOne().then(() => recipe.toObject());
+    });
 };
 
 const attachRecommendedRecipes = (req, res, next) => {
-    const fridgeItems = req.appUser && Array.isArray(req.appUser.inventory) ? req.appUser.inventory : [];
-    req.recommendedRecipes = getRecipeRecommendations(fridgeItems);
-    next();
+    const fridgeItems = req.appUser && typeof req.appUser.getFridgeItems === 'function' ? req.appUser.getFridgeItems() : [];
+    Promise.resolve(getRecipeRecommendations(fridgeItems))
+        .then((recommendedRecipes) => {
+            req.recommendedRecipes = recommendedRecipes;
+            next();
+        })
+        .catch(next);
 };
 
 
