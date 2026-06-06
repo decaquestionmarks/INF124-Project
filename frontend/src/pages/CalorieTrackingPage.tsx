@@ -22,6 +22,7 @@ type MacroProgress = {
 };
 
 type TrackedFood = {
+  id: string;
   name: string;
   amount: number | string;
   measurement: number;
@@ -92,15 +93,15 @@ const scaleMacronutrients = (macronutrients: TrackedFood['macronutrients'], rati
 })
 
 export function CalorieTrackingPage(){
-  const [editingName, setEditingName] = useState("");
+  const [editingFoodId, setEditingFoodId] = useState("");
   const [editAmount, setEditAmount] = useState("");
   const current = new Date();
   const [date, setDate] = useState(current)
   const [foods, setFoods] = useState<TrackedFood[]>([])
   const [goalProgress, setGoalProgress] = useState<MacroProgress>(() => emptyMacroProgress())
   const navigate = useNavigate()
-  const handleSelectFood = (name: string) => {
-      navigate(`/calorie-tracking/food?trackedFoodName=${encodeURIComponent(name)}&date=${date.toISOString().slice(0,10)}`)
+  const handleSelectFood = (food: TrackedFood) => {
+      navigate(`/calorie-tracking/food?trackedFoodId=${encodeURIComponent(food.id)}&date=${date.toISOString().slice(0,10)}`)
   }
 
   const decrementDate = () => {
@@ -123,10 +124,10 @@ export function CalorieTrackingPage(){
     return window.innerWidth > 900
   })
 
-  const handleDeleteFood = async (name: string) => {
+  const handleDeleteFood = async (food: TrackedFood) => {
     // make API call to delete food
     try {
-      const res = await authFetch(`/users/me/goal/${date.toISOString().slice(0,10)}/${encodeURIComponent(name)}`, {
+      const res = await authFetch(`/users/me/goal/${date.toISOString().slice(0,10)}/${encodeURIComponent(food.id)}`, {
         method: 'DELETE',
         headers :{
           'Content-Type': 'application/json'
@@ -139,7 +140,7 @@ export function CalorieTrackingPage(){
       const foods = data.foods
       setGoalProgress(toMacroProgress(data.progress))
       setFoods(Array.isArray(foods) ? foods : [])
-      toast.success(`Deleted ${name}`)
+      toast.success(`Deleted ${food.name}`)
     }
       catch (error) {
         console.error("Error deleting food item: ", error)
@@ -173,14 +174,14 @@ export function CalorieTrackingPage(){
 
     const saveEdit = async () => {
     const nextMeasurement = Number(editAmount)
-    if (!editingName || !Number.isFinite(nextMeasurement) || nextMeasurement <= 0) {
+    if (!editingFoodId || !Number.isFinite(nextMeasurement) || nextMeasurement <= 0) {
       toast.error("Enter a valid amount before saving.")
       return
     }
 
     try{
       const updatedFoods = foods.map((f) => {
-        if (f.name !== editingName) {
+        if (f.id !== editingFoodId) {
           return f
         }
 
@@ -208,7 +209,7 @@ export function CalorieTrackingPage(){
       if (!res.ok){
         throw new Error(data.error || "Failed to update food item")
       }
-      setEditingName("");
+      setEditingFoodId("");
       setEditAmount("");
       setFoods(Array.isArray(data.foods) ? data.foods : updatedFoods)
       setGoalProgress(toMacroProgress(data.progress))
@@ -342,16 +343,16 @@ export function CalorieTrackingPage(){
               <div className="added-items">
                 {foods.length == 0 ? <p className="no-foods-tracked"> No foods tracked</p> : 
                  foods.map((f) => (
-                  <div key={f.name} className="food-item">
+                  <div key={f.id} className="food-item">
                     <div className="left-item"
-	                      onClick={() => {setEditingName(f.name); setEditAmount(String(f.amount ?? f.measurement ?? ''))}}>
+	                      onClick={() => {setEditingFoodId(f.id); setEditAmount(String(f.amount ?? f.measurement ?? ''))}}>
                         
-                      {f.name} - {editingName === f.name ? (
+                      {f.name} - {editingFoodId === f.id ? (
                         <div className="calorie-tracking-edit-input">
                         <input autoFocus value={editAmount} 
                           onChange={(e) => setEditAmount(e.target.value)}
                           onKeyDown={(e) => {if (e.key === "Enter") {e.preventDefault(); saveEdit()}}}
-                          onBlur={() => {setEditAmount(""); setEditingName("")}}
+                          onBlur={() => {setEditAmount(""); setEditingFoodId("")}}
                           /> 
                         <p> {f.measurementClassification}</p>
                         </div>)
@@ -362,8 +363,8 @@ export function CalorieTrackingPage(){
                     </div>
                     {/* (<div>{f.macronutrients?.calories} calories</div>) */}
                     <div className="right-item">
-                      <button onClick={() => handleSelectFood(f.name)} className="details">Details</button>
-                      <button className="delete-food-item" onClick={() => handleDeleteFood(f.name)}><RemoveCircleIcon className="delete-icon"></RemoveCircleIcon></button>
+                      <button onClick={() => handleSelectFood(f)} className="details">Details</button>
+                      <button className="delete-food-item" onClick={() => handleDeleteFood(f)}><RemoveCircleIcon className="delete-icon"></RemoveCircleIcon></button>
                     </div>
                   </div>
                   ))}

@@ -28,7 +28,15 @@ const toGoalInstance = (goal) => {
 	}
 
 	if (typeof goal.calculateProgress === 'function' && typeof goal.getFoods === 'function') {
-		return goal;
+		const foods = goal.getFoods();
+		if (Array.isArray(foods) && foods.every((food) => food && food.id)) {
+			return goal;
+		}
+
+		return new Goal(
+			{ ...DEFAULT_DAILY_GOALS, ...normalizeGoalValues(goal.goals || {}) },
+			Array.isArray(foods) ? foods : []
+		);
 	}
 
 	return new Goal(
@@ -188,8 +196,9 @@ const addGoalFood = async (req, res) => {
 	const goal = ensureGoalForDate(req.appUser, date);
 
 	try {
-		const food = req.body && req.body.name ? req.body : null;
+		const food = req.body && req.body.name ? { ...req.body } : null;
 		if (!food) return res.status(400).json({ error: 'Food payload is required' });
+		delete food.id;
 
 		if (typeof goal.addFood === 'function') {
 			goal.addFood(food);
@@ -262,19 +271,17 @@ const updateGoal = async (req, res) => {
 
 const deleteGoalFood = async (req, res) => {
 	const date = normalizeGoalDate(req);
-	const foodName = req.params.food;
+	const foodId = req.params.food;
 	const existingGoal = req.appUser.getGoal(date);
 	const goal = existingGoal ? ensureGoalForDate(req.appUser, date) : null;
 
 	if (!goal) return res.status(404).json({ error: 'Goal not found for date' });
-	if (!foodName) return res.status(400).json({ error: 'Food name is required' });
+	if (!foodId) return res.status(400).json({ error: 'Food ID is required' });
 
 	try {
 		const foods = getGoalFoodsFromGoal(goal);
 		const initialCount = foods.length;
-		const updatedFoods = foods.filter((food) => 
-			(food && food.name && food.name.trim().toLowerCase()) !== foodName.trim().toLowerCase()
-		);
+		const updatedFoods = foods.filter((food) => String(food && food.id) !== String(foodId));
 
 		if (typeof goal.foods !== 'undefined') {
 			goal.foods = updatedFoods;

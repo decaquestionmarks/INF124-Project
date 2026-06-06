@@ -1,4 +1,5 @@
 const { goalMacros, goalMicros } = require('./modelhelpers');
+const { randomUUID } = require('crypto');
 
 const goalNutrients = [...goalMacros, ...goalMicros];
 const nutrientAliases = {
@@ -29,6 +30,7 @@ const getNutrientAmount = (food, nutrient) => {
 const normalizeFood = (food) => {
 	const normalizedFood = {
 		...food,
+		id: food.id ? String(food.id) : randomUUID(),
 		macronutrients: {
 			...(food.macronutrients || {}),
 		},
@@ -83,7 +85,6 @@ class Goal {
 	}
 
 	addFood(food) {
-		// combines amounts if duplicate foods
 		if (food === null || typeof food !== 'object') {
 			throw new TypeError('food must be an object');
 		}
@@ -93,19 +94,7 @@ class Goal {
 		}
 
 		const normalizedFood = normalizeFood(food);
-
-		// combine duplicate food amounts and macros
-		const existingFood = (this.foods.find((f) => f.name===normalizedFood.name));
-		if (existingFood){
-			existingFood.measurement = Number((Number(existingFood.measurement) + Number(normalizedFood.measurement)).toFixed(1))
-			existingFood.macronutrients = existingFood.macronutrients || {};
-			goalNutrients.forEach((nutrient) => {
-				existingFood.macronutrients[nutrient] = Number((getNutrientAmount(existingFood, nutrient) + getNutrientAmount(normalizedFood, nutrient)).toFixed(1));
-			});
-		}
-		else{
-			this.foods.push(normalizedFood);
-		}
+		this.foods.push(normalizedFood);
 	}
 
 	addFoods(foods) {

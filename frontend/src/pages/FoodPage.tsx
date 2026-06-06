@@ -7,6 +7,7 @@ import { useLocation } from 'react-router-dom'
 import { authFetch } from '../api.ts'
 
 type TrackedFood = {
+  id: string;
   name: string;
   measurement: number;
   measurementClassification: string;
@@ -25,6 +26,7 @@ const toNumber = (value: unknown) => {
 export function FoodPage(){
   const location = useLocation();
   const params = new URLSearchParams(location.search)
+  const trackedFoodId = params.get('trackedFoodId')
   const foodName = params.get('trackedFoodName')
   const selectedDate = params.get('date') ?? new Date().toISOString().slice(0, 10)
   const [trackedFood, setTrackedFood] = useState<TrackedFood | null>(null)
@@ -40,7 +42,7 @@ export function FoodPage(){
   })
 
   useEffect(() => {
-    if (!foodName) {
+    if (!trackedFoodId && !foodName) {
       setTrackedFood(null)
       setError("No tracked food selected.")
       setIsLoading(false)
@@ -59,7 +61,13 @@ export function FoodPage(){
         }
 
         const foods = Array.isArray(data.foods) ? data.foods as TrackedFood[] : []
-        const selectedFood = foods.find((food) => food.name.toLowerCase() === foodName.toLowerCase())
+        const selectedFood = foods.find((food) => {
+          if (trackedFoodId) {
+            return food.id === trackedFoodId
+          }
+
+          return foodName ? food.name.toLowerCase() === foodName.toLowerCase() : false
+        })
         setTrackedFood(selectedFood ?? null)
 
         if (!selectedFood) {
@@ -74,7 +82,7 @@ export function FoodPage(){
       }
     }
     handleFetchFoodDetails()
-  }, [foodName, selectedDate])
+  }, [trackedFoodId, foodName, selectedDate])
 
   useEffect(() => {
     const mediaQuery = window.matchMedia('(max-width: 900px)')
