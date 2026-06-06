@@ -22,6 +22,17 @@ const normalizeName = (value) => (typeof value === 'string' ? value.trim().toLow
 
 const getIngredientName = (ingredient) => normalizeName(ingredient && ingredient.name);
 
+const toRecipeObject = (recipe) => ({
+    id: recipe._id ? recipe._id.toString() : recipe.id,
+    name: recipe.name,
+    description: recipe.description,
+    foods: Array.isArray(recipe.foods) ? recipe.foods : [],
+    steps: Array.isArray(recipe.steps) ? recipe.steps : [],
+    ownerId: recipe.ownerId,
+    createdAt: recipe.createdAt,
+    updatedAt: recipe.updatedAt,
+});
+
 const getRecipeRecommendations = (fridgeItems = []) => {
     const fridgeNames = new Set(
         fridgeItems
@@ -63,7 +74,7 @@ const searchRecipes = (query) => {
         ],
     }).lean().then((results) => ({
         query: normalizedQuery,
-        results: results.map((recipe) => recipe.toObject()),
+        results: results.map(toRecipeObject),
         count: results.length,
     }));
 };
