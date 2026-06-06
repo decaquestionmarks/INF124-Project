@@ -7,7 +7,7 @@ type SharingComponentProps = {
 
 export function SharingComponent({recipeId}: SharingComponentProps){
     if (!recipeId) return null;
-    const url = `http://localhost:5173/recipes/${encodeURIComponent(recipeId)}`
+    const url = `https://foodly-4d744.web.app/recipes/${encodeURIComponent(recipeId)}`
     const presetText = `Check out this delicious recipe`
     
     return (
