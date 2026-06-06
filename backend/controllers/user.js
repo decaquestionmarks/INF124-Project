@@ -428,36 +428,36 @@ const getFridge = (req, res) => {
 	res.json({ fridge });
 };
 
-const getSavedFoods = (req, res) => {
-	const query = normalizeName(req.query.query || '');
-	const savedFoods = typeof req.appUser.getSavedFoods === 'function'
-		? req.appUser.getSavedFoods()
-		: Array.isArray(req.appUser.savedFoods) ? req.appUser.savedFoods : [];
-	const results = query
-		? savedFoods.filter((food) => {
-			return normalizeName(food.name).includes(query)
-				|| normalizeName(food.classification).includes(query)
-				|| normalizeName(food.measurementClassification).includes(query);
-		})
-		: savedFoods;
+// const getSavedFoods = (req, res) => {
+// 	const query = normalizeName(req.query.query || '');
+// 	const savedFoods = typeof req.appUser.getSavedFoods === 'function'
+// 		? req.appUser.getSavedFoods()
+// 		: Array.isArray(req.appUser.savedFoods) ? req.appUser.savedFoods : [];
+// 	const results = query
+// 		? savedFoods.filter((food) => {
+// 			return normalizeName(food.name).includes(query)
+// 				|| normalizeName(food.classification).includes(query)
+// 				|| normalizeName(food.measurementClassification).includes(query);
+// 		})
+// 		: savedFoods;
 
-	res.json({ query, count: results.length, results });
-};
+// 	res.json({ query, count: results.length, results });
+// };
 
-const createSavedFood = async (req, res) => {
-	try {
-		const savedFoodInput = buildSavedFoodFromBody(req.body);
-		const savedFoodsBefore = typeof req.appUser.getSavedFoods === 'function' ? req.appUser.getSavedFoods() : [];
-		const existingFood = savedFoodsBefore.find((food) => normalizeName(food.name) === normalizeName(savedFoodInput.name));
-		const savedFood = req.appUser.saveFood(savedFoodInput);
+// const createSavedFood = async (req, res) => {
+// 	try {
+// 		const savedFoodInput = buildSavedFoodFromBody(req.body);
+// 		const savedFoodsBefore = typeof req.appUser.getSavedFoods === 'function' ? req.appUser.getSavedFoods() : [];
+// 		const existingFood = savedFoodsBefore.find((food) => normalizeName(food.name) === normalizeName(savedFoodInput.name));
+// 		const savedFood = req.appUser.saveFood(savedFoodInput);
 
-		await saveUser(req.appUser, 'savedFoods');
-		const savedFoods = typeof req.appUser.getSavedFoods === 'function' ? req.appUser.getSavedFoods() : [];
-		return res.status(existingFood ? 200 : 201).json({ savedFood, savedFoods });
-	} catch (err) {
-		return res.status(err.statusCode || 400).json({ error: err.message });
-	}
-};
+// 		await saveUser(req.appUser, 'savedFoods');
+// 		const savedFoods = typeof req.appUser.getSavedFoods === 'function' ? req.appUser.getSavedFoods() : [];
+// 		return res.status(existingFood ? 200 : 201).json({ savedFood, savedFoods });
+// 	} catch (err) {
+// 		return res.status(err.statusCode || 400).json({ error: err.message });
+// 	}
+// };
 
 const addGoalFood = async (req, res) => {
 	const member = getFamilyMemberForRequest(req, res);
@@ -615,11 +615,9 @@ module.exports = {
 	getGoalForDate,
 	getGoalFoods,
 	getFridge,
-	getSavedFoods,
 	addFamilyMember,
 	addGoalFood,
 	addFridgeItem,
-	createSavedFood,
 	updateAccount,
 	updateGoal,
 	deleteFamilyMember,
