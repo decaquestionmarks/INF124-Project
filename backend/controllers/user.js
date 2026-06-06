@@ -13,6 +13,7 @@ const {
 const mockUsers = {};
 const isMongoReady = () => mongoose.connection.readyState === 1;
 const DEFAULT_DAILY_GOALS = { calories: 2000, protein: 50 };
+const DEFAULT_CALORIE_GOAL = DEFAULT_DAILY_GOALS.calories;
 const SELF_MEMBER_ID = 'self';
 const SAVED_FOOD_MEASUREMENTS = ['grams', 'ml'];
 
@@ -22,6 +23,11 @@ const normalizeName = (value) => (typeof value === 'string' ? value.trim().toLow
 const toFiniteNonNegativeNumber = (value, fallback = 0) => {
 	const numericValue = Number(value);
 	return Number.isFinite(numericValue) && numericValue >= 0 ? numericValue : fallback;
+};
+
+const normalizeCalorieGoal = (value, fallback = DEFAULT_CALORIE_GOAL) => {
+	const numericValue = Number(value);
+	return Number.isFinite(numericValue) && numericValue > 0 ? Math.round(numericValue) : fallback;
 };
 
 const normalizeMemberId = (req) => {
@@ -45,6 +51,7 @@ const normalizeFamilyMember = (member, user, index = 0) => {
 		id,
 		name,
 		isDefault: id === SELF_MEMBER_ID || Boolean(member.isDefault),
+		calorieGoal: normalizeCalorieGoal(member.calorieGoal),
 	};
 };
 
@@ -59,6 +66,7 @@ const ensureFamilyMembers = (user) => {
 		id: SELF_MEMBER_ID,
 		name: user.name || 'Me',
 		isDefault: true,
+		calorieGoal: DEFAULT_CALORIE_GOAL,
 	};
 
 	if (selfIndex === -1) {
@@ -128,11 +136,16 @@ const normalizeGoalValues = (goals = {}) => {
 	}, {});
 };
 
-const createDefaultGoal = () => new Goal(DEFAULT_DAILY_GOALS, []);
+const buildDefaultDailyGoals = (member) => ({
+	...DEFAULT_DAILY_GOALS,
+	calories: normalizeCalorieGoal(member?.calorieGoal),
+});
 
-const toGoalInstance = (goal) => {
+const createDefaultGoal = (member) => new Goal(buildDefaultDailyGoals(member), []);
+
+const toGoalInstance = (goal, member) => {
 	if (!goal) {
-		return createDefaultGoal();
+		return createDefaultGoal(member);
 	}
 
 	if (typeof goal.calculateProgress === 'function' && typeof goal.getFoods === 'function') {
@@ -142,20 +155,21 @@ const toGoalInstance = (goal) => {
 		}
 
 		return new Goal(
-			{ ...DEFAULT_DAILY_GOALS, ...normalizeGoalValues(goal.goals || {}) },
+			{ ...buildDefaultDailyGoals(member), ...normalizeGoalValues(goal.goals || {}) },
 			Array.isArray(foods) ? foods : []
 		);
 	}
 
 	return new Goal(
-		{ ...DEFAULT_DAILY_GOALS, ...normalizeGoalValues(goal.goals || {}) },
+		{ ...buildDefaultDailyGoals(member), ...normalizeGoalValues(goal.goals || {}) },
 		Array.isArray(goal.foods) ? goal.foods : []
 	);
 };
 
 const ensureGoalForDate = (user, date, memberId = SELF_MEMBER_ID) => {
+	const member = getFamilyMember(user, memberId);
 	const existingGoal = getStoredGoal(user, date, memberId);
-	const goal = toGoalInstance(existingGoal);
+	const goal = toGoalInstance(existingGoal, member);
 
 	if (!existingGoal || existingGoal !== goal) {
 		setStoredGoal(user, date, memberId, goal);
@@ -175,6 +189,44 @@ const saveUser = async (user, modifiedPath) => {
 };
 
 const getGoalFoodsFromGoal = (goal) => typeof goal.getFoods === 'function' ? goal.getFoods() : goal.foods || [];
+
+const goalKeyBelongsToMember = (goalKey, memberId) => {
+	if (memberId === SELF_MEMBER_ID) {
+		return !String(goalKey).includes(':');
+	}
+
+	return String(goalKey).startsWith(`${memberId}:`);
+};
+
+const getDateFromMemberGoalKey = (goalKey, memberId) => {
+	const key = String(goalKey);
+	return memberId === SELF_MEMBER_ID ? key : key.slice(`${memberId}:`.length);
+};
+
+const updateStoredGoalCaloriesForMember = (user, member) => {
+	if (!user.goals || typeof user.goals !== 'object') {
+		return [];
+	}
+
+	const updatedGoals = [];
+	Object.entries(user.goals).forEach(([goalKey, storedGoal]) => {
+		if (!goalKeyBelongsToMember(goalKey, member.id)) return;
+
+		const goal = toGoalInstance(storedGoal, member);
+		goal.setGoal('calories', member.calorieGoal);
+		user.goals[goalKey] = goal;
+		updatedGoals.push({
+			date: getDateFromMemberGoalKey(goalKey, member.id),
+			goal,
+		});
+	});
+
+	if (updatedGoals.length > 0 && typeof user.markModified === 'function') {
+		user.markModified('goals');
+	}
+
+	return updatedGoals;
+};
 
 const buildGoalPayload = (date, goal, member) => ({
 	date,
@@ -330,6 +382,46 @@ const getFamily = (req, res) => {
 	});
 };
 
+// PUT /users/me/family/:memberId
+const updateFamilyMember = async (req, res) => {
+	const memberId = normalizeMemberId(req);
+	const members = ensureFamilyMembers(req.appUser);
+	const memberIndex = members.findIndex((member) => member.id === memberId);
+
+	if (memberIndex === -1) {
+		return res.status(404).json({ error: 'Family member not found' });
+	}
+
+	if (typeof req.body?.calorieGoal === 'undefined') {
+		return res.status(400).json({ error: 'Calorie goal is required' });
+	}
+
+	const numericCalorieGoal = Number(req.body.calorieGoal);
+	if (!Number.isFinite(numericCalorieGoal) || numericCalorieGoal <= 0) {
+		return res.status(400).json({ error: 'Calorie goal must be greater than 0' });
+	}
+
+	const member = {
+		...members[memberIndex],
+		calorieGoal: normalizeCalorieGoal(numericCalorieGoal),
+	};
+	members[memberIndex] = member;
+
+	req.appUser.familyMembers = members;
+	req.appUser.markModified?.('familyMembers');
+	const updatedGoals = updateStoredGoalCaloriesForMember(req.appUser, member);
+
+	try {
+		await saveUser(req.appUser);
+		updatedGoals.forEach(({ date, goal }) => {
+			broadcastGoalUpdate(req.appUser.id, date, member.id, buildGoalPayload(date, goal, member));
+		});
+		return res.json({ member, members });
+	} catch (err) {
+		return res.status(400).json({ error: err.message });
+	}
+};
+
 // POST /users/me/family
 const addFamilyMember = async (req, res) => {
 	const name = normalizeFamilyMemberName(req.body?.name);
@@ -349,6 +441,7 @@ const addFamilyMember = async (req, res) => {
 		id: new mongoose.Types.ObjectId().toString(),
 		name,
 		isDefault: false,
+		calorieGoal: DEFAULT_CALORIE_GOAL,
 	};
 
 	req.appUser.familyMembers = [...members, member];
@@ -616,6 +709,7 @@ module.exports = {
 	getGoalFoods,
 	getFridge,
 	addFamilyMember,
+	updateFamilyMember,
 	addGoalFood,
 	addFridgeItem,
 	updateAccount,

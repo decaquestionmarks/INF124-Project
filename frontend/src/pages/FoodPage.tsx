@@ -104,7 +104,28 @@ function MacroDonut({ segments }: { segments: MacroVisualizerSegment[] }) {
     .filter((segment): segment is MacroVisualizerSegment => segment !== undefined && segment.percent > 0)
 
   const gapLength = visibleSegments.length > 1 ? 4 : 0
-  let currentOffset = 0
+  const drawableSegments = visibleSegments.reduce<{
+    offset: number;
+    segments: Array<MacroVisualizerSegment & {
+      dashLength: number;
+      dashOffset: number;
+    }>;
+  }>((accumulator, segment) => {
+    const segmentLength = (segment.percent / 100) * DONUT_CIRCUMFERENCE
+    const dashLength = Math.max(segmentLength - gapLength, 0)
+
+    return {
+      offset: accumulator.offset + segmentLength,
+      segments: [
+        ...accumulator.segments,
+        {
+          ...segment,
+          dashLength,
+          dashOffset: -accumulator.offset,
+        },
+      ],
+    }
+  }, { offset: 0, segments: [] }).segments
 
   return (
     <svg className="macro-donut" viewBox="0 0 140 140" aria-hidden="true">
@@ -116,13 +137,7 @@ function MacroDonut({ segments }: { segments: MacroVisualizerSegment[] }) {
         fill="none"
         strokeWidth="11"
       />
-      {visibleSegments.map((segment) => {
-        const segmentLength = (segment.percent / 100) * DONUT_CIRCUMFERENCE
-        const dashLength = Math.max(segmentLength - gapLength, 0)
-        const dashOffset = -currentOffset
-        currentOffset += segmentLength
-
-        return (
+      {drawableSegments.map((segment) => (
           <circle
             className={`macro-donut__segment macro-donut__segment--${segment.key}`}
             key={segment.key}
@@ -131,11 +146,10 @@ function MacroDonut({ segments }: { segments: MacroVisualizerSegment[] }) {
             r={DONUT_RADIUS}
             fill="none"
             strokeWidth="11"
-            strokeDasharray={`${dashLength} ${DONUT_CIRCUMFERENCE - dashLength}`}
-            strokeDashoffset={dashOffset}
+            strokeDasharray={`${segment.dashLength} ${DONUT_CIRCUMFERENCE - segment.dashLength}`}
+            strokeDashoffset={segment.dashOffset}
           />
-        )
-      })}
+      ))}
     </svg>
   )
 }
