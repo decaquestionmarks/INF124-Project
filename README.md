@@ -1,3 +1,6 @@
+## Jira Board Link
+https://inf124-project.atlassian.net/jira/software/projects/SCRUM/boards/1
+
 ## **C4 Diagrams, Wireframes, and Use Cases:**
 https://www.figma.com/design/hJ7MhmfuWZqQtOxp8rggw1/inf-124-ui?node-id=0-1&t=XNAMsZyE89Rxtz0n-1
 
