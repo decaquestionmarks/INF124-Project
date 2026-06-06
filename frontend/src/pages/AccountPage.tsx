@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import { Header } from '../components/Header.tsx';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
+import { authFetch } from '../api.ts';
 
 const initialData = {
   weightStarting: '',
@@ -33,36 +34,9 @@ export function AccountPage(){
 
   const formSchema = [
       {
-        id: "weightStarting",
-        label: "Starting Weight:",
+        id: "calorie-goal:",
+        label: "Calorie Goal:",
         type: "number"
-      },
-      {
-        id: "weightCurrent",
-        label: "Current Weight:",
-        type: "number"
-      },
-      {
-        id: "weightGoal",
-        label: "Goal Weight:",
-        type: "number"
-      },
-      {
-        id: "age",
-        label: "Age:",
-        type: "number"
-      },
-
-
-      {
-        id: "activityLevel",
-        label: "Activity:",
-        type: "select",
-      },
-      {
-        id: "height",
-        label: "Height:",
-        type: "group",
       },
   ]
     const [formValues, setFormValues] = useState<Record<string, string>>(initialData)
@@ -74,6 +48,10 @@ export function AccountPage(){
     useEffect(() => {
     // getting the users account details
         const fetchAccount = async () => {
+           const res = await authFetch(`/users/me/account`)
+           const data = await res.json()
+
+           console.log("DATA: ", data)
          // fetch account data
         }
         fetchAccount()

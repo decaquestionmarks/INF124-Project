@@ -54,9 +54,8 @@ export function CalorieTrackingPage(){
   const navigate = useNavigate()
   const handleSelectFood = (name: string) => {
       console.log("name of food to view: ", name)
-      navigate(`/calorie-tracking/food?trackedFoodId=${name}`)
+      navigate(`/calorie-tracking/food?trackedFoodName=${name}`)
   }
-
 
   const decrementDate = () => {
     const d = new Date(date);
@@ -201,6 +200,7 @@ export function CalorieTrackingPage(){
     // gets food for current date
     const fetchFoodForCurrentDate = async () => {
       try{
+        
         const res = await authFetch(`/users/me/goal/foods?date=${date.toISOString().slice(0,10)}`)
         
         if (!res.ok){
@@ -216,6 +216,7 @@ export function CalorieTrackingPage(){
       }
       
     };
+
     fetchFoodForCurrentDate()
     fetchGoalForCurrentDate()
   }, [date]);

@@ -12,129 +12,129 @@ import {toast} from 'react-hot-toast'
 import { authFetch } from '../api.ts'
 
 // TODO remove mock foods results and search filtering
-const mockResults: FoodResult[] = [
+// const mockResults: FoodResult[] = [
   
-  {
-    name: "Chicken Breast",
-    classification: "Meat",
-    measurementClassification: "Mass",
-    measurement: 165,
-    macronutrients: {
-      calories: 275,
-      fat: 3.6,
-      protein: 51,
-      carbs: 2
-    }
-  },
-  {
-    name: "White Rice",
-    classification: "Grains",
-    measurementClassification: "Mass",
-    measurement: 1,
-    macronutrients: {
-      calories: 205,
-      fat: 0.4,
-      protein: 4.3,
-      carbs: 45
-    }
-  },
-  {
-    name: "Banana",
-    classification: "Fruit",
-    measurementClassification: "Mass",
-    measurement: 1,
-    macronutrients: {
-      calories: 105,
-      fat: 0.4,
-      protein: 1.3,
-      carbs: 27
-    }
-  },
-  {
-    name: "Egg (Boiled)",
-    classification: "Protein",
-    measurementClassification: "Mass",
-    measurement: 1,
-    macronutrients: {
-      calories: 78,
-      fat: 5.3,
-      protein: 6.3,
-      carbs: 0.6
-    }
-  },
-  {
-    name: "Greek Yogurt",
-    classification: "Dairy",
-    measurementClassification: "Mass",
-    measurement: 150,
-    macronutrients: {
-      calories: 120,
-      fat: 4,
-      protein: 15,
-      carbs: 5
-    }
-  },
-  {
-    name: "Peanut Butter",
-    classification: "Fats",
-    measurementClassification: "Mass",
-    measurement: 2,
-    macronutrients: {
-      calories: 190,
-      fat: 16,
-      protein: 7,
-      carbs: 7
-    }
-  },
-  {
-    name: "Oatmeal",
-    classification: "Pantry",
-    measurementClassification: "Mass",
-    measurement: 40,
-    macronutrients: {
-      calories: 150,
-      fat: 3,
-      protein: 5,
-      carbs: 27
-    }
-  },
-  {
-    name: "Salmon",
-    classification: "Meat",
-    measurementClassification: "Mass",
-    measurement: 100,
-    macronutrients: {
-      calories: 208,
-      fat: 13,
-      protein: 20,
-      carbs: 0
-    }
-  },
-  {
-    name: "Avocado",
-    classification: "Produce",
-    measurementClassification: "Mass",
-    measurement: 1,
-    macronutrients: {
-      calories: 240,
-      fat: 22,
-      protein: 3,
-      carbs: 13
-    }
-  },
-  {
-    name: "Whole Wheat Bread",
-    classification: "Bakery",
-    measurementClassification: "Mass",
-    measurement: 1,
-    macronutrients: {
-      calories: 80,
-      fat: 1,
-      protein: 4,
-      carbs: 14
-    }
-  }
-];
+//   {
+//     name: "Chicken Breast",
+//     classification: "Meat",
+//     measurementClassification: "Mass",
+//     measurement: 165,
+//     macronutrients: {
+//       calories: 275,
+//       fat: 3.6,
+//       protein: 51,
+//       carbs: 2
+//     }
+//   },
+//   {
+//     name: "White Rice",
+//     classification: "Grains",
+//     measurementClassification: "Mass",
+//     measurement: 1,
+//     macronutrients: {
+//       calories: 205,
+//       fat: 0.4,
+//       protein: 4.3,
+//       carbs: 45
+//     }
+//   },
+//   {
+//     name: "Banana",
+//     classification: "Fruit",
+//     measurementClassification: "Mass",
+//     measurement: 1,
+//     macronutrients: {
+//       calories: 105,
+//       fat: 0.4,
+//       protein: 1.3,
+//       carbs: 27
+//     }
+//   },
+//   {
+//     name: "Egg (Boiled)",
+//     classification: "Protein",
+//     measurementClassification: "Mass",
+//     measurement: 1,
+//     macronutrients: {
+//       calories: 78,
+//       fat: 5.3,
+//       protein: 6.3,
+//       carbs: 0.6
+//     }
+//   },
+//   {
+//     name: "Greek Yogurt",
+//     classification: "Dairy",
+//     measurementClassification: "Mass",
+//     measurement: 150,
+//     macronutrients: {
+//       calories: 120,
+//       fat: 4,
+//       protein: 15,
+//       carbs: 5
+//     }
+//   },
+//   {
+//     name: "Peanut Butter",
+//     classification: "Fats",
+//     measurementClassification: "Mass",
+//     measurement: 2,
+//     macronutrients: {
+//       calories: 190,
+//       fat: 16,
+//       protein: 7,
+//       carbs: 7
+//     }
+//   },
+//   {
+//     name: "Oatmeal",
+//     classification: "Pantry",
+//     measurementClassification: "Mass",
+//     measurement: 40,
+//     macronutrients: {
+//       calories: 150,
+//       fat: 3,
+//       protein: 5,
+//       carbs: 27
+//     }
+//   },
+//   {
+//     name: "Salmon",
+//     classification: "Meat",
+//     measurementClassification: "Mass",
+//     measurement: 100,
+//     macronutrients: {
+//       calories: 208,
+//       fat: 13,
+//       protein: 20,
+//       carbs: 0
+//     }
+//   },
+//   {
+//     name: "Avocado",
+//     classification: "Produce",
+//     measurementClassification: "Mass",
+//     measurement: 1,
+//     macronutrients: {
+//       calories: 240,
+//       fat: 22,
+//       protein: 3,
+//       carbs: 13
+//     }
+//   },
+//   {
+//     name: "Whole Wheat Bread",
+//     classification: "Bakery",
+//     measurementClassification: "Mass",
+//     measurement: 1,
+//     macronutrients: {
+//       calories: 80,
+//       fat: 1,
+//       protein: 4,
+//       carbs: 14
+//     }
+//   }
+// ];
 
 type SearchFoodProps = {
     linkBack: string
@@ -167,45 +167,26 @@ export function SearchFoodPage({linkBack}: SearchFoodProps){
   const [servingSize, setServingSize] = useState("1")
 
 
-//  const handleSubmitSearch = async (e: React.FormEvent) => {
-  // make call to actual API here
-//     e.preventDefault()
-//     if (!userInput.trim()) return;
-//     try{
-//       //make call
-//       // set search results
-//       setSearchResults([])
+  // TODO: CHECK THIS
+  const handleSubmitSearch = async (e: React.FormEvent) => {
+      e.preventDefault()
+      if (!userInput.trim()) return
+      
+      try{
+          const res = await authFetch(`/foods/search?query=${encodeURIComponent(userInput.trim())}`);
+          const data = await res.json();
+          console.log("SEARCH RESULTS: ", data)
+          setSearchResults(data.results);
+      }
+      catch (error) {
+        console.error("Error searching for foods: ", error)
+      }
 
-//     }
-//     catch (error){
-//       console.error("ERROR SearchFoodPage", error)
-//     }
-//  }
-const handleSubmitSearch = async (e: React.FormEvent) => {
-  e.preventDefault()
-  if (!userInput.trim()) return
-
-  try {
-    // simulate filtering
-    const filtered = mockResults.filter(food =>
-      food.name.toLowerCase().includes(userInput.toLowerCase())
-    )
-    setSearchResults(filtered)
-  } catch (error) {
-    console.error("ERROR SearchFoodPage", error)
   }
-}
-
 
  const handleLogFood = async () => {
     if (linkBack === '/fridge'){
-      try{
-      
-        const res = await authFetch('/users/me/fridge',
-          {
-          method: 'POST',
-          headers: {'Content-type': 'application/json'},
-          body: JSON.stringify({
+        const body_info = JSON.stringify({
               name: addedItem?.name,
               classification: addedItem?.classification,
               measurementClassification: addedItem?.measurementClassification,
@@ -217,6 +198,13 @@ const handleSubmitSearch = async (e: React.FormEvent) => {
                 carbs: addedItem?.macronutrients.carbs
               }
           })
+        console.log("BODY INFO: ", body_info)
+      try{
+        const res = await authFetch('/users/me/fridge',
+          {
+          method: 'POST',
+          headers: {'Content-type': 'application/json'},
+          body: body_info
           }
         )
         if (!res.ok){

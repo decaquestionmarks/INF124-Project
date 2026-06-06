@@ -1,9 +1,10 @@
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import SearchIcon from '@mui/icons-material/Search'
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import RemoveCircleRoundedIcon from '@mui/icons-material/RemoveCircleRounded';
 // import '../pages/CreateRecipePage.css' // need to separate out css
 import './SearchFood.css' 
+import { authFetch } from '../api';
 
 type Ingredient = {
   "name": string;
@@ -22,11 +23,38 @@ export function SearchFood({addedIngredients, setAddedIngredients}: SearchFoodPr
     const [searchInput, setSearchInput] = useState('')
     const [filteredIngredients, setFilteredIngredients] = useState<Ingredient[]>([])
 
+
+    useEffect(() => {
+        if (!searchInput.trim()) {
+            setFilteredIngredients([]);
+            return;
+        }
+
+        // TODO: CHECK THIS
+        const timeout = setTimeout(async () => {
+            const res = await authFetch(`/foods/search?query=${encodeURIComponent(searchInput)}`);
+            const data = await res.json();
+            console.log("INGREDIENTS DATA: ", data)
+
+            setFilteredIngredients(data.results);
+        }, 200);
+        // waits 200ms after typing to fetch so not overfetching
+
+        return () => clearTimeout(timeout);
+        }, [searchInput]);
+
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const input = e.target.value;
       setSearchInput(input);
       setFilteredIngredients([])
     }
+
+    // const getIngredients = async (query: string) => {
+    //     // GET /foods/search?query=banana
+    //     const res = await authFetch(`/foods/search?query=${encodeURIComponent(query)}`);
+    //     const data = await res.json();
+    //     console.log("DATA: ", data)
+    // }
 
     const handleRemoveIngredient = (name: string) => {
         setAddedIngredients((prev) =>

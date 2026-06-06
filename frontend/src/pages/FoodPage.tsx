@@ -3,13 +3,26 @@ import { Sidebar } from '../components/Sidebar.tsx'
 import './DashboardPage.css'
 import './FoodPage.css'
 import { SecondaryHeader } from '../components/Header.tsx'
+import { useLocation } from 'react-router-dom'
+import { authFetch } from '../api.ts'
 
 
 export function FoodPage(){
   // change this to match to fetch
-  const temp_vals = 0
+  const location = useLocation();
+  const params = new URLSearchParams(location.search)
+  const foodName = params.get('trackedFoodName')
+  const [amount, setAmount] = useState(0)
+  const [unit, setUnit] = useState("")
+  const [macros, setMacros] = useState({
+        calories: 0,
+        fat: 0,
+        protein: 0,
+        carbs: 0
+      });
   
 
+  console.log("FOOD NAME: ", foodName);
     const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
     if (typeof window === 'undefined') {
       return true
@@ -18,6 +31,24 @@ export function FoodPage(){
     return window.innerWidth > 900
   })
 
+  useEffect(() => {
+    if (!foodName) return;
+    const handleFetchFoodDetails = async () => {
+      const res = await authFetch(`/foods/${foodName}`)
+      const data = await res.json()
+      setMacros({
+        calories: data.macronutrients?.calories ?? 0,
+        fat: data.macronutrients?.fat ?? 0,
+        protein: data.macronutrients?.protein ?? 0,
+        carbs: data.macronutrients?.carbs ?? 0
+      });
+      setAmount(data.measurement);
+      setUnit(data.measurementClassification);
+
+      console.log("FETCHED FOOD DETAILS: ", data)
+    }
+    handleFetchFoodDetails()
+  }, [foodName])
 
   useEffect(() => {
     const mediaQuery = window.matchMedia('(max-width: 900px)')
@@ -66,24 +97,24 @@ export function FoodPage(){
                 <div className="overall-macros">
                   <div className="macro-row">
                         <span>Amount:</span>
-                         <span>{temp_vals} g</span>
+                         <span>{amount} {unit}</span>
                     </div>
                     <div className="macro-row">
                         <span>Calories:</span>
-                        <span>{temp_vals}</span>
+                        <span>{macros.calories}</span>
                     </div>
    
                     <div className="macro-row">
                         <span>Fat:</span>
-                        <span>{temp_vals} g</span>
+                        <span>{macros.fat} g</span>
                     </div>
                     <div className="macro-row">
                         <span>Protein:</span>
-                        <span>{temp_vals} g</span>
+                        <span>{macros.protein} g</span>
                     </div>
                     <div className="macro-row">
                         <span>Carbs:</span>
-                        <span>{temp_vals} g</span>
+                        <span>{macros.carbs} g</span>
                     </div>
                 </div>
             </section>
