@@ -350,3 +350,6 @@ The next logical steps for the project would be:
 ## Summary
 
 Nutrition Tracker is currently scoped as a smart, family-aware nutrition platform that helps users track meals, manage household food, discover recipes, and work toward personal goals. The concept already has a strong planning foundation through feature ideation, a sitemap, wireframes, and use cases. The next phase is to turn that design direction into a focused MVP and implementation plan.
+
+## AI Usage
+We used AI tools for line completion and Codex helped with refactoring and speeding up the development process for final updates.
