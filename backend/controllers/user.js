@@ -9,6 +9,102 @@ const { broadcastGoalUpdate } = require('../services/realtime');
 const mockUsers = {};
 const isMongoReady = () => mongoose.connection.readyState === 1;
 const DEFAULT_DAILY_GOALS = { calories: 2000, protein: 50 };
+const SELF_MEMBER_ID = 'self';
+
+const normalizeFamilyMemberName = (name) => (typeof name === 'string' ? name.trim() : '');
+
+const normalizeMemberId = (req) => {
+	const memberId = req.params.memberId || req.query.memberId || req.body?.memberId;
+	return typeof memberId === 'string' && memberId.trim() ? memberId.trim() : SELF_MEMBER_ID;
+};
+
+const normalizeFamilyMember = (member, user, index = 0) => {
+	if (!member || typeof member !== 'object') return null;
+
+	const rawId = typeof member.id === 'string' || typeof member.id === 'number'
+		? String(member.id).trim()
+		: '';
+	const id = rawId || (index === 0 && member.isDefault ? SELF_MEMBER_ID : '');
+	if (!id) return null;
+
+	const fallbackName = id === SELF_MEMBER_ID ? user.name || 'Me' : 'Family member';
+	const name = normalizeFamilyMemberName(member.name) || fallbackName;
+
+	return {
+		id,
+		name,
+		isDefault: id === SELF_MEMBER_ID || Boolean(member.isDefault),
+	};
+};
+
+const ensureFamilyMembers = (user) => {
+	const sourceMembers = Array.isArray(user.familyMembers) ? user.familyMembers : [];
+	const members = sourceMembers
+		.map((member, index) => normalizeFamilyMember(member, user, index))
+		.filter(Boolean);
+
+	const selfIndex = members.findIndex((member) => member.id === SELF_MEMBER_ID);
+	const selfMember = {
+		id: SELF_MEMBER_ID,
+		name: user.name || 'Me',
+		isDefault: true,
+	};
+
+	if (selfIndex === -1) {
+		members.unshift(selfMember);
+	} else {
+		members[selfIndex] = {
+			...members[selfIndex],
+			isDefault: true,
+			name: members[selfIndex].name || selfMember.name,
+		};
+	}
+
+	user.familyMembers = members;
+	if (typeof user.markModified === 'function') {
+		user.markModified('familyMembers');
+	}
+
+	return members;
+};
+
+const getFamilyMember = (user, memberId = SELF_MEMBER_ID) => {
+	const members = ensureFamilyMembers(user);
+	return members.find((member) => member.id === memberId) || null;
+};
+
+const getFamilyMemberForRequest = (req, res) => {
+	const memberId = normalizeMemberId(req);
+	const member = getFamilyMember(req.appUser, memberId);
+
+	if (!member) {
+		res.status(404).json({ error: 'Family member not found' });
+		return null;
+	}
+
+	return member;
+};
+
+const getGoalKey = (date, memberId = SELF_MEMBER_ID) => {
+	const normalizedDate = date instanceof Date ? date.toISOString().slice(0, 10) : String(date || '').trim();
+	return memberId === SELF_MEMBER_ID ? normalizedDate : `${memberId}:${normalizedDate}`;
+};
+
+const getStoredGoal = (user, date, memberId = SELF_MEMBER_ID) => {
+	const goals = user.goals && typeof user.goals === 'object' ? user.goals : {};
+	return goals[getGoalKey(date, memberId)];
+};
+
+const setStoredGoal = (user, date, memberId, goal) => {
+	if (!user.goals || typeof user.goals !== 'object') {
+		user.goals = {};
+	}
+
+	user.goals[getGoalKey(date, memberId)] = goal;
+	if (typeof user.markModified === 'function') {
+		user.markModified('goals');
+	}
+};
 
 const normalizeGoalValues = (goals = {}) => {
 	return Object.entries(goals || {}).reduce((normalized, [nutrient, amount]) => {
@@ -46,12 +142,12 @@ const toGoalInstance = (goal) => {
 	);
 };
 
-const ensureGoalForDate = (user, date) => {
-	const existingGoal = user.getGoal(date);
+const ensureGoalForDate = (user, date, memberId = SELF_MEMBER_ID) => {
+	const existingGoal = getStoredGoal(user, date, memberId);
 	const goal = toGoalInstance(existingGoal);
 
 	if (!existingGoal || existingGoal !== goal) {
-		user.setGoal(date, goal);
+		setStoredGoal(user, date, memberId, goal);
 	}
 
 	return goal;
@@ -69,8 +165,10 @@ const saveUser = async (user, modifiedPath) => {
 
 const getGoalFoodsFromGoal = (goal) => typeof goal.getFoods === 'function' ? goal.getFoods() : goal.foods || [];
 
-const buildGoalPayload = (date, goal) => ({
+const buildGoalPayload = (date, goal, member) => ({
 	date,
+	memberId: member?.id || SELF_MEMBER_ID,
+	member,
 	goal: goal.goals || {},
 	foods: getGoalFoodsFromGoal(goal),
 	progress: typeof goal.calculateProgress === 'function' ? goal.calculateProgress() : null,
@@ -99,6 +197,7 @@ const ensureUserExists = async (uid, decodedToken = {}) => {
 			fridge: { id: fridge.id, items: [] },
 			privateRecipes: [],
 			shoppingLists: [],
+			familyMembers: [{ id: SELF_MEMBER_ID, name, isDefault: true }],
 			goals: {},
 		});
 
@@ -166,23 +265,104 @@ const getAccount = (req, res) => {
 	res.json({ account });
 };
 
+// GET /users/me/family
+const getFamily = (req, res) => {
+	const members = ensureFamilyMembers(req.appUser);
+
+	saveUser(req.appUser, 'familyMembers').finally(() => {
+		res.json({ members });
+	});
+};
+
+// POST /users/me/family
+const addFamilyMember = async (req, res) => {
+	const name = normalizeFamilyMemberName(req.body?.name);
+
+	if (!name) {
+		return res.status(400).json({ error: 'Family member name is required' });
+	}
+
+	const members = ensureFamilyMembers(req.appUser);
+	const hasDuplicateName = members.some((member) => member.name.toLowerCase() === name.toLowerCase());
+
+	if (hasDuplicateName) {
+		return res.status(409).json({ error: 'A family member with that name already exists' });
+	}
+
+	const member = {
+		id: new mongoose.Types.ObjectId().toString(),
+		name,
+		isDefault: false,
+	};
+
+	req.appUser.familyMembers = [...members, member];
+
+	try {
+		await saveUser(req.appUser, 'familyMembers');
+		return res.status(201).json({ member, members: req.appUser.familyMembers });
+	} catch (err) {
+		return res.status(400).json({ error: err.message });
+	}
+};
+
+// DELETE /users/me/family/:memberId
+const deleteFamilyMember = async (req, res) => {
+	const memberId = normalizeMemberId(req);
+
+	if (memberId === SELF_MEMBER_ID) {
+		return res.status(400).json({ error: 'The account owner profile cannot be removed' });
+	}
+
+	const members = ensureFamilyMembers(req.appUser);
+	const nextMembers = members.filter((member) => member.id !== memberId);
+
+	if (nextMembers.length === members.length) {
+		return res.status(404).json({ error: 'Family member not found' });
+	}
+
+	req.appUser.familyMembers = nextMembers;
+
+	if (req.appUser.goals && typeof req.appUser.goals === 'object') {
+		const memberGoalPrefix = `${memberId}:`;
+		Object.keys(req.appUser.goals).forEach((goalKey) => {
+			if (goalKey.startsWith(memberGoalPrefix)) {
+				delete req.appUser.goals[goalKey];
+			}
+		});
+		req.appUser.markModified?.('goals');
+	}
+
+	try {
+		await saveUser(req.appUser, 'familyMembers');
+		return res.json({ members: nextMembers });
+	} catch (err) {
+		return res.status(400).json({ error: err.message });
+	}
+};
+
 // GET /users/me/goal?date=YYYY-MM-DD
 const getGoalForDate = (req, res) => {
-	const date = req.query.date || req.params.date || new Date().toISOString().slice(0, 10);
-	const goal = ensureGoalForDate(req.appUser, date);
+	const member = getFamilyMemberForRequest(req, res);
+	if (!member) return;
+
+	const date = normalizeGoalDate(req);
+	const goal = ensureGoalForDate(req.appUser, date, member.id);
 
 	saveUser(req.appUser, 'goals').finally(() => {
-		res.json(buildGoalPayload(date, goal));
+		res.json(buildGoalPayload(date, goal, member));
 	});
 };
 
 // GET /users/me/goal/foods?date=YYYY-MM-DD
 const getGoalFoods = (req, res) => {
-	const date = req.query.date || req.params.date || new Date().toISOString().slice(0, 10);
-	const goal = ensureGoalForDate(req.appUser, date);
+	const member = getFamilyMemberForRequest(req, res);
+	if (!member) return;
+
+	const date = normalizeGoalDate(req);
+	const goal = ensureGoalForDate(req.appUser, date, member.id);
 
 	saveUser(req.appUser, 'goals').finally(() => {
-		res.json({ date, foods: getGoalFoodsFromGoal(goal) });
+		res.json({ date, memberId: member.id, foods: getGoalFoodsFromGoal(goal) });
 	});
 };
 
@@ -193,13 +373,18 @@ const getFridge = (req, res) => {
 };
 
 const addGoalFood = async (req, res) => {
+	const member = getFamilyMemberForRequest(req, res);
+	if (!member) return;
+
 	const date = normalizeGoalDate(req);
-	const goal = ensureGoalForDate(req.appUser, date);
+	const goal = ensureGoalForDate(req.appUser, date, member.id);
 
 	try {
 		const food = req.body && req.body.name ? { ...req.body } : null;
 		if (!food) return res.status(400).json({ error: 'Food payload is required' });
 		delete food.id;
+		delete food.memberId;
+		delete food.date;
 
 		if (typeof goal.addFood === 'function') {
 			goal.addFood(food);
@@ -209,8 +394,8 @@ const addGoalFood = async (req, res) => {
 		}
 
 		await saveUser(req.appUser, 'goals');
-		const payload = buildGoalPayload(date, goal);
-		broadcastGoalUpdate(req.appUser.id, date, payload);
+		const payload = buildGoalPayload(date, goal, member);
+		broadcastGoalUpdate(req.appUser.id, date, member.id, payload);
 		return res.status(201).json(payload);
 	} catch (err) {
 		return res.status(400).json({ error: err.message });
@@ -232,6 +417,13 @@ const updateAccount = async (req, res) => {
 	try {
 		if (typeof req.body?.name === 'string' && req.body.name.trim()) {
 			req.appUser.name = req.body.name.trim();
+			const members = ensureFamilyMembers(req.appUser);
+			const selfMember = members.find((member) => member.id === SELF_MEMBER_ID);
+			if (selfMember) {
+				selfMember.name = req.appUser.name;
+				req.appUser.familyMembers = members;
+				req.appUser.markModified?.('familyMembers');
+			}
 		}
 
 		await saveUser(req.appUser);
@@ -242,10 +434,13 @@ const updateAccount = async (req, res) => {
 };
 
 const updateGoal = async (req, res) => {
+	const member = getFamilyMemberForRequest(req, res);
+	if (!member) return;
+
 	const date = normalizeGoalDate(req);
 
 	try {
-		const nextGoal = ensureGoalForDate(req.appUser, date);
+		const nextGoal = ensureGoalForDate(req.appUser, date, member.id);
 
 		if (req.body?.goals && typeof req.body.goals === 'object' && !Array.isArray(req.body.goals)) {
 			if (typeof nextGoal.setGoals === 'function') {
@@ -264,10 +459,10 @@ const updateGoal = async (req, res) => {
 			}
 		}
 
-		req.appUser.setGoal(date, nextGoal);
+		setStoredGoal(req.appUser, date, member.id, nextGoal);
 		await saveUser(req.appUser, 'goals');
-		const payload = buildGoalPayload(date, nextGoal);
-		broadcastGoalUpdate(req.appUser.id, date, payload);
+		const payload = buildGoalPayload(date, nextGoal, member);
+		broadcastGoalUpdate(req.appUser.id, date, member.id, payload);
 		return res.json(payload);
 	} catch (err) {
 		return res.status(400).json({ error: err.message });
@@ -275,10 +470,13 @@ const updateGoal = async (req, res) => {
 };
 
 const deleteGoalFood = async (req, res) => {
+	const member = getFamilyMemberForRequest(req, res);
+	if (!member) return;
+
 	const date = normalizeGoalDate(req);
 	const foodId = req.params.food;
-	const existingGoal = req.appUser.getGoal(date);
-	const goal = existingGoal ? ensureGoalForDate(req.appUser, date) : null;
+	const existingGoal = getStoredGoal(req.appUser, date, member.id);
+	const goal = existingGoal ? ensureGoalForDate(req.appUser, date, member.id) : null;
 
 	if (!goal) return res.status(404).json({ error: 'Goal not found for date' });
 	if (!foodId) return res.status(400).json({ error: 'Food ID is required' });
@@ -298,10 +496,10 @@ const deleteGoalFood = async (req, res) => {
 		if (!removed) {
 			return res.status(404).json({ error: 'Food not found in goal' });
 		}
-		req.appUser.setGoal(date, goal);
+		setStoredGoal(req.appUser, date, member.id, goal);
 		await saveUser(req.appUser, 'goals');
-		const payload = buildGoalPayload(date, goal);
-		broadcastGoalUpdate(req.appUser.id, date, payload);
+		const payload = buildGoalPayload(date, goal, member);
+		broadcastGoalUpdate(req.appUser.id, date, member.id, payload);
 		return res.json(payload);
 	} catch (err) {
 		return res.status(400).json({ error: err.message });
@@ -326,13 +524,16 @@ const deleteFridgeFood = async (req, res) => {
 module.exports = {
 	attachUser,
 	getAccount,
+	getFamily,
 	getGoalForDate,
 	getGoalFoods,
 	getFridge,
+	addFamilyMember,
 	addGoalFood,
 	addFridgeItem,
 	updateAccount,
 	updateGoal,
+	deleteFamilyMember,
 	deleteGoalFood,
 	deleteFridgeFood,
 };

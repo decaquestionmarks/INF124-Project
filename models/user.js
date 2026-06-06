@@ -31,6 +31,7 @@ const userSchema = new mongoose.Schema(
         fridge: { type: fridgeSchema, default: null },
         privateRecipes: { type: [mongoose.Schema.Types.Mixed], default: [] },
         shoppingLists: { type: [mongoose.Schema.Types.Mixed], default: [] },
+        familyMembers: { type: [mongoose.Schema.Types.Mixed], default: [] },
         goals: { type: mongoose.Schema.Types.Mixed, default: {} },
     },
     { timestamps: true }

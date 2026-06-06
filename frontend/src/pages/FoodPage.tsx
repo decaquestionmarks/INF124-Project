@@ -29,6 +29,7 @@ export function FoodPage(){
   const trackedFoodId = params.get('trackedFoodId')
   const foodName = params.get('trackedFoodName')
   const selectedDate = params.get('date') ?? new Date().toISOString().slice(0, 10)
+  const memberId = params.get('memberId') ?? 'self'
   const [trackedFood, setTrackedFood] = useState<TrackedFood | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -53,7 +54,7 @@ export function FoodPage(){
       try {
         setIsLoading(true)
         setError(null)
-        const res = await authFetch(`/users/me/goal/foods?date=${selectedDate}`)
+        const res = await authFetch(`/users/me/goal/foods?date=${selectedDate}&memberId=${encodeURIComponent(memberId)}`)
         const data = await res.json()
 
         if (!res.ok) {
@@ -82,7 +83,7 @@ export function FoodPage(){
       }
     }
     handleFetchFoodDetails()
-  }, [trackedFoodId, foodName, selectedDate])
+  }, [trackedFoodId, foodName, selectedDate, memberId])
 
   useEffect(() => {
     const mediaQuery = window.matchMedia('(max-width: 900px)')

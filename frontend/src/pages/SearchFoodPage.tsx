@@ -161,6 +161,7 @@ export function SearchFoodPage({linkBack}: SearchFoodProps){
   const params = new URLSearchParams(location.search);
   const meal = params.get('meal');
   const date = params.get('date');
+  const memberId = params.get('memberId') ?? 'self';
 
   const [addedItem, setAddedItem] = useState<FoodResult | null>(null)
   const [userInput, setUserInput] = useState("")
@@ -214,7 +215,7 @@ export function SearchFoodPage({linkBack}: SearchFoodProps){
         }
 
 	        toast.success(`Added ${addedItem?.name} to fridge`)
-          navigate(linkBack, {state: {meal, date, addedItem}})
+          navigate(linkBack, {state: {meal, date, memberId, addedItem}})
 	      }
 	      catch (error){
 	        console.error("Error adding food to fridge: ", error)
@@ -229,6 +230,7 @@ export function SearchFoodPage({linkBack}: SearchFoodProps){
         method: 'POST',
         headers: {'Content-type': 'application/json'},
 	        body: JSON.stringify({
+              memberId,
 	            name: addedItem?.name,
 	            classification: addedItem.classification,
 	            measurementClassification: addedItem.measurementClassification,
@@ -246,7 +248,7 @@ export function SearchFoodPage({linkBack}: SearchFoodProps){
           throw new Error("Failed to log food to calorie tracker")
 	        }
 	        toast.success(`Logged ${addedItem?.name} to calorie tracker`)
-          navigate(linkBack, {state: {meal, date, addedItem}})
+          navigate(linkBack, {state: {meal, date, memberId, addedItem}})
 	      }
 	      catch (error) {
 	        console.error("Error logging food to calorie tracker: ", error)

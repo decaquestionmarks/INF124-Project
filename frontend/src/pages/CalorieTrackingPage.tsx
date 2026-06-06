@@ -36,6 +36,12 @@ type TrackedFood = {
   };
 };
 
+type FamilyMember = {
+  id: string;
+  name: string;
+  isDefault?: boolean;
+};
+
 type ProgressNutrient = {
   goal?: number;
   total?: number;
@@ -44,6 +50,7 @@ type ProgressNutrient = {
 
 type GoalUpdatePayload = {
   date?: string;
+  memberId?: string;
   foods?: TrackedFood[];
   progress?: unknown;
 };
@@ -104,6 +111,10 @@ const scaleMacronutrients = (macronutrients: TrackedFood['macronutrients'], rati
   protein: roundNutrient(toNumber(macronutrients.protein) * ratio),
 })
 
+const DEFAULT_MEMBER_ID = 'self'
+const defaultFamilyMembers: FamilyMember[] = [{ id: DEFAULT_MEMBER_ID, name: 'Me', isDefault: true }]
+const MEMBER_STORAGE_KEY = 'calorie-tracker-member-id'
+
 export function CalorieTrackingPage(){
   const [editingFoodId, setEditingFoodId] = useState("");
   const [editAmount, setEditAmount] = useState("");
@@ -112,10 +123,21 @@ export function CalorieTrackingPage(){
   const dateKey = date.toISOString().slice(0,10)
   const [foods, setFoods] = useState<TrackedFood[]>([])
   const [goalProgress, setGoalProgress] = useState<MacroProgress>(() => emptyMacroProgress())
+  const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>(defaultFamilyMembers)
+  const [activeMemberId, setActiveMemberId] = useState(() => {
+    if (typeof window === 'undefined') {
+      return DEFAULT_MEMBER_ID
+    }
+
+    return window.localStorage.getItem(MEMBER_STORAGE_KEY) || DEFAULT_MEMBER_ID
+  })
   const navigate = useNavigate()
   const { user } = useAuth()
+  const memberQuery = `memberId=${encodeURIComponent(activeMemberId)}`
+  const activeMember = familyMembers.find((member) => member.id === activeMemberId) ?? familyMembers[0]
+
   const handleSelectFood = (food: TrackedFood) => {
-      navigate(`/calorie-tracking/food?trackedFoodId=${encodeURIComponent(food.id)}&date=${dateKey}`)
+      navigate(`/calorie-tracking/food?trackedFoodId=${encodeURIComponent(food.id)}&date=${dateKey}&${memberQuery}`)
   }
 
   const decrementDate = () => {
@@ -141,7 +163,7 @@ export function CalorieTrackingPage(){
   const handleDeleteFood = async (food: TrackedFood) => {
     // make API call to delete food
     try {
-      const res = await authFetch(`/users/me/goal/${dateKey}/${encodeURIComponent(food.id)}`, {
+      const res = await authFetch(`/users/me/goal/${dateKey}/${encodeURIComponent(food.id)}?${memberQuery}`, {
         method: 'DELETE',
         headers :{
           'Content-Type': 'application/json'
@@ -186,6 +208,52 @@ export function CalorieTrackingPage(){
     return () => legacyMediaQuery.removeListener?.(syncSidebarState)
   }, [])
 
+  useEffect(() => {
+    let isDisposed = false
+
+    const fetchFamilyMembers = async () => {
+      try {
+        const res = await authFetch('/users/me/family')
+        const data = await res.json()
+
+        if (!res.ok) {
+          throw new Error(data.error || "Unable to load family members")
+        }
+
+        if (isDisposed) return
+
+        const members = Array.isArray(data.members) && data.members.length > 0
+          ? data.members as FamilyMember[]
+          : defaultFamilyMembers
+
+        setFamilyMembers(members)
+        setActiveMemberId((currentMemberId) => {
+          if (members.some((member) => member.id === currentMemberId)) {
+            return currentMemberId
+          }
+
+          return members.find((member) => member.isDefault)?.id || members[0]?.id || DEFAULT_MEMBER_ID
+        })
+      } catch (error) {
+        console.error("Error loading family members: ", error)
+        setFamilyMembers(defaultFamilyMembers)
+        setActiveMemberId(DEFAULT_MEMBER_ID)
+      }
+    }
+
+    fetchFamilyMembers()
+
+    return () => {
+      isDisposed = true
+    }
+  }, [])
+
+  useEffect(() => {
+    setEditingFoodId("")
+    setEditAmount("")
+    window.localStorage.setItem(MEMBER_STORAGE_KEY, activeMemberId)
+  }, [activeMemberId])
+
     const saveEdit = async () => {
     const nextMeasurement = Number(editAmount)
     if (!editingFoodId || !Number.isFinite(nextMeasurement) || nextMeasurement <= 0) {
@@ -215,6 +283,7 @@ export function CalorieTrackingPage(){
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
+          memberId: activeMemberId,
           foods: updatedFoods
         })
       })
@@ -239,7 +308,7 @@ export function CalorieTrackingPage(){
     // gets goal for current date
      const fetchGoalForCurrentDate = async () => {
       try{
-        const res = await authFetch(`/users/me/goal/?date=${dateKey}`)
+        const res = await authFetch(`/users/me/goal/?date=${dateKey}&${memberQuery}`)
         
         if (!res.ok){
           throw new Error("Unable to fetch goal for current date")
@@ -257,7 +326,7 @@ export function CalorieTrackingPage(){
     const fetchFoodForCurrentDate = async () => {
       try{
         
-        const res = await authFetch(`/users/me/goal/foods?date=${dateKey}`)
+        const res = await authFetch(`/users/me/goal/foods?date=${dateKey}&${memberQuery}`)
         
         if (!res.ok){
           setFoods([]);
@@ -274,7 +343,7 @@ export function CalorieTrackingPage(){
 
     fetchFoodForCurrentDate()
     fetchGoalForCurrentDate()
-  }, [dateKey]);
+  }, [dateKey, memberQuery]);
 
   useEffect(() => {
     if (!user) return
@@ -285,6 +354,7 @@ export function CalorieTrackingPage(){
 
     const applyGoalUpdate = (payload: GoalUpdatePayload) => {
       if (payload.date !== dateKey) return
+      if ((payload.memberId ?? DEFAULT_MEMBER_ID) !== activeMemberId) return
 
       if (Array.isArray(payload.foods)) {
         setFoods(payload.foods)
@@ -298,7 +368,7 @@ export function CalorieTrackingPage(){
         const token = await user.getIdToken()
         if (isDisposed) return
 
-        socket = new WebSocket(getGoalWebSocketUrl(token, dateKey))
+        socket = new WebSocket(getGoalWebSocketUrl(token, dateKey, activeMemberId))
 
         socket.onmessage = (event) => {
           try {
@@ -333,7 +403,22 @@ export function CalorieTrackingPage(){
       }
       socket?.close()
     }
-  }, [dateKey, user]);
+  }, [dateKey, activeMemberId, user]);
+
+  const memberSwitcher = (
+    <label className="member-switcher">
+      <span>Tracking</span>
+      <select
+        value={activeMember?.id || DEFAULT_MEMBER_ID}
+        onChange={(event) => setActiveMemberId(event.target.value)}
+        aria-label="Select family member"
+      >
+        {familyMembers.map((member) => (
+          <option key={member.id} value={member.id}>{member.name}</option>
+        ))}
+      </select>
+    </label>
+  )
 
    return (
        <main
@@ -351,7 +436,7 @@ export function CalorieTrackingPage(){
          />
    
          <section className="dashboard-page__content">
-        <Header isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} pageTitle={"Calorie Tracker"}></Header>
+        <Header isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} pageTitle={"Calorie Tracker"} pageButton={memberSwitcher}></Header>
         <section className="nav-days">
           <div className="nav-items">
             <button aria-label="Go to previous day" onClick={decrementDate}><ArrowLeftRoundedIcon aria-hidden="true" className="nav-icon" sx={{fontSize: 70}}></ArrowLeftRoundedIcon></button>
@@ -410,7 +495,7 @@ export function CalorieTrackingPage(){
                 <div className="meal-cat-labels">
                  <h3 className="meal-title">Tracked Foods</h3>
                 </div>
-                <Link to={`/calorie-tracking/search-food?date=${dateKey}`} className="add-food">Add Food<AddCircleIcon></AddCircleIcon> </Link>              
+                <Link to={`/calorie-tracking/search-food?date=${dateKey}&${memberQuery}`} className="add-food">Add Food<AddCircleIcon></AddCircleIcon> </Link>              
              </div>
               
               <div className="added-items">

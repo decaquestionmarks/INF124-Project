@@ -16,11 +16,11 @@ const initialData = {
   "height-in": '',
 }
 
-const familyData = [
-    {username: "Jane Doe"},
-    {username : "John Doe"},
-]
-
+type FamilyMember = {
+  id: string;
+  name: string;
+  isDefault?: boolean;
+}
 
 export function AccountPage(){
  
@@ -43,15 +43,16 @@ export function AccountPage(){
     const [originalFormValues, setOriginalFormValues] = useState<Record<string, string>>(initialData)
     const [editingGoals, setEditingGoals] = useState(false);
     const [editingFamily, setEditingFamily] = useState(false);
+    const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([])
+    const [newFamilyMemberName, setNewFamilyMemberName] = useState("")
+    const [familyError, setFamilyError] = useState("")
 
   // TODO: connect these to backend
     useEffect(() => {
     // getting the users account details
         const fetchAccount = async () => {
            const res = await authFetch(`/users/me/account`)
-           const data = await res.json()
-
-           console.log("DATA: ", data)
+           await res.json()
          // fetch account data
         }
         fetchAccount()
@@ -59,20 +60,73 @@ export function AccountPage(){
 
 
   useEffect(() => {
-    // getting the users family details
         const fetchFamily = async () => {
-          // fetch family data from backend
+          try {
+            const res = await authFetch('/users/me/family')
+            const data = await res.json()
+
+            if (!res.ok) {
+              throw new Error(data.error || "Unable to load family members")
+            }
+
+            setFamilyMembers(Array.isArray(data.members) ? data.members : [])
+            setFamilyError("")
+          } catch (error) {
+            console.error("Error loading family members: ", error)
+            setFamilyError("Unable to load family members.")
+          }
         }
         fetchFamily()
   }, [])
 
-  // TODO: connect these to backend
-  const handleInviteUser = () => {
-    setEditingFamily(false)
+  const handleInviteUser = async () => {
+    const name = newFamilyMemberName.trim()
+    if (!name) return
+
+    try {
+      const res = await authFetch('/users/me/family', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ name }),
+      })
+      const data = await res.json()
+
+      if (!res.ok) {
+        throw new Error(data.error || "Unable to add family member")
+      }
+
+      if (Array.isArray(data.members)) {
+        setFamilyMembers(data.members)
+      } else if (data.member) {
+        setFamilyMembers((members) => [...members, data.member])
+      }
+
+      setNewFamilyMemberName("")
+      setFamilyError("")
+      setEditingFamily(false)
+    } catch (error) {
+      console.error("Error adding family member: ", error)
+      setFamilyError(error instanceof Error ? error.message : "Unable to add family member.")
+    }
   }
 
-  const handleRemoveUser = (_username: string) => {
-    setEditingFamily(false)
+  const handleRemoveUser = async (memberId: string) => {
+    try {
+      const res = await authFetch(`/users/me/family/${encodeURIComponent(memberId)}`, {
+        method: 'DELETE',
+      })
+      const data = await res.json()
+
+      if (!res.ok) {
+        throw new Error(data.error || "Unable to remove family member")
+      }
+
+      setFamilyMembers(Array.isArray(data.members) ? data.members : [])
+      setFamilyError("")
+    } catch (error) {
+      console.error("Error removing family member: ", error)
+      setFamilyError(error instanceof Error ? error.message : "Unable to remove family member.")
+    }
   }
 
      const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
@@ -210,20 +264,37 @@ export function AccountPage(){
               </div>
 
                 <div className="family-data">
-                    {familyData.map((data) => (
-                        <div key={data.username} className="family-member">
+                    {familyError ? <p className="family-error">{familyError}</p> : null}
+                    {familyMembers.map((member) => (
+                        <div key={member.id} className="family-member">
                           <div className="icon-name-family-member">
                               <AccountCircleIcon aria-hidden="true" className="pfp-icon" fontSize="large"/>
-                              <span>{data.username}</span>
+                              <span>{member.name}{member.isDefault ? " (You)" : ""}</span>
                           </div>
-                          <button aria-label={`Remove ${data.username}`} className={`remove-user ${editingFamily ? 'edit' : ''}`} onClick={() => handleRemoveUser(data.username)}>{editingFamily ? 'Remove User' : ''}</button>
+                          {member.isDefault ? (
+                            <span className={`remove-user ${editingFamily ? 'edit' : ''}`}>{editingFamily ? 'Account owner' : ''}</span>
+                          ) : (
+                            <button aria-label={`Remove ${member.name}`} className={`remove-user ${editingFamily ? 'edit' : ''}`} onClick={() => handleRemoveUser(member.id)}>{editingFamily ? 'Remove' : ''}</button>
+                          )}
                         </div>
                        
                     ))}
                     <div className={`add-family-member ${editingFamily ? 'hidden' : ''}`}>
-                      <input id="user-email" type="text" placeholder="someone123@gmail.com"/>
+                      <input
+                        id="family-member-name"
+                        type="text"
+                        placeholder="Family member name"
+                        value={newFamilyMemberName}
+                        onChange={(event) => setNewFamilyMemberName(event.target.value)}
+                        onKeyDown={(event) => {
+                          if (event.key === "Enter") {
+                            event.preventDefault()
+                            handleInviteUser()
+                          }
+                        }}
+                      />
                        <button aria-label="Add family member" className="add-user" onClick={handleInviteUser}>
-                        Invite User
+                        Add Member
                         <AddCircleIcon className="plus-icon" fontSize="medium"/>
                             
                         </button>

@@ -247,6 +247,20 @@ input{
     transition: opacity 160ms ease;
 }
 
+.add-family-member input{
+    width: 100%;
+    border: 1px solid #eadfd5;
+    border-radius: 8px;
+    color: #62574c;
+    font: inherit;
+    padding: .65rem .75rem;
+}
+
+.add-family-member input:focus{
+    outline: 2px solid var(--main-orange-color);
+    outline-offset: 2px;
+}
+
 .add-family-member.hidden{
     opacity: 1;
 }
@@ -278,6 +292,11 @@ input{
     background-color: white;
     border: none;
     cursor: pointer;
+}
+
+.family-error{
+    color: #b42318;
+    margin: .75rem 0 0;
 }
 
 .icon-name-family-member{
@@ -338,4 +357,3 @@ input{
     color: black;
     outline: 2px solid var(--main-orange-color);
 }
-
