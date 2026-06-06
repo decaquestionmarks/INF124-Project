@@ -54,6 +54,11 @@
     gap: 1rem;
 }
 
+.search-results-message{
+    color: #7f7167;
+    margin: .25rem 0;
+}
+
 .search-item-heading{
 
     display: grid;

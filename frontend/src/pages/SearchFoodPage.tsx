@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type FormEvent } from 'react'
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import { Sidebar } from '../components/Sidebar.tsx'
 import './DashboardPage.css'
 import './CalorieTrackingPage.css'
@@ -47,6 +47,7 @@ type FoodCreatorForm = {
 
 const FOOD_CLASSIFICATIONS = ['Meat', 'Produce', 'Bakery', 'Dairy', 'Pantry', 'Frozen', 'Drinks', 'Snacks', 'Condiments', 'Spices and Baking', 'Other']
 const MEASUREMENT_OPTIONS: Array<FoodCreatorForm['measurementClassification']> = ['grams', 'ml']
+const DEFAULT_FOOD_LIMIT = 10
 
 const defaultCreatorForm = (): FoodCreatorForm => ({
   name: '',
@@ -122,12 +123,15 @@ const normalizeFoodResult = (food: Partial<FoodResult>, source: FoodSource): Foo
 
 export function SearchFoodPage({ linkBack }: SearchFoodProps) {
   const [searchResults, setSearchResults] = useState<FoodResult[]>([])
+  const [defaultFoods, setDefaultFoods] = useState<FoodResult[]>([])
   const [addedItem, setAddedItem] = useState<FoodResult | null>(null)
   const [userInput, setUserInput] = useState('')
+  const userInputRef = useRef('')
   const [servingCount, setServingCount] = useState('1')
   const [creatorForm, setCreatorForm] = useState<FoodCreatorForm>(() => defaultCreatorForm())
   const [isSavingFood, setIsSavingFood] = useState(false)
   const [isCreatorOpen, setIsCreatorOpen] = useState(false)
+  const [isLoadingDefaultFoods, setIsLoadingDefaultFoods] = useState(false)
   const navigate = useNavigate()
 
   const location = useLocation()
@@ -168,6 +172,22 @@ export function SearchFoodPage({ linkBack }: SearchFoodProps) {
     return () => legacyMediaQuery.removeListener?.(syncSidebarState)
   }, [])
 
+  const fetchDefaultFoods = async () => {
+    const res = await authFetch('/foods')
+    const data = await res.json()
+
+    if (!res.ok) {
+      throw new Error(data.error || 'Unable to load foods')
+    }
+
+    return Array.isArray(data.results)
+      ? data.results
+        .map((food: Partial<FoodResult>) => normalizeFoodResult(food, 'global'))
+        .filter(Boolean)
+        .slice(0, DEFAULT_FOOD_LIMIT) as FoodResult[]
+      : []
+  }
+
   const fetchGlobalFoods = async (query: string) => {
     if (!query) return []
 
@@ -184,6 +204,11 @@ export function SearchFoodPage({ linkBack }: SearchFoodProps) {
   }
 
   const searchFoods = async (query = userInput.trim()) => {
+    if (!query) {
+      setSearchResults(defaultFoods)
+      return
+    }
+
     try {
       const globalFoods = await fetchGlobalFoods(query)
       setSearchResults(globalFoods)
@@ -197,6 +222,36 @@ export function SearchFoodPage({ linkBack }: SearchFoodProps) {
     event.preventDefault()
     await searchFoods(userInput.trim())
   }
+
+  useEffect(() => {
+    let isActive = true
+
+    const loadDefaultFoods = async () => {
+      try {
+        setIsLoadingDefaultFoods(true)
+        const foods = await fetchDefaultFoods()
+        if (!isActive) return
+
+        setDefaultFoods(foods)
+        setSearchResults((currentResults) => currentResults.length > 0 || userInputRef.current.trim() ? currentResults : foods)
+      } catch (error) {
+        console.error('Error loading default foods: ', error)
+        if (isActive) {
+          toast.error('Unable to load foods. Please try again.')
+        }
+      } finally {
+        if (isActive) {
+          setIsLoadingDefaultFoods(false)
+        }
+      }
+    }
+
+    loadDefaultFoods()
+
+    return () => {
+      isActive = false
+    }
+  }, [])
 
   const updateCreatorField = (field: keyof FoodCreatorForm, value: string) => {
     setCreatorForm((currentForm) => ({
@@ -360,11 +415,31 @@ export function SearchFoodPage({ linkBack }: SearchFoodProps) {
         <section>
           <form onSubmit={handleSubmitSearch} className="search-form">
             <SearchIcon aria-hidden="true" className="search-icon"></SearchIcon>
-            <input id="search-bar-input" value={userInput} onChange={(event) => setUserInput(event.target.value)} aria-label="Search Foods" type="search" placeholder="Search Foods" className="search-bar" autoComplete="off" />
+            <input
+              id="search-bar-input"
+              value={userInput}
+              onChange={(event) => {
+                const value = event.target.value
+                userInputRef.current = value
+                setUserInput(value)
+                if (!value.trim()) {
+                  setSearchResults(defaultFoods)
+                }
+              }}
+              aria-label="Search Foods"
+              type="search"
+              placeholder="Search Foods"
+              className="search-bar"
+              autoComplete="off"
+            />
           </form>
         </section>
 
         <section className="search-results">
+          {isLoadingDefaultFoods && searchResults.length === 0 ? (
+            <p className="search-results-message">Loading foods...</p>
+          ) : null}
+
           {searchResults.map((result) => (
             <div onClick={() => { setAddedItem(result); setServingCount('1') }} key={getFoodKey(result)} className="search-item">
               <div className={`search-item-heading ${addedItem && getFoodKey(addedItem) === getFoodKey(result) ? 'added' : ''}`}>
