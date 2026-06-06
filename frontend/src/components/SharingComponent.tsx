@@ -12,7 +12,7 @@ export function SharingComponent({recipeId}: SharingComponentProps){
     
     return (
         <div className="share-row">
-            <XShareButton url={url} title={presetText} hashtags={['#foodly']}>
+            <XShareButton url={url} title={presetText} hashtags={['foodly']}>
                 <XIcon size={32} round></XIcon>
             </XShareButton>
             <RedditShareButton url={url} title={presetText}>
