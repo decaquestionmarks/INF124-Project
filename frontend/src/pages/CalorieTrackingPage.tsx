@@ -9,7 +9,8 @@ import ArrowRightRoundedIcon from '@mui/icons-material/ArrowRightRounded';
 import ArrowLeftRoundedIcon from '@mui/icons-material/ArrowLeftRounded';
 import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
 import {toast} from 'react-hot-toast'
-import { authFetch } from '../api.ts'
+import { authFetch, getGoalWebSocketUrl } from '../api.ts'
+import { useAuth } from '../auth/AuthContext.tsx'
 type MacroProgress = {
   calories: {
     goal: number,
@@ -39,6 +40,17 @@ type ProgressNutrient = {
   goal?: number;
   total?: number;
   remaining?: number;
+};
+
+type GoalUpdatePayload = {
+  date?: string;
+  foods?: TrackedFood[];
+  progress?: unknown;
+};
+
+type GoalWebSocketMessage = {
+  type?: string;
+  payload?: GoalUpdatePayload;
 };
 
 const emptyMacroProgress = (): MacroProgress => ({
@@ -97,11 +109,13 @@ export function CalorieTrackingPage(){
   const [editAmount, setEditAmount] = useState("");
   const current = new Date();
   const [date, setDate] = useState(current)
+  const dateKey = date.toISOString().slice(0,10)
   const [foods, setFoods] = useState<TrackedFood[]>([])
   const [goalProgress, setGoalProgress] = useState<MacroProgress>(() => emptyMacroProgress())
   const navigate = useNavigate()
+  const { user } = useAuth()
   const handleSelectFood = (food: TrackedFood) => {
-      navigate(`/calorie-tracking/food?trackedFoodId=${encodeURIComponent(food.id)}&date=${date.toISOString().slice(0,10)}`)
+      navigate(`/calorie-tracking/food?trackedFoodId=${encodeURIComponent(food.id)}&date=${dateKey}`)
   }
 
   const decrementDate = () => {
@@ -127,7 +141,7 @@ export function CalorieTrackingPage(){
   const handleDeleteFood = async (food: TrackedFood) => {
     // make API call to delete food
     try {
-      const res = await authFetch(`/users/me/goal/${date.toISOString().slice(0,10)}/${encodeURIComponent(food.id)}`, {
+      const res = await authFetch(`/users/me/goal/${dateKey}/${encodeURIComponent(food.id)}`, {
         method: 'DELETE',
         headers :{
           'Content-Type': 'application/json'
@@ -195,7 +209,7 @@ export function CalorieTrackingPage(){
         }
       })
 
-      const res = await authFetch(`/users/me/goal/${date.toISOString().slice(0,10)}`, {
+      const res = await authFetch(`/users/me/goal/${dateKey}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
@@ -225,7 +239,7 @@ export function CalorieTrackingPage(){
     // gets goal for current date
      const fetchGoalForCurrentDate = async () => {
       try{
-        const res = await authFetch(`/users/me/goal/?date=${date.toISOString().slice(0,10)}`)
+        const res = await authFetch(`/users/me/goal/?date=${dateKey}`)
         
         if (!res.ok){
           throw new Error("Unable to fetch goal for current date")
@@ -243,7 +257,7 @@ export function CalorieTrackingPage(){
     const fetchFoodForCurrentDate = async () => {
       try{
         
-        const res = await authFetch(`/users/me/goal/foods?date=${date.toISOString().slice(0,10)}`)
+        const res = await authFetch(`/users/me/goal/foods?date=${dateKey}`)
         
         if (!res.ok){
           setFoods([]);
@@ -260,7 +274,66 @@ export function CalorieTrackingPage(){
 
     fetchFoodForCurrentDate()
     fetchGoalForCurrentDate()
-  }, [date]);
+  }, [dateKey]);
+
+  useEffect(() => {
+    if (!user) return
+
+    let socket: WebSocket | null = null
+    let reconnectTimer: number | undefined
+    let isDisposed = false
+
+    const applyGoalUpdate = (payload: GoalUpdatePayload) => {
+      if (payload.date !== dateKey) return
+
+      if (Array.isArray(payload.foods)) {
+        setFoods(payload.foods)
+      }
+
+      setGoalProgress(toMacroProgress(payload.progress))
+    }
+
+    const connect = async () => {
+      try {
+        const token = await user.getIdToken()
+        if (isDisposed) return
+
+        socket = new WebSocket(getGoalWebSocketUrl(token, dateKey))
+
+        socket.onmessage = (event) => {
+          try {
+            const message = JSON.parse(event.data) as GoalWebSocketMessage
+            if (message.type === 'goal:update' && message.payload) {
+              applyGoalUpdate(message.payload)
+            }
+          } catch (error) {
+            console.error("Error reading calorie tracker update: ", error)
+          }
+        }
+
+        socket.onerror = () => {
+          socket?.close()
+        }
+
+        socket.onclose = () => {
+          if (isDisposed) return
+          reconnectTimer = window.setTimeout(connect, 2000)
+        }
+      } catch (error) {
+        console.error("Error connecting calorie tracker updates: ", error)
+      }
+    }
+
+    connect()
+
+    return () => {
+      isDisposed = true
+      if (reconnectTimer) {
+        window.clearTimeout(reconnectTimer)
+      }
+      socket?.close()
+    }
+  }, [dateKey, user]);
 
    return (
        <main
@@ -337,7 +410,7 @@ export function CalorieTrackingPage(){
                 <div className="meal-cat-labels">
                  <h3 className="meal-title">Tracked Foods</h3>
                 </div>
-                <Link to={`/calorie-tracking/search-food?date=${date.toISOString().slice(0,10)}`} className="add-food">Add Food<AddCircleIcon></AddCircleIcon> </Link>              
+                <Link to={`/calorie-tracking/search-food?date=${dateKey}`} className="add-food">Add Food<AddCircleIcon></AddCircleIcon> </Link>              
              </div>
               
               <div className="added-items">

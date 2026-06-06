@@ -52,6 +52,11 @@ const getBearerToken = (authorizationHeader = '') => {
   return token;
 };
 
+const verifyIdToken = async (idToken) => {
+  const app = getFirebaseApp();
+  return admin.auth(app).verifyIdToken(idToken);
+};
+
 const requireAuth = async (req, res, next) => {
   const idToken = getBearerToken(req.headers.authorization);
 
@@ -60,8 +65,7 @@ const requireAuth = async (req, res, next) => {
   }
 
   try {
-    const app = getFirebaseApp();
-    const decodedToken = await admin.auth(app).verifyIdToken(idToken);
+    const decodedToken = await verifyIdToken(idToken);
     req.user = decodedToken;
     return next();
   } catch (error) {
@@ -72,4 +76,5 @@ const requireAuth = async (req, res, next) => {
 
 module.exports = {
   requireAuth,
+  verifyIdToken,
 };

@@ -1,12 +1,15 @@
 require('dotenv').config();
 const express = require('express');
+const http = require('http');
 const recipeRouter = require('./routes/recipe');
 const foodsRouter = require('./routes/foods');
 const usersRouter = require('./routes/users');
 const cors = require('cors')
 const mongoose = require('mongoose');
+const { setupRealtime } = require('./services/realtime');
 
 const app = express();
+const server = http.createServer(app);
 const PORT = process.env.PORT || 3000;
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/recipes';
 
@@ -34,7 +37,9 @@ app.get('/', (req, res) => {
   res.json({ message: 'Server is running' });
 });
 
+setupRealtime(server);
+
 // Start server
-app.listen(PORT, '0.0.0.0', () => {
+server.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running at http://0.0.0.0:${PORT}`);
 });

@@ -3,6 +3,7 @@ const Food = require('../../models/food');
 const Goal = require('../../models/goal');
 const Fridge = require('../../models/fridge');
 const mongoose = require('mongoose');
+const { broadcastGoalUpdate } = require('../services/realtime');
 
 // Simple in-memory mock user store for demo / frontend consumption
 const mockUsers = {};
@@ -208,7 +209,9 @@ const addGoalFood = async (req, res) => {
 		}
 
 		await saveUser(req.appUser, 'goals');
-		return res.status(201).json(buildGoalPayload(date, goal));
+		const payload = buildGoalPayload(date, goal);
+		broadcastGoalUpdate(req.appUser.id, date, payload);
+		return res.status(201).json(payload);
 	} catch (err) {
 		return res.status(400).json({ error: err.message });
 	}
@@ -263,7 +266,9 @@ const updateGoal = async (req, res) => {
 
 		req.appUser.setGoal(date, nextGoal);
 		await saveUser(req.appUser, 'goals');
-		return res.json(buildGoalPayload(date, nextGoal));
+		const payload = buildGoalPayload(date, nextGoal);
+		broadcastGoalUpdate(req.appUser.id, date, payload);
+		return res.json(payload);
 	} catch (err) {
 		return res.status(400).json({ error: err.message });
 	}
@@ -295,7 +300,9 @@ const deleteGoalFood = async (req, res) => {
 		}
 		req.appUser.setGoal(date, goal);
 		await saveUser(req.appUser, 'goals');
-		return res.json(buildGoalPayload(date, goal));
+		const payload = buildGoalPayload(date, goal);
+		broadcastGoalUpdate(req.appUser.id, date, payload);
+		return res.json(payload);
 	} catch (err) {
 		return res.status(400).json({ error: err.message });
 	}

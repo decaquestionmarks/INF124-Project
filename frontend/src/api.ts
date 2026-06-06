@@ -13,6 +13,14 @@ const getApiUrl = (path: string) => {
   return `${API_BASE_URL}${path.startsWith('/') ? path : `/${path}`}`
 }
 
+export const getGoalWebSocketUrl = (token: string, date: string) => {
+  const url = new URL(getApiUrl('/users/me/goal/live'), window.location.href)
+  url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:'
+  url.searchParams.set('token', token)
+  url.searchParams.set('date', date)
+  return url.toString()
+}
+
 const getHeaders = (headers?: HeadersInit) => new Headers(headers)
 
 export async function apiFetch(path: string, options: RequestInit = {}) {
