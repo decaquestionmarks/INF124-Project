@@ -221,6 +221,37 @@ const createFood = async (req, res) => {
     } catch (err) {
         return res.status(err.statusCode || 400).json({ error: err.message || 'Unable to create food' });
     }
+
+    const deleteFood = async (req, res) => {
+        if (!isMongoReady()) {
+            return res.status(503).json({ error: 'Database unavailable' });
+        }
+
+        try {
+            const { name } = req.body;
+
+            if (!name) {
+            return res.status(400).json({ error: 'Food name is required' });
+            }
+
+            const deleted = await FoodModel.findOneAndDelete({
+            name: name.trim(),
+            });
+
+            if (!deleted) {
+            return res.status(404).json({ error: 'Food not found' });
+            }
+
+            return res.status(200).json({
+            message: 'Food deleted successfully',
+            deleted: toFoodObject(deleted),
+            });
+        } catch (err) {
+            return res
+            .status(500)
+            .json({ error: err.message || 'Unable to delete food' });
+        }
+    };
 };
 
 module.exports = {

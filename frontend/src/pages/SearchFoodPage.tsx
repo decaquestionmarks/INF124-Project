@@ -15,7 +15,7 @@ type SearchFoodProps = {
   linkBack: string
 }
 
-type FoodSource = 'global' | 'saved'
+type FoodSource = 'global'
 
 type Macronutrients = {
   calories: number
@@ -120,26 +120,8 @@ const normalizeFoodResult = (food: Partial<FoodResult>, source: FoodSource): Foo
   }
 }
 
-const mergeFoodResults = (savedFoods: FoodResult[], globalFoods: FoodResult[]) => {
-  const foodsByName = new Map<string, FoodResult>()
-
-  savedFoods.forEach((food) => {
-    foodsByName.set(food.name.trim().toLowerCase(), food)
-  })
-
-  globalFoods.forEach((food) => {
-    const key = food.name.trim().toLowerCase()
-    if (!foodsByName.has(key)) {
-      foodsByName.set(key, food)
-    }
-  })
-
-  return Array.from(foodsByName.values())
-}
-
 export function SearchFoodPage({ linkBack }: SearchFoodProps) {
   const [searchResults, setSearchResults] = useState<FoodResult[]>([])
-  const [savedFoods, setSavedFoods] = useState<FoodResult[]>([])
   const [addedItem, setAddedItem] = useState<FoodResult | null>(null)
   const [userInput, setUserInput] = useState('')
   const [servingCount, setServingCount] = useState('1')
@@ -186,19 +168,6 @@ export function SearchFoodPage({ linkBack }: SearchFoodProps) {
     return () => legacyMediaQuery.removeListener?.(syncSidebarState)
   }, [])
 
-  const fetchSavedFoods = async (query = '') => {
-    const res = await authFetch(`/users/me/saved-foods${query ? `?query=${encodeURIComponent(query)}` : ''}`)
-    const data = await res.json()
-
-    if (!res.ok) {
-      throw new Error(data.error || 'Unable to load saved foods')
-    }
-
-    return Array.isArray(data.results)
-      ? data.results.map((food: Partial<FoodResult>) => normalizeFoodResult(food, 'saved')).filter(Boolean) as FoodResult[]
-      : []
-  }
-
   const fetchGlobalFoods = async (query: string) => {
     if (!query) return []
 
@@ -216,37 +185,13 @@ export function SearchFoodPage({ linkBack }: SearchFoodProps) {
 
   const searchFoods = async (query = userInput.trim()) => {
     try {
-      const [nextSavedFoods, globalFoods] = await Promise.all([
-        fetchSavedFoods(query),
-        fetchGlobalFoods(query),
-      ])
-      setSavedFoods(nextSavedFoods)
-      setSearchResults(mergeFoodResults(nextSavedFoods, globalFoods))
+      const globalFoods = await fetchGlobalFoods(query)
+      setSearchResults(globalFoods)
     } catch (error) {
       console.error('Error searching for foods: ', error)
       toast.error('Unable to search foods. Please try again.')
     }
   }
-
-  useEffect(() => {
-    let isDisposed = false
-    const timer = window.setTimeout(async () => {
-      try {
-        const initialSavedFoods = await fetchSavedFoods('')
-        if (!isDisposed) {
-          setSavedFoods(initialSavedFoods)
-          setSearchResults(initialSavedFoods)
-        }
-      } catch (error) {
-        console.error('Error loading saved foods: ', error)
-      }
-    }, 0)
-
-    return () => {
-      isDisposed = true
-      window.clearTimeout(timer)
-    }
-  }, [])
 
   const handleSubmitSearch = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -277,7 +222,7 @@ export function SearchFoodPage({ linkBack }: SearchFoodProps) {
 
     try {
       setIsSavingFood(true)
-      const res = await authFetch('/users/me/saved-foods', {
+      const res = await authFetch('/foods', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -299,21 +244,22 @@ export function SearchFoodPage({ linkBack }: SearchFoodProps) {
         throw new Error(data.error || 'Unable to save food')
       }
 
-      const savedFood = normalizeFoodResult(data.savedFood, 'saved')
-      const nextSavedFoods = Array.isArray(data.savedFoods)
-        ? data.savedFoods.map((food: Partial<FoodResult>) => normalizeFoodResult(food, 'saved')).filter(Boolean) as FoodResult[]
-        : savedFood ? [savedFood, ...savedFoods] : savedFoods
+      const newFood = normalizeFoodResult(data, 'global')
 
-      setSavedFoods(nextSavedFoods)
-      setSearchResults(mergeFoodResults(nextSavedFoods, searchResults.filter((food) => food.source !== 'saved')))
-
-      if (savedFood) {
-        setAddedItem(savedFood)
+      if (newFood) {
+        setAddedItem(newFood)
         setServingCount('1')
+        setSearchResults((prev) => {
+          const hasExisting = prev.some((food) => food.name.trim().toLowerCase() === newFood.name.trim().toLowerCase())
+          if (hasExisting) {
+            return prev.map((food) => food.name.trim().toLowerCase() === newFood.name.trim().toLowerCase() ? newFood : food)
+          }
+          return [newFood, ...prev]
+        })
       }
 
       setCreatorForm(defaultCreatorForm())
-      toast.success(`${savedFood?.name ?? 'Food'} saved`)
+      toast.success(`${newFood?.name ?? 'Food'} saved to foods`) 
     } catch (error) {
       console.error('Error saving food: ', error)
       toast.error('Failed to save food. Please try again.')
@@ -350,7 +296,6 @@ export function SearchFoodPage({ linkBack }: SearchFoodProps) {
       servings: roundNutrient(servings),
       servingMeasurement: addedItem.measurement,
       servingMeasurementClassification: addedItem.measurementClassification,
-      savedFoodId: addedItem.source === 'saved' ? addedItem.id : undefined,
       macronutrients: selectedMacros,
     }
 
@@ -429,7 +374,7 @@ export function SearchFoodPage({ linkBack }: SearchFoodProps) {
                   <span>{result.measurementClassification}</span>
                 </div>
                 <span>{formatAmount(result.macronutrients.calories)} cal</span>
-                <span className="food-source">{result.source === 'saved' ? 'Saved' : 'Food list'}</span>
+                {/* <span className="food-source">{result.source === 'saved' ? 'Saved' : 'Food list'}</span> */}
                 <button
                   aria-label="Select item"
                   className="add-icon"
