@@ -22,6 +22,36 @@ type TrackedFood = {
   };
 }
 
+type MacroKey = 'protein' | 'carbs' | 'fat'
+
+type MacroVisualizerItem = {
+  key: MacroKey;
+  label: string;
+  caloriesPerGram: number;
+}
+
+type MacroVisualizerSegment = MacroVisualizerItem & {
+  grams: number;
+  macroCalories: number;
+  percent: number;
+}
+
+type FoodDetailRow = {
+  label: string;
+  value: string;
+  highlight?: boolean;
+}
+
+const MACRO_VISUALIZER_ITEMS: MacroVisualizerItem[] = [
+  { key: 'protein', label: 'Protein', caloriesPerGram: 4 },
+  { key: 'carbs', label: 'Net Carbs', caloriesPerGram: 4 },
+  { key: 'fat', label: 'Fat', caloriesPerGram: 9 },
+]
+
+const DONUT_SEGMENT_ORDER: MacroKey[] = ['fat', 'protein', 'carbs']
+const DONUT_RADIUS = 58
+const DONUT_CIRCUMFERENCE = 2 * Math.PI * DONUT_RADIUS
+
 const toNumber = (value: unknown) => {
   return typeof value === 'number' && Number.isFinite(value) ? value : 0
 }
@@ -41,6 +71,74 @@ const normalizeMeasurementLabel = (value: string) => {
 }
 
 const formatAmount = (value: number) => Number.isInteger(value) ? String(value) : value.toFixed(1)
+
+const formatGrams = (value: number) => `${value.toFixed(1)}g`
+
+const getMacroVisualizerData = (macros: TrackedFood['macronutrients']) => {
+  const segments = MACRO_VISUALIZER_ITEMS.map((item) => {
+    const grams = toNumber(macros?.[item.key])
+
+    return {
+      ...item,
+      grams,
+      macroCalories: grams * item.caloriesPerGram,
+      percent: 0,
+    }
+  })
+
+  const totalMacroCalories = segments.reduce((sum, segment) => sum + segment.macroCalories, 0)
+  const displayCalories = toNumber(macros?.calories)
+
+  return {
+    calories: Math.round(displayCalories > 0 ? displayCalories : totalMacroCalories),
+    labels: segments.map((segment) => ({
+      ...segment,
+      percent: totalMacroCalories > 0 ? (segment.macroCalories / totalMacroCalories) * 100 : 0,
+    })),
+  }
+}
+
+function MacroDonut({ segments }: { segments: MacroVisualizerSegment[] }) {
+  const visibleSegments = DONUT_SEGMENT_ORDER
+    .map((key) => segments.find((segment) => segment.key === key))
+    .filter((segment): segment is MacroVisualizerSegment => segment !== undefined && segment.percent > 0)
+
+  const gapLength = visibleSegments.length > 1 ? 4 : 0
+  let currentOffset = 0
+
+  return (
+    <svg className="macro-donut" viewBox="0 0 140 140" aria-hidden="true">
+      <circle
+        className="macro-donut__track"
+        cx="70"
+        cy="70"
+        r={DONUT_RADIUS}
+        fill="none"
+        strokeWidth="11"
+      />
+      {visibleSegments.map((segment) => {
+        const segmentLength = (segment.percent / 100) * DONUT_CIRCUMFERENCE
+        const dashLength = Math.max(segmentLength - gapLength, 0)
+        const dashOffset = -currentOffset
+        currentOffset += segmentLength
+
+        return (
+          <circle
+            className={`macro-donut__segment macro-donut__segment--${segment.key}`}
+            key={segment.key}
+            cx="70"
+            cy="70"
+            r={DONUT_RADIUS}
+            fill="none"
+            strokeWidth="11"
+            strokeDasharray={`${dashLength} ${DONUT_CIRCUMFERENCE - dashLength}`}
+            strokeDashoffset={dashOffset}
+          />
+        )
+      })}
+    </svg>
+  )
+}
 
 const getFoodAmountLabel = (food: TrackedFood) => {
   const measurement = Number(food.measurement)
@@ -149,6 +247,17 @@ export function FoodPage(){
   }, [])
 
   const macros = trackedFood?.macronutrients ?? {}
+  const macroVisualizer = getMacroVisualizerData(macros)
+  const macroVisualizerLabel = macroVisualizer.labels
+    .map((segment) => `${segment.label} ${Math.round(segment.percent)} percent, ${formatGrams(segment.grams)}`)
+    .join('; ')
+  const foodDetailRows: FoodDetailRow[] = trackedFood ? [
+    { label: 'Amount', value: getFoodAmountLabel(trackedFood), highlight: true },
+    { label: 'Calories', value: `${toNumber(macros.calories)} kcal`, highlight: true },
+    { label: 'Protein', value: formatGrams(toNumber(macros.protein)) },
+    { label: 'Carbs', value: formatGrams(toNumber(macros.carbs)) },
+    { label: 'Fat', value: formatGrams(toNumber(macros.fat)) },
+  ] : []
   
     return (
        <main
@@ -169,30 +278,61 @@ export function FoodPage(){
             <SecondaryHeader isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} pageTitle={trackedFood?.name ?? foodName ?? "Food Details"} linkBack="/calorie-tracking"></SecondaryHeader>
             <section className="food-page">
 
-                {isLoading ? <p>Loading food details...</p> : null}
-                {!isLoading && error ? <p>{error}</p> : null}
+                {isLoading ? <p className="food-page__state">Loading food details...</p> : null}
+                {!isLoading && error ? <p className="food-page__state food-page__state--error">{error}</p> : null}
                 {!isLoading && trackedFood ? (
                   <div className="overall-macros">
-                    <div className="macro-row">
-                        <span>Amount:</span>
-                         <span>{getFoodAmountLabel(trackedFood)}</span>
+                    <div className="food-page__summary">
+                      <div className="food-page__summary-item">
+                        <span>Logged amount</span>
+                        <strong>{getFoodAmountLabel(trackedFood)}</strong>
+                      </div>
+                      <div className="food-page__summary-item food-page__summary-item--accent">
+                        <span>Total calories</span>
+                        <strong>{macroVisualizer.calories} kcal</strong>
+                      </div>
                     </div>
-                    <div className="macro-row">
-                        <span>Calories:</span>
-                        <span>{toNumber(macros.calories)}</span>
-                    </div>
-   
-                    <div className="macro-row">
-                        <span>Fat:</span>
-                        <span>{toNumber(macros.fat)} g</span>
-                    </div>
-                    <div className="macro-row">
-                        <span>Protein:</span>
-                        <span>{toNumber(macros.protein)} g</span>
-                    </div>
-                    <div className="macro-row">
-                        <span>Carbs:</span>
-                        <span>{toNumber(macros.carbs)} g</span>
+
+                    <div className="food-page__details-grid">
+                      <div
+                        className="macro-visualizer"
+                        role="img"
+                        aria-label={`${macroVisualizer.calories} kilocalories. ${macroVisualizerLabel}`}
+                      >
+                        <div className="macro-visualizer__chart">
+                          <MacroDonut segments={macroVisualizer.labels} />
+                          <div className="macro-visualizer__center">
+                            <strong>{macroVisualizer.calories}</strong>
+                            <span>kcal</span>
+                          </div>
+                        </div>
+
+                        <div className="macro-visualizer__legend" aria-hidden="true">
+                          {macroVisualizer.labels.map((segment) => (
+                            <div className="macro-visualizer__legend-row" key={segment.key}>
+                              <span className={`macro-visualizer__legend-label macro-visualizer__legend-label--${segment.key}`}>
+                                {segment.label} ({Math.round(segment.percent)}%)
+                              </span>
+                              <strong>{formatGrams(segment.grams)}</strong>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <section className="food-page__nutrition" aria-labelledby="food-page-nutrition-title">
+                        <div className="food-page__nutrition-header">
+                          <span>Details</span>
+                          <h2 id="food-page-nutrition-title">Nutrition</h2>
+                        </div>
+                        <div className="food-page__nutrition-list">
+                          {foodDetailRows.map((row) => (
+                            <div className={`food-page__nutrition-row${row.highlight ? ' food-page__nutrition-row--highlight' : ''}`} key={row.label}>
+                              <span>{row.label}</span>
+                              <strong>{row.value}</strong>
+                            </div>
+                          ))}
+                        </div>
+                      </section>
                     </div>
                   </div>
                 ) : null}
