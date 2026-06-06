@@ -145,6 +145,7 @@ export function SearchFoodPage({ linkBack }: SearchFoodProps) {
   const [servingCount, setServingCount] = useState('1')
   const [creatorForm, setCreatorForm] = useState<FoodCreatorForm>(() => defaultCreatorForm())
   const [isSavingFood, setIsSavingFood] = useState(false)
+  const [isCreatorOpen, setIsCreatorOpen] = useState(false)
   const navigate = useNavigate()
 
   const location = useLocation()
@@ -411,58 +412,6 @@ export function SearchFoodPage({ linkBack }: SearchFoodProps) {
       <section className="dashboard-page__content">
         <SecondaryHeader isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} pageTitle="Food Finder" linkBack={linkBack}></SecondaryHeader>
 
-        <form onSubmit={handleSaveFood} className="food-creator">
-          <h2>Create Food</h2>
-          <div className="food-creator-grid">
-            <label>
-              <span>Name</span>
-              <input value={creatorForm.name} onChange={(event) => updateCreatorField('name', event.target.value)} autoComplete="off" />
-            </label>
-            <label>
-              <span>Category</span>
-              <select value={creatorForm.classification} onChange={(event) => updateCreatorField('classification', event.target.value)}>
-                {FOOD_CLASSIFICATIONS.map((classification) => (
-                  <option key={classification} value={classification}>{classification}</option>
-                ))}
-              </select>
-            </label>
-            <label>
-              <span>Serving Size</span>
-              <input type="number" min="0.1" step="0.1" value={creatorForm.measurement} onChange={(event) => updateCreatorField('measurement', event.target.value)} />
-            </label>
-            <label>
-              <span>Unit</span>
-              <select value={creatorForm.measurementClassification} onChange={(event) => updateCreatorField('measurementClassification', event.target.value as FoodCreatorForm['measurementClassification'])}>
-                {MEASUREMENT_OPTIONS.map((unit) => (
-                  <option key={unit} value={unit}>{unit}</option>
-                ))}
-              </select>
-            </label>
-            <label>
-              <span>Calories</span>
-              <input type="number" min="0" step="0.1" value={creatorForm.calories} onChange={(event) => updateCreatorField('calories', event.target.value)} />
-            </label>
-            <label>
-              <span>Carbs</span>
-              <input type="number" min="0" step="0.1" value={creatorForm.carbs} onChange={(event) => updateCreatorField('carbs', event.target.value)} />
-            </label>
-            <label>
-              <span>Fat</span>
-              <input type="number" min="0" step="0.1" value={creatorForm.fat} onChange={(event) => updateCreatorField('fat', event.target.value)} />
-            </label>
-            <label>
-              <span>Protein</span>
-              <input type="number" min="0" step="0.1" value={creatorForm.protein} onChange={(event) => updateCreatorField('protein', event.target.value)} />
-            </label>
-          </div>
-          <div className="save-bar">
-            <button type="submit" className="save-button" disabled={isSavingFood}>
-              <AddCircleIcon aria-hidden="true" fontSize="small" />
-              Save Food
-            </button>
-          </div>
-        </form>
-
         <section>
           <form onSubmit={handleSubmitSearch} className="search-form">
             <SearchIcon aria-hidden="true" className="search-icon"></SearchIcon>
@@ -533,6 +482,75 @@ export function SearchFoodPage({ linkBack }: SearchFoodProps) {
               <button onClick={handleLogFood} className="save-button" disabled={!hasValidServingCount} type="button">Log</button>
             </div>
           </section>}
+
+        <div className="custom-food-creator-cta">
+          <button
+            type="button"
+            className="save-button"
+            onClick={() => setIsCreatorOpen((open) => !open)}
+          >
+            {isCreatorOpen ? (
+              <RemoveCircleIcon aria-hidden="true" fontSize="small" />
+            ) : (
+              <AddCircleIcon aria-hidden="true" fontSize="small" />
+            )}
+            {isCreatorOpen ? 'Hide custom food creator' : 'Create custom food'}
+          </button>
+        </div>
+
+        {isCreatorOpen && (
+          <form onSubmit={handleSaveFood} className="food-creator">
+            <h2>Create Food</h2>
+            <div className="food-creator-grid">
+              <label>
+                <span>Name</span>
+                <input value={creatorForm.name} onChange={(event) => updateCreatorField('name', event.target.value)} autoComplete="off" />
+              </label>
+              <label>
+                <span>Category</span>
+                <select value={creatorForm.classification} onChange={(event) => updateCreatorField('classification', event.target.value)}>
+                  {FOOD_CLASSIFICATIONS.map((classification) => (
+                    <option key={classification} value={classification}>{classification}</option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                <span>Serving Size</span>
+                <input type="number" min="0.1" step="0.1" value={creatorForm.measurement} onChange={(event) => updateCreatorField('measurement', event.target.value)} />
+              </label>
+              <label>
+                <span>Unit</span>
+                <select value={creatorForm.measurementClassification} onChange={(event) => updateCreatorField('measurementClassification', event.target.value as FoodCreatorForm['measurementClassification'])}>
+                  {MEASUREMENT_OPTIONS.map((unit) => (
+                    <option key={unit} value={unit}>{unit}</option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                <span>Calories</span>
+                <input type="number" min="0" step="0.1" value={creatorForm.calories} onChange={(event) => updateCreatorField('calories', event.target.value)} />
+              </label>
+              <label>
+                <span>Carbs</span>
+                <input type="number" min="0" step="0.1" value={creatorForm.carbs} onChange={(event) => updateCreatorField('carbs', event.target.value)} />
+              </label>
+              <label>
+                <span>Fat</span>
+                <input type="number" min="0" step="0.1" value={creatorForm.fat} onChange={(event) => updateCreatorField('fat', event.target.value)} />
+              </label>
+              <label>
+                <span>Protein</span>
+                <input type="number" min="0" step="0.1" value={creatorForm.protein} onChange={(event) => updateCreatorField('protein', event.target.value)} />
+              </label>
+            </div>
+            <div className="save-bar">
+              <button type="submit" className="save-button" disabled={isSavingFood}>
+                <AddCircleIcon aria-hidden="true" fontSize="small" />
+                Save Food
+              </button>
+            </div>
+          </form>
+        )}
       </section>
     </main>
   )

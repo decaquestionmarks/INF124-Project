@@ -157,7 +157,14 @@
     justify-content: flex-end;
 }
 
-.save-bar button{
+.custom-food-creator-cta{
+    display: flex;
+    justify-content: center;
+    margin-top: .25rem;
+}
+
+.save-bar button,
+.custom-food-creator-cta button{
     width: auto;
     min-width: 9rem;
     display: inline-flex;
@@ -175,17 +182,20 @@
     padding: .6rem .85rem;
 }
 
-.save-bar button:hover{
+.save-bar button:hover,
+.custom-food-creator-cta button:hover{
     border-color: var(--button-hover-border-text);
     background: var(--light-button-hover);
     color: var(--button-hover-border-text);
 }
 
-.save-bar button:disabled{
+.save-bar button:disabled,
+.custom-food-creator-cta button:disabled{
     opacity: 0.6;
 }
 
-.save-bar button:disabled:hover{
+.save-bar button:disabled:hover,
+.custom-food-creator-cta button:disabled:hover{
     border-color: #deb99b;
     background: #fff7ef;
     color: #7f5e44;
