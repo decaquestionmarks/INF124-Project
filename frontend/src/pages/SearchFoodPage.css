@@ -1,3 +1,53 @@
+.food-creator{
+    color: #5a524b;
+    background-color: var(--card-color);
+    box-shadow: inset 0 0 0 1px #eadfd5;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem;
+    border-radius: 8px;
+    text-align: left;
+}
+
+.food-creator h2{
+    margin: 0;
+    font-size: 1.15rem;
+}
+
+.food-creator-grid{
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: .85rem;
+}
+
+.food-creator-grid label{
+    display: flex;
+    flex-direction: column;
+    gap: .35rem;
+    min-width: 0;
+    font-size: .9rem;
+    font-weight: 600;
+}
+
+.food-creator-grid input,
+.food-creator-grid select{
+    width: 100%;
+    min-width: 0;
+    border: 1px solid #eadfd5;
+    border-radius: 8px;
+    background: #fff;
+    color: #5a524b;
+    font: inherit;
+    padding: .55rem .65rem;
+}
+
+.food-creator-grid input:focus,
+.food-creator-grid select:focus{
+    outline: 2px solid var(--main-orange-color);
+    outline-offset: 1px;
+}
+
 .search-results{
     display: flex;
     flex-direction: column;
@@ -7,13 +57,15 @@
 .search-item-heading{
 
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr auto;
+    grid-template-columns: minmax(0, 1.2fr) minmax(7rem, .8fr) minmax(5rem, .6fr) minmax(5rem, .5fr) auto;
+    align-items: center;
+    gap: .75rem;
     box-sizing: border-box;
     text-decoration: none;
     color: #5a524b;
     padding: .5rem .5rem .5rem 1rem;
     transition: background-color 160ms ease, border 160ms ease;
-    border-radius: 1rem;
+    border-radius: 8px;
     color: #5a524b;
     font-size: .9rem;
     border: 1px solid #eadfd5;
@@ -23,7 +75,7 @@
 
 .search-item-heading:hover{
     background-color: var(--search-results-hover);;
-    border-radius: 1rem;
+    border-radius: 8px;
     border: 1px solid var(--button-hover-border-text)
 }
 
@@ -34,6 +86,26 @@
 
       
 
+}
+
+.search-item-heading > span,
+.amount-and-unit{
+    min-width: 0;
+}
+
+.search-item-heading > span:first-child{
+    overflow-wrap: anywhere;
+}
+
+.amount-and-unit{
+    display: flex;
+    gap: .25rem;
+    align-items: center;
+}
+
+.food-source{
+    color: #7f7167;
+    font-size: .82rem;
 }
 
 .right-elements{
@@ -86,7 +158,27 @@
 }
 
 .save-bar button{
-    width: 25%;
+    width: auto;
+    min-width: 9rem;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    gap: .35rem;
+    border: 1px solid #deb99b;
+    border-radius: 8px;
+    background: #fff7ef;
+    color: #7f5e44;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 1rem;
+    transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease;
+    padding: .6rem .85rem;
+}
+
+.save-bar button:hover{
+    border-color: var(--button-hover-border-text);
+    background: var(--light-button-hover);
+    color: var(--button-hover-border-text);
 }
 
 .save-bar button:disabled{
@@ -97,7 +189,7 @@
     border-color: #deb99b;
     background: #fff7ef;
     color: #7f5e44;
-    cursor: disabled;
+    cursor: not-allowed;
 }
 
 .search-label{
@@ -105,6 +197,24 @@
 }
 
 @media(max-width: 1024px){
+    .food-creator-grid{
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .search-item-heading{
+        grid-template-columns: minmax(0, 1fr) auto;
+    }
+
+    .search-item-heading .amount-and-unit,
+    .search-item-heading .food-source{
+        grid-column: 1;
+    }
+
+    .search-item-heading .add-icon{
+        grid-column: 2;
+        grid-row: 1 / span 4;
+    }
+
     .save-bar button{
         width: 100%;
     }
@@ -138,7 +248,7 @@
     flex-direction: column;
     gap: 1rem;
     padding: 1rem;
-    border-radius: 1.5rem;
+    border-radius: 8px;
 }
 
 .added-item-name{
@@ -150,7 +260,7 @@
 .macros{
     flex-direction: column; 
     gap: .5rem;
-    border-radius: 1.5rem;
+    border-radius: 8px;
     display: flex;  
     background-color: white;
     box-shadow: inset 0 0 0 1px #eadfd5;
@@ -158,7 +268,7 @@
 }
 .serving-inputs{
     padding: 1.1rem;
-    border-radius: 1.5rem;
+    border-radius: 8px;
     display: flex;  
     align-items: center;
     gap: 1rem;
@@ -183,4 +293,19 @@
 .serving-size{
     text-align: end
 
+}
+
+@media(max-width: 640px){
+    .food-creator-grid{
+        grid-template-columns: 1fr;
+    }
+
+    .serving-inputs{
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .serving-inputs input{
+        width: 100%;
+    }
 }

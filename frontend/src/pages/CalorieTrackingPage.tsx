@@ -28,6 +28,9 @@ type TrackedFood = {
   amount: number | string;
   measurement: number;
   measurementClassification: string;
+  servings?: number;
+  servingMeasurement?: number;
+  servingMeasurementClassification?: string;
   macronutrients: {
     calories?: number;
     carbs?: number;
@@ -103,6 +106,59 @@ const toMacroProgress = (progress: unknown): MacroProgress => {
 }
 
 const roundNutrient = (value: number) => Number(value.toFixed(1))
+
+const normalizeMeasurementLabel = (value: string) => {
+  const normalized = value.trim().toLowerCase()
+
+  if (normalized === 'mass' || normalized === 'gram' || normalized === 'grams' || normalized === 'g') {
+    return 'grams'
+  }
+
+  if (normalized === 'volume' || normalized === 'milliliter' || normalized === 'milliliters' || normalized === 'ml') {
+    return 'ml'
+  }
+
+  return value
+}
+
+const formatAmount = (value: number) => Number.isInteger(value) ? String(value) : value.toFixed(1)
+
+const getServingMeasurement = (food: TrackedFood) => Number(food.servingMeasurement)
+
+const hasServingMetadata = (food: TrackedFood) => {
+  const servingMeasurement = getServingMeasurement(food)
+  return Number.isFinite(servingMeasurement) && servingMeasurement > 0
+}
+
+const getServingCount = (food: TrackedFood) => {
+  const explicitServings = Number(food.servings)
+  if (Number.isFinite(explicitServings) && explicitServings > 0) {
+    return explicitServings
+  }
+
+  const servingMeasurement = getServingMeasurement(food)
+  const measurement = Number(food.measurement)
+  return servingMeasurement > 0 && measurement > 0 ? measurement / servingMeasurement : 0
+}
+
+const getEditableAmount = (food: TrackedFood) => {
+  return hasServingMetadata(food) ? getServingCount(food) : Number(food.measurement)
+}
+
+const getEditUnit = (food: TrackedFood) => hasServingMetadata(food) ? 'servings' : normalizeMeasurementLabel(food.measurementClassification)
+
+const formatTrackedFoodAmount = (food: TrackedFood) => {
+  const measurement = Number(food.measurement)
+  const measurementClassification = normalizeMeasurementLabel(food.measurementClassification)
+
+  if (hasServingMetadata(food)) {
+    const servings = getServingCount(food)
+    const servingLabel = servings === 1 ? 'serving' : 'servings'
+    return `${formatAmount(servings)} ${servingLabel} (${formatAmount(measurement)} ${measurementClassification})`
+  }
+
+  return `${formatAmount(measurement)} ${measurementClassification}`
+}
 
 const scaleMacronutrients = (macronutrients: TrackedFood['macronutrients'], ratio: number) => ({
   calories: roundNutrient(toNumber(macronutrients.calories) * ratio),
@@ -249,14 +305,19 @@ export function CalorieTrackingPage(){
   }, [])
 
   useEffect(() => {
-    setEditingFoodId("")
-    setEditAmount("")
     window.localStorage.setItem(MEMBER_STORAGE_KEY, activeMemberId)
+
+    const timer = window.setTimeout(() => {
+      setEditingFoodId("")
+      setEditAmount("")
+    }, 0)
+
+    return () => window.clearTimeout(timer)
   }, [activeMemberId])
 
     const saveEdit = async () => {
-    const nextMeasurement = Number(editAmount)
-    if (!editingFoodId || !Number.isFinite(nextMeasurement) || nextMeasurement <= 0) {
+    const nextInput = Number(editAmount)
+    if (!editingFoodId || !Number.isFinite(nextInput) || nextInput <= 0) {
       toast.error("Enter a valid amount before saving.")
       return
     }
@@ -268,11 +329,21 @@ export function CalorieTrackingPage(){
         }
 
         const previousMeasurement = Number(f.measurement)
-        const ratio = previousMeasurement > 0 ? nextMeasurement / previousMeasurement : 1
+        const servingMeasurement = getServingMeasurement(f)
+        const nextFoodMeasurement = servingMeasurement > 0
+          ? roundNutrient(nextInput * servingMeasurement)
+          : nextInput
+        const ratio = previousMeasurement > 0 ? nextFoodMeasurement / previousMeasurement : 1
 
         return {
           ...f,
-          measurement: nextMeasurement,
+          amount: servingMeasurement > 0 ? nextInput : nextFoodMeasurement,
+          servings: servingMeasurement > 0 ? nextInput : f.servings,
+          measurement: nextFoodMeasurement,
+          measurementClassification: normalizeMeasurementLabel(f.measurementClassification),
+          servingMeasurementClassification: f.servingMeasurementClassification
+            ? normalizeMeasurementLabel(f.servingMeasurementClassification)
+            : f.servingMeasurementClassification,
           macronutrients: scaleMacronutrients(f.macronutrients, ratio),
         }
       })
@@ -503,7 +574,7 @@ export function CalorieTrackingPage(){
                  foods.map((f) => (
                   <div key={f.id} className="food-item">
                     <div className="left-item"
-	                      onClick={() => {setEditingFoodId(f.id); setEditAmount(String(f.amount ?? f.measurement ?? ''))}}>
+                      onClick={() => {setEditingFoodId(f.id); setEditAmount(String(getEditableAmount(f) || ''))}}>
                         
                       {f.name} - {editingFoodId === f.id ? (
                         <div className="calorie-tracking-edit-input">
@@ -512,12 +583,12 @@ export function CalorieTrackingPage(){
                           onKeyDown={(e) => {if (e.key === "Enter") {e.preventDefault(); saveEdit()}}}
                           onBlur={() => {setEditAmount(""); setEditingFoodId("")}}
                           /> 
-                        <p> {f.measurementClassification}</p>
+                        <p> {getEditUnit(f)}</p>
                         </div>)
                         
                         :
                         // TODO: CHANGE THIS TO AMOUNT
-                      (<div>{f.measurement} {f.measurementClassification}</div>)}
+                      (<div>{formatTrackedFoodAmount(f)}</div>)}
                     </div>
                     {/* (<div>{f.macronutrients?.calories} calories</div>) */}
                     <div className="right-item">

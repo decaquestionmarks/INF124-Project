@@ -4,14 +4,25 @@ const Goal = require('../../models/goal');
 const Fridge = require('../../models/fridge');
 const mongoose = require('mongoose');
 const { broadcastGoalUpdate } = require('../services/realtime');
+const {
+	foodclassifcations: foodClassifications,
+	normalizeMeasurementClassification,
+} = require('../../models/modelhelpers');
 
 // Simple in-memory mock user store for demo / frontend consumption
 const mockUsers = {};
 const isMongoReady = () => mongoose.connection.readyState === 1;
 const DEFAULT_DAILY_GOALS = { calories: 2000, protein: 50 };
 const SELF_MEMBER_ID = 'self';
+const SAVED_FOOD_MEASUREMENTS = ['grams', 'ml'];
 
 const normalizeFamilyMemberName = (name) => (typeof name === 'string' ? name.trim() : '');
+const normalizeName = (value) => (typeof value === 'string' ? value.trim().toLowerCase() : '');
+
+const toFiniteNonNegativeNumber = (value, fallback = 0) => {
+	const numericValue = Number(value);
+	return Number.isFinite(numericValue) && numericValue >= 0 ? numericValue : fallback;
+};
 
 const normalizeMemberId = (req) => {
 	const memberId = req.params.memberId || req.query.memberId || req.body?.memberId;
@@ -198,14 +209,15 @@ const ensureUserExists = async (uid, decodedToken = {}) => {
 			privateRecipes: [],
 			shoppingLists: [],
 			familyMembers: [{ id: SELF_MEMBER_ID, name, isDefault: true }],
+			savedFoods: [],
 			goals: {},
 		});
 
 		try {
-			fridge.addFood(new Food({ name: 'Milk', classification: 'Dairy', measurementClassification: 'Volume', measurement: 1, macronutrients: { calories: 150, protein: 8 } }));
+			fridge.addFood(new Food({ name: 'Milk', classification: 'Dairy', measurementClassification: 'ml', measurement: 240, macronutrients: { calories: 150, protein: 8 } }));
 			fridge.addFood(new Food({ name: 'Apple', classification: 'Produce', measurementClassification: 'Pieces', measurement: 2, macronutrients: { calories: 95, fiber: 4 } }));
 		} catch (error) {
-			fridge.addFood({ name: 'Milk', classification: 'Dairy', measurementClassification: 'Volume', measurement: 1, macronutrients: { calories: 150, protein: 8 } });
+			fridge.addFood({ name: 'Milk', classification: 'Dairy', measurementClassification: 'ml', measurement: 240, macronutrients: { calories: 150, protein: 8 } });
 			fridge.addFood({ name: 'Apple', classification: 'Produce', measurementClassification: 'Pieces', measurement: 2, macronutrients: { calories: 95, fiber: 4 } });
 		}
 
@@ -213,8 +225,8 @@ const ensureUserExists = async (uid, decodedToken = {}) => {
 
 		const today = new Date().toISOString().slice(0, 10);
 		const goal = createDefaultGoal();
-		goal.addFood({ name: 'Greek Yogurt', measurement: 100.0, measurementClassification: 'Mass', macronutrients: { calories: 120, protein: 12 } });
-		goal.addFood({ name: 'Granola Bar', measurement: 100.0, measurementClassification: 'Mass', macronutrients: { calories: 180, protein: 3 } });
+		goal.addFood({ name: 'Greek Yogurt', measurement: 100.0, measurementClassification: 'grams', macronutrients: { calories: 120, protein: 12 } });
+		goal.addFood({ name: 'Granola Bar', measurement: 100.0, measurementClassification: 'grams', macronutrients: { calories: 180, protein: 3 } });
 		user.setGoal(today, goal);
 
 		try {
@@ -247,7 +259,51 @@ const normalizeGoalDate = (req) => req.params.date || req.query.date || new Date
 
 const buildFoodFromBody = (body = {}) => {
 	const { name, classification, measurementClassification, measurement, macronutrients = {} } = body;
-	return new Food({ name, classification, measurementClassification, measurement: Number(measurement), macronutrients });
+	return new Food({ name, classification, measurementClassification: normalizeMeasurementClassification(measurementClassification), measurement: Number(measurement), macronutrients });
+};
+
+const buildSavedFoodFromBody = (body = {}) => {
+	const name = typeof body.name === 'string' ? body.name.trim() : '';
+	const classification = typeof body.classification === 'string' && foodClassifications.includes(body.classification)
+		? body.classification
+		: 'Other';
+	const measurementClassification = normalizeMeasurementClassification(body.measurementClassification);
+	const measurement = Number(body.measurement);
+
+	if (!name) {
+		const error = new Error('Food name is required');
+		error.statusCode = 400;
+		throw error;
+	}
+
+	if (!SAVED_FOOD_MEASUREMENTS.includes(measurementClassification)) {
+		const error = new Error('Measurement must be grams or ml');
+		error.statusCode = 400;
+		throw error;
+	}
+
+	if (!Number.isFinite(measurement) || measurement <= 0) {
+		const error = new Error('Serving size must be greater than 0');
+		error.statusCode = 400;
+		throw error;
+	}
+
+	const sourceMacros = body.macronutrients && typeof body.macronutrients === 'object' && !Array.isArray(body.macronutrients)
+		? body.macronutrients
+		: {};
+
+	return {
+		name,
+		classification,
+		measurementClassification,
+		measurement,
+		macronutrients: {
+			calories: toFiniteNonNegativeNumber(sourceMacros.calories),
+			carbs: toFiniteNonNegativeNumber(sourceMacros.carbs),
+			fat: toFiniteNonNegativeNumber(sourceMacros.fat),
+			protein: toFiniteNonNegativeNumber(sourceMacros.protein),
+		},
+	};
 };
 
 // GET /users/me/account
@@ -370,6 +426,37 @@ const getGoalFoods = (req, res) => {
 const getFridge = (req, res) => {
 	const fridge = req.appUser.getFridgeItems();
 	res.json({ fridge });
+};
+
+const getSavedFoods = (req, res) => {
+	const query = normalizeName(req.query.query || '');
+	const savedFoods = typeof req.appUser.getSavedFoods === 'function'
+		? req.appUser.getSavedFoods()
+		: Array.isArray(req.appUser.savedFoods) ? req.appUser.savedFoods : [];
+	const results = query
+		? savedFoods.filter((food) => {
+			return normalizeName(food.name).includes(query)
+				|| normalizeName(food.classification).includes(query)
+				|| normalizeName(food.measurementClassification).includes(query);
+		})
+		: savedFoods;
+
+	res.json({ query, count: results.length, results });
+};
+
+const createSavedFood = async (req, res) => {
+	try {
+		const savedFoodInput = buildSavedFoodFromBody(req.body);
+		const savedFoodsBefore = typeof req.appUser.getSavedFoods === 'function' ? req.appUser.getSavedFoods() : [];
+		const existingFood = savedFoodsBefore.find((food) => normalizeName(food.name) === normalizeName(savedFoodInput.name));
+		const savedFood = req.appUser.saveFood(savedFoodInput);
+
+		await saveUser(req.appUser, 'savedFoods');
+		const savedFoods = typeof req.appUser.getSavedFoods === 'function' ? req.appUser.getSavedFoods() : [];
+		return res.status(existingFood ? 200 : 201).json({ savedFood, savedFoods });
+	} catch (err) {
+		return res.status(err.statusCode || 400).json({ error: err.message });
+	}
 };
 
 const addGoalFood = async (req, res) => {
@@ -528,9 +615,11 @@ module.exports = {
 	getGoalForDate,
 	getGoalFoods,
 	getFridge,
+	getSavedFoods,
 	addFamilyMember,
 	addGoalFood,
 	addFridgeItem,
+	createSavedFood,
 	updateAccount,
 	updateGoal,
 	deleteFamilyMember,

@@ -11,6 +11,9 @@ type TrackedFood = {
   name: string;
   measurement: number;
   measurementClassification: string;
+  servings?: number;
+  servingMeasurement?: number;
+  servingMeasurementClassification?: string;
   macronutrients?: {
     calories?: number;
     fat?: number;
@@ -21,6 +24,39 @@ type TrackedFood = {
 
 const toNumber = (value: unknown) => {
   return typeof value === 'number' && Number.isFinite(value) ? value : 0
+}
+
+const normalizeMeasurementLabel = (value: string) => {
+  const normalized = value.trim().toLowerCase()
+
+  if (normalized === 'mass' || normalized === 'gram' || normalized === 'grams' || normalized === 'g') {
+    return 'grams'
+  }
+
+  if (normalized === 'volume' || normalized === 'milliliter' || normalized === 'milliliters' || normalized === 'ml') {
+    return 'ml'
+  }
+
+  return value
+}
+
+const formatAmount = (value: number) => Number.isInteger(value) ? String(value) : value.toFixed(1)
+
+const getFoodAmountLabel = (food: TrackedFood) => {
+  const measurement = Number(food.measurement)
+  const measurementClassification = normalizeMeasurementLabel(food.measurementClassification)
+  const servingMeasurement = Number(food.servingMeasurement)
+  const explicitServings = Number(food.servings)
+  const servings = Number.isFinite(explicitServings) && explicitServings > 0
+    ? explicitServings
+    : servingMeasurement > 0 && measurement > 0 ? measurement / servingMeasurement : 0
+
+  if (servingMeasurement > 0 && servings > 0) {
+    const servingLabel = servings === 1 ? 'serving' : 'servings'
+    return `${formatAmount(servings)} ${servingLabel} (${formatAmount(measurement)} ${measurementClassification})`
+  }
+
+  return `${formatAmount(measurement)} ${measurementClassification}`
 }
 
 export function FoodPage(){
@@ -44,10 +80,13 @@ export function FoodPage(){
 
   useEffect(() => {
     if (!trackedFoodId && !foodName) {
-      setTrackedFood(null)
-      setError("No tracked food selected.")
-      setIsLoading(false)
-      return
+      const timer = window.setTimeout(() => {
+        setTrackedFood(null)
+        setError("No tracked food selected.")
+        setIsLoading(false)
+      }, 0)
+
+      return () => window.clearTimeout(timer)
     }
 
     const handleFetchFoodDetails = async () => {
@@ -134,9 +173,9 @@ export function FoodPage(){
                 {!isLoading && error ? <p>{error}</p> : null}
                 {!isLoading && trackedFood ? (
                   <div className="overall-macros">
-                  <div className="macro-row">
+                    <div className="macro-row">
                         <span>Amount:</span>
-                         <span>{trackedFood.measurement} {trackedFood.measurementClassification}</span>
+                         <span>{getFoodAmountLabel(trackedFood)}</span>
                     </div>
                     <div className="macro-row">
                         <span>Calories:</span>

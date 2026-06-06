@@ -8,9 +8,11 @@ const {
 	getGoalForDate,
 	getGoalFoods,
 	getFridge,
+	getSavedFoods,
 	addFamilyMember,
 	addGoalFood,
 	addFridgeItem,
+	createSavedFood,
 	updateAccount,
 	updateGoal,
 	deleteFamilyMember,
@@ -29,11 +31,13 @@ router.get('/me/goal/foods', getGoalFoods);
 router.get('/me/goal/:date?', getGoalForDate);
 router.get('/me/goal', getGoalForDate);
 router.get('/me/fridge', getFridge);
+router.get('/me/saved-foods', getSavedFoods);
 
 router.post('/me/family', addFamilyMember);
 router.post('/me/goal/:date/foods', addGoalFood);
 router.post('/me/goal/foods', addGoalFood);
 router.post('/me/fridge', addFridgeItem);
+router.post('/me/saved-foods', createSavedFood);
 
 router.put('/me/account', updateAccount);
 router.put('/me/goal/:date', updateGoal);

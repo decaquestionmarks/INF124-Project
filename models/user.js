@@ -3,12 +3,25 @@ const Food = require('./food');
 const Recipe = require('./recipe');
 const ShoppingList = require('./shoppinglist');
 const Goal = require('./goal');
+const { normalizeMeasurementClassification } = require('./modelhelpers');
 
 const fridgeItemSchema = new mongoose.Schema(
     {
         name: { type: String, required: true, trim: true },
         classification: { type: String, trim: true },
-        measurementClassification: { type: String, required: true, trim: true },
+        measurementClassification: { type: String, required: true, trim: true, set: normalizeMeasurementClassification },
+        measurement: { type: Number, required: true },
+        macronutrients: { type: mongoose.Schema.Types.Mixed, default: {} },
+    },
+    { _id: false }
+);
+
+const savedFoodSchema = new mongoose.Schema(
+    {
+        id: { type: String, required: true },
+        name: { type: String, required: true, trim: true },
+        classification: { type: String, trim: true, default: 'Other' },
+        measurementClassification: { type: String, required: true, trim: true, set: normalizeMeasurementClassification },
         measurement: { type: Number, required: true },
         macronutrients: { type: mongoose.Schema.Types.Mixed, default: {} },
     },
@@ -32,6 +45,7 @@ const userSchema = new mongoose.Schema(
         privateRecipes: { type: [mongoose.Schema.Types.Mixed], default: [] },
         shoppingLists: { type: [mongoose.Schema.Types.Mixed], default: [] },
         familyMembers: { type: [mongoose.Schema.Types.Mixed], default: [] },
+        savedFoods: { type: [savedFoodSchema], default: [] },
         goals: { type: mongoose.Schema.Types.Mixed, default: {} },
     },
     { timestamps: true }
@@ -41,27 +55,40 @@ const normalizeName = (value) => (typeof value === 'string' ? value.trim().toLow
 
 const normalizeDate = (date) => (date instanceof Date ? date.toISOString().slice(0, 10) : date);
 
-const toPlainFood = (food) => {
+const toPlainFood = (food, options = {}) => {
     if (!food) return null;
+    const { includeId = false } = options;
 
     if (typeof food.toObject === 'function') {
         const object = food.toObject();
-        return {
+        const plainFood = {
             name: object.name,
             classification: object.classification,
-            measurementClassification: object.measurementClassification,
+            measurementClassification: normalizeMeasurementClassification(object.measurementClassification),
             measurement: object.measurement,
             macronutrients: object.macronutrients || {},
         };
+
+        if (includeId && object.id) {
+            plainFood.id = String(object.id);
+        }
+
+        return plainFood;
     }
 
-    return {
+    const plainFood = {
         name: food.name,
         classification: food.classification,
-        measurementClassification: food.measurementClassification,
+        measurementClassification: normalizeMeasurementClassification(food.measurementClassification),
         measurement: food.measurement,
         macronutrients: food.macronutrients || {},
     };
+
+    if (includeId && food.id) {
+        plainFood.id = String(food.id);
+    }
+
+    return plainFood;
 };
 
 userSchema.methods.setFridge = function setFridge(fridge) {
@@ -84,7 +111,7 @@ userSchema.methods.setFridge = function setFridge(fridge) {
 };
 
 userSchema.methods.getFridgeItems = function getFridgeItems() {
-    return Array.isArray(this.fridge?.items) ? this.fridge.items : [];
+    return Array.isArray(this.fridge?.items) ? this.fridge.items.map(toPlainFood).filter(Boolean) : [];
 };
 
 userSchema.methods.addFood = function addFood(food) {
@@ -120,6 +147,39 @@ userSchema.methods.removeFood = function removeFood(name) {
     this.fridge.items = this.fridge.items.filter((food) => normalizeName(food.name) !== normalizeName(name));
     this.markModified('fridge');
     return this.fridge.items.length < initialCount;
+};
+
+userSchema.methods.getSavedFoods = function getSavedFoods() {
+    return Array.isArray(this.savedFoods)
+        ? this.savedFoods.map((food) => toPlainFood(food, { includeId: true })).filter(Boolean)
+        : [];
+};
+
+userSchema.methods.saveFood = function saveFood(food) {
+    if (typeof food !== 'object' || food === null) {
+        throw new TypeError('food must be a plain object');
+    }
+
+    const foodData = toPlainFood(food, { includeId: true });
+    foodData.id = foodData.id || new mongoose.Types.ObjectId().toString();
+    foodData.classification = foodData.classification || 'Other';
+
+    this.savedFoods = Array.isArray(this.savedFoods) ? this.savedFoods : [];
+
+    const existingFood = this.savedFoods.find((item) => normalizeName(item.name) === normalizeName(foodData.name));
+
+    if (existingFood) {
+        existingFood.classification = foodData.classification;
+        existingFood.measurementClassification = foodData.measurementClassification;
+        existingFood.measurement = foodData.measurement;
+        existingFood.macronutrients = foodData.macronutrients;
+        this.markModified('savedFoods');
+        return toPlainFood(existingFood, { includeId: true });
+    }
+
+    this.savedFoods.push(foodData);
+    this.markModified('savedFoods');
+    return foodData;
 };
 
 userSchema.methods.addPrivateRecipe = function addPrivateRecipe(recipe) {

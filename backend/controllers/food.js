@@ -1,75 +1,76 @@
 const mongoose = require('mongoose');
 const FoodModel = require('../../models/food');
+const { normalizeMeasurementClassification } = require('../../models/modelhelpers');
 
 const seedFoods = [
     {
         name: 'Chicken Breast',
         classification: 'Meat',
-        measurementClassification: 'Mass',
+        measurementClassification: 'grams',
         measurement: 165,
         macronutrients: { calories: 275, fat: 3.6, protein: 51, carbs: 2 },
     },
     {
         name: 'White Rice',
         classification: 'Pantry',
-        measurementClassification: 'Mass',
-        measurement: 1,
+        measurementClassification: 'grams',
+        measurement: 158,
         macronutrients: { calories: 205, fat: 0.4, protein: 4.3, carbs: 45 },
     },
     {
         name: 'Banana',
         classification: 'Produce',
-        measurementClassification: 'Mass',
-        measurement: 1,
+        measurementClassification: 'grams',
+        measurement: 118,
         macronutrients: { calories: 105, fat: 0.4, protein: 1.3, carbs: 27 },
     },
     {
         name: 'Egg (Boiled)',
         classification: 'Other',
-        measurementClassification: 'Mass',
-        measurement: 1,
+        measurementClassification: 'grams',
+        measurement: 50,
         macronutrients: { calories: 78, fat: 5.3, protein: 6.3, carbs: 0.6 },
     },
     {
         name: 'Greek Yogurt',
         classification: 'Dairy',
-        measurementClassification: 'Mass',
+        measurementClassification: 'grams',
         measurement: 150,
         macronutrients: { calories: 120, fat: 4, protein: 15, carbs: 5 },
     },
     {
         name: 'Peanut Butter',
         classification: 'Condiments',
-        measurementClassification: 'Mass',
-        measurement: 2,
+        measurementClassification: 'grams',
+        measurement: 32,
         macronutrients: { calories: 190, fat: 16, protein: 7, carbs: 7 },
     },
     {
         name: 'Oatmeal',
         classification: 'Pantry',
-        measurementClassification: 'Mass',
+        measurementClassification: 'grams',
         measurement: 40,
         macronutrients: { calories: 150, fat: 3, protein: 5, carbs: 27 },
     },
     {
         name: 'Salmon',
         classification: 'Meat',
-        measurementClassification: 'Mass',
+        measurementClassification: 'grams',
         measurement: 100,
         macronutrients: { calories: 208, fat: 13, protein: 20, carbs: 0 },
     },
     {
         name: 'Avocado',
         classification: 'Produce',
-        measurementClassification: 'Mass',
-        measurement: 1,
+        measurementClassification: 'grams',
+        measurement: 150,
         macronutrients: { calories: 240, fat: 22, protein: 3, carbs: 13 },
     },
     {
         name: 'Whole Wheat Bread',
         classification: 'Bakery',
-        measurementClassification: 'Mass',
-        measurement: 1,
+        measurementClassification: 'grams',
+        measurement: 38,
         macronutrients: { calories: 80, fat: 1, protein: 4, carbs: 14 },
     },
 ];
@@ -85,10 +86,24 @@ const toFoodObject = (food) => {
         id: food._id ? food._id.toString() : food.id,
         name: food.name,
         classification: food.classification,
-        measurementClassification: food.measurementClassification,
+        measurementClassification: normalizeMeasurementClassification(food.measurementClassification),
         measurement: food.measurement,
         macronutrients: food.macronutrients || {},
     };
+};
+
+const getMeasurementSearchTerms = (query) => {
+    const normalizedMeasurement = normalizeMeasurementClassification(query);
+
+    if (normalizedMeasurement === 'grams') {
+        return ['grams', 'gram', 'mass', 'g'];
+    }
+
+    if (normalizedMeasurement === 'ml') {
+        return ['ml', 'milliliter', 'milliliters', 'volume'];
+    }
+
+    return [query];
 };
 
 const isMongoReady = () => mongoose.connection.readyState === 1;
@@ -125,11 +140,12 @@ const searchFoods = async (query = '') => {
             return getAllFoods();
         }
 
+        const measurementTerms = getMeasurementSearchTerms(normalizedQuery);
         const foods = await FoodModel.find({
             $or: [
                 { name: { $regex: normalizedQuery, $options: 'i' } },
                 { classification: { $regex: normalizedQuery, $options: 'i' } },
-                { measurementClassification: { $regex: normalizedQuery, $options: 'i' } },
+                ...measurementTerms.map((term) => ({ measurementClassification: { $regex: term, $options: 'i' } })),
             ],
         }).lean().sort({ name: 1 });
 
@@ -144,7 +160,7 @@ const searchFoods = async (query = '') => {
         .filter((food) => {
             return normalizeName(food.name).includes(normalizedQuery)
                 || normalizeName(food.classification).includes(normalizedQuery)
-                || normalizeName(food.measurementClassification).includes(normalizedQuery);
+                || getMeasurementSearchTerms(normalizedQuery).some((term) => normalizeName(food.measurementClassification).includes(term));
         })
         .map((food) => ({
             id: normalizeName(food.name).replace(/[^a-z0-9]+/g, '-'),

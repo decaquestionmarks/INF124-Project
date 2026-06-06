@@ -1,263 +1,159 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { Sidebar } from '../components/Sidebar.tsx'
 import './DashboardPage.css'
 import './CalorieTrackingPage.css'
 import SearchIcon from '@mui/icons-material/Search'
 import { SecondaryHeader } from '../components/Header.tsx'
 import './SearchFoodPage.css'
-import {useLocation, useNavigate } from 'react-router-dom'
-import AddCircleIcon from '@mui/icons-material/AddCircle';
-import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
-import {toast} from 'react-hot-toast'
+import { useLocation, useNavigate } from 'react-router-dom'
+import AddCircleIcon from '@mui/icons-material/AddCircle'
+import RemoveCircleIcon from '@mui/icons-material/RemoveCircle'
+import { toast } from 'react-hot-toast'
 import { authFetch } from '../api.ts'
 
-// TODO remove mock foods results and search filtering
-// const mockResults: FoodResult[] = [
-  
-//   {
-//     name: "Chicken Breast",
-//     classification: "Meat",
-//     measurementClassification: "Mass",
-//     measurement: 165,
-//     macronutrients: {
-//       calories: 275,
-//       fat: 3.6,
-//       protein: 51,
-//       carbs: 2
-//     }
-//   },
-//   {
-//     name: "White Rice",
-//     classification: "Grains",
-//     measurementClassification: "Mass",
-//     measurement: 1,
-//     macronutrients: {
-//       calories: 205,
-//       fat: 0.4,
-//       protein: 4.3,
-//       carbs: 45
-//     }
-//   },
-//   {
-//     name: "Banana",
-//     classification: "Fruit",
-//     measurementClassification: "Mass",
-//     measurement: 1,
-//     macronutrients: {
-//       calories: 105,
-//       fat: 0.4,
-//       protein: 1.3,
-//       carbs: 27
-//     }
-//   },
-//   {
-//     name: "Egg (Boiled)",
-//     classification: "Protein",
-//     measurementClassification: "Mass",
-//     measurement: 1,
-//     macronutrients: {
-//       calories: 78,
-//       fat: 5.3,
-//       protein: 6.3,
-//       carbs: 0.6
-//     }
-//   },
-//   {
-//     name: "Greek Yogurt",
-//     classification: "Dairy",
-//     measurementClassification: "Mass",
-//     measurement: 150,
-//     macronutrients: {
-//       calories: 120,
-//       fat: 4,
-//       protein: 15,
-//       carbs: 5
-//     }
-//   },
-//   {
-//     name: "Peanut Butter",
-//     classification: "Fats",
-//     measurementClassification: "Mass",
-//     measurement: 2,
-//     macronutrients: {
-//       calories: 190,
-//       fat: 16,
-//       protein: 7,
-//       carbs: 7
-//     }
-//   },
-//   {
-//     name: "Oatmeal",
-//     classification: "Pantry",
-//     measurementClassification: "Mass",
-//     measurement: 40,
-//     macronutrients: {
-//       calories: 150,
-//       fat: 3,
-//       protein: 5,
-//       carbs: 27
-//     }
-//   },
-//   {
-//     name: "Salmon",
-//     classification: "Meat",
-//     measurementClassification: "Mass",
-//     measurement: 100,
-//     macronutrients: {
-//       calories: 208,
-//       fat: 13,
-//       protein: 20,
-//       carbs: 0
-//     }
-//   },
-//   {
-//     name: "Avocado",
-//     classification: "Produce",
-//     measurementClassification: "Mass",
-//     measurement: 1,
-//     macronutrients: {
-//       calories: 240,
-//       fat: 22,
-//       protein: 3,
-//       carbs: 13
-//     }
-//   },
-//   {
-//     name: "Whole Wheat Bread",
-//     classification: "Bakery",
-//     measurementClassification: "Mass",
-//     measurement: 1,
-//     macronutrients: {
-//       calories: 80,
-//       fat: 1,
-//       protein: 4,
-//       carbs: 14
-//     }
-//   }
-// ];
-
 type SearchFoodProps = {
-    linkBack: string
+  linkBack: string
+}
+
+type FoodSource = 'global' | 'saved'
+
+type Macronutrients = {
+  calories: number
+  fat: number
+  protein: number
+  carbs: number
 }
 
 type FoodResult = {
-  name: string,
-  classification: string,
-  measurementClassification: string,
-  measurement: number,
-  macronutrients: {
-    calories: number,
-    fat: number,
-    protein: number,
-    carbs: number
+  id?: string
+  name: string
+  classification: string
+  measurementClassification: string
+  measurement: number
+  macronutrients: Macronutrients
+  source?: FoodSource
+}
+
+type FoodCreatorForm = {
+  name: string
+  classification: string
+  measurementClassification: 'grams' | 'ml'
+  measurement: string
+  calories: string
+  carbs: string
+  fat: string
+  protein: string
+}
+
+const FOOD_CLASSIFICATIONS = ['Meat', 'Produce', 'Bakery', 'Dairy', 'Pantry', 'Frozen', 'Drinks', 'Snacks', 'Condiments', 'Spices and Baking', 'Other']
+const MEASUREMENT_OPTIONS: Array<FoodCreatorForm['measurementClassification']> = ['grams', 'ml']
+
+const defaultCreatorForm = (): FoodCreatorForm => ({
+  name: '',
+  classification: 'Other',
+  measurementClassification: 'grams',
+  measurement: '100',
+  calories: '',
+  carbs: '',
+  fat: '',
+  protein: '',
+})
+
+const normalizeMeasurementLabel = (value: string) => {
+  const normalized = value.trim().toLowerCase()
+
+  if (normalized === 'mass' || normalized === 'gram' || normalized === 'grams' || normalized === 'g') {
+    return 'grams'
+  }
+
+  if (normalized === 'volume' || normalized === 'milliliter' || normalized === 'milliliters' || normalized === 'ml') {
+    return 'ml'
+  }
+
+  return value
+}
+
+const toNumber = (value: unknown, fallback = 0) => {
+  const numericValue = Number(value)
+  return Number.isFinite(numericValue) ? numericValue : fallback
+}
+
+const roundNutrient = (value: number) => Number(value.toFixed(1))
+
+const scaleMacros = (macronutrients: Macronutrients, servings: number): Macronutrients => ({
+  calories: roundNutrient(toNumber(macronutrients.calories) * servings),
+  carbs: roundNutrient(toNumber(macronutrients.carbs) * servings),
+  fat: roundNutrient(toNumber(macronutrients.fat) * servings),
+  protein: roundNutrient(toNumber(macronutrients.protein) * servings),
+})
+
+const formatAmount = (value: number) => Number.isInteger(value) ? String(value) : value.toFixed(1)
+
+const getFoodKey = (food: FoodResult) => `${food.source ?? 'global'}-${food.id ?? food.name}-${food.measurement}-${food.measurementClassification}`
+
+const normalizeFoodResult = (food: Partial<FoodResult>, source: FoodSource): FoodResult | null => {
+  if (!food.name || !food.measurementClassification) {
+    return null
+  }
+
+  const measurement = toNumber(food.measurement)
+
+  if (measurement <= 0) {
+    return null
+  }
+
+  const macronutrients = food.macronutrients ?? { calories: 0, carbs: 0, fat: 0, protein: 0 }
+
+  return {
+    id: food.id,
+    name: food.name,
+    classification: food.classification || 'Other',
+    measurementClassification: normalizeMeasurementLabel(food.measurementClassification),
+    measurement,
+    macronutrients: {
+      calories: toNumber(macronutrients.calories),
+      carbs: toNumber(macronutrients.carbs),
+      fat: toNumber(macronutrients.fat),
+      protein: toNumber(macronutrients.protein),
+    },
+    source,
   }
 }
 
-export function SearchFoodPage({linkBack}: SearchFoodProps){
+const mergeFoodResults = (savedFoods: FoodResult[], globalFoods: FoodResult[]) => {
+  const foodsByName = new Map<string, FoodResult>()
+
+  savedFoods.forEach((food) => {
+    foodsByName.set(food.name.trim().toLowerCase(), food)
+  })
+
+  globalFoods.forEach((food) => {
+    const key = food.name.trim().toLowerCase()
+    if (!foodsByName.has(key)) {
+      foodsByName.set(key, food)
+    }
+  })
+
+  return Array.from(foodsByName.values())
+}
+
+export function SearchFoodPage({ linkBack }: SearchFoodProps) {
   const [searchResults, setSearchResults] = useState<FoodResult[]>([])
+  const [savedFoods, setSavedFoods] = useState<FoodResult[]>([])
+  const [addedItem, setAddedItem] = useState<FoodResult | null>(null)
+  const [userInput, setUserInput] = useState('')
+  const [servingCount, setServingCount] = useState('1')
+  const [creatorForm, setCreatorForm] = useState<FoodCreatorForm>(() => defaultCreatorForm())
+  const [isSavingFood, setIsSavingFood] = useState(false)
   const navigate = useNavigate()
 
-  const location = useLocation();
-  const params = new URLSearchParams(location.search);
-  const meal = params.get('meal');
-  const date = params.get('date');
-  const memberId = params.get('memberId') ?? 'self';
+  const location = useLocation()
+  const params = new URLSearchParams(location.search)
+  const meal = params.get('meal')
+  const date = params.get('date')
+  const memberId = params.get('memberId') ?? 'self'
 
-  const [addedItem, setAddedItem] = useState<FoodResult | null>(null)
-  const [userInput, setUserInput] = useState("")
-  const [servingSize, setServingSize] = useState("1")
-
-
-  const handleSubmitSearch = async (e: React.FormEvent) => {
-      e.preventDefault()
-      if (!userInput.trim()) return
-      
-      try{
-          const res = await authFetch(`/foods/search?query=${encodeURIComponent(userInput.trim())}`);
-          const data = await res.json();
-          setSearchResults(Array.isArray(data.results) ? data.results : []);
-      }
-      catch (error) {
-        console.error("Error searching for foods: ", error)
-      }
-
-  }
-
-	 const handleLogFood = async () => {
-    if (!addedItem) {
-      toast.error("Choose a food before logging.")
-      return
-    }
-
-    if (linkBack === '/fridge'){
-        const body_info = JSON.stringify({
-	              name: addedItem?.name,
-	              classification: addedItem?.classification,
-	              measurementClassification: addedItem?.measurementClassification,
-	              measurement: servingSize,
-              macronutrients: {
-                calories: addedItem?.macronutrients.calories,
-                fat: addedItem?.macronutrients.fat,
-                protein: addedItem?.macronutrients.protein,
-	                carbs: addedItem?.macronutrients.carbs
-	              }
-	          })
-	      try{
-	        const res = await authFetch('/users/me/fridge',
-	          {
-          method: 'POST',
-          headers: {'Content-type': 'application/json'},
-          body: body_info
-          }
-        )
-        if (!res.ok){
-          throw new Error("Failed to add food to fridge")
-        }
-
-	        toast.success(`Added ${addedItem?.name} to fridge`)
-          navigate(linkBack, {state: {meal, date, memberId, addedItem}})
-	      }
-	      catch (error){
-	        console.error("Error adding food to fridge: ", error)
-        toast.error("Failed to add food to fridge. Please try again")
-      }
-  }
-  else if (linkBack == '/calorie-tracking') { // adding food to calorie tracker
-    try{
-      const goalDate = date ?? new Date().toISOString().slice(0, 10)
-      const res = await authFetch(`/users/me/goal/${goalDate}/foods`,
-        {
-        method: 'POST',
-        headers: {'Content-type': 'application/json'},
-	        body: JSON.stringify({
-              memberId,
-	            name: addedItem?.name,
-	            classification: addedItem.classification,
-	            measurementClassification: addedItem.measurementClassification,
-	            measurement: Number(servingSize),
-	            macronutrients: {
-	              calories: calories,
-	              carbs: carbs,
-	              fat: fat,
-	              protein: protein,
-	            }
-	            
-	        })
-        });
-        if (!res.ok){
-          throw new Error("Failed to log food to calorie tracker")
-	        }
-	        toast.success(`Logged ${addedItem?.name} to calorie tracker`)
-          navigate(linkBack, {state: {meal, date, memberId, addedItem}})
-	      }
-	      catch (error) {
-	        console.error("Error logging food to calorie tracker: ", error)
-	        toast.error("Failed to log food. Please try again")
-	      }
-	  }
-	  }
-
- const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
     if (typeof window === 'undefined') {
       return true
     }
@@ -289,96 +185,357 @@ export function SearchFoodPage({linkBack}: SearchFoodProps){
     return () => legacyMediaQuery.removeListener?.(syncSidebarState)
   }, [])
 
-  const ratio = addedItem ? (Number(servingSize) / addedItem.measurement) : 1
-  const calories = addedItem ? Number(((addedItem.macronutrients.calories) * ratio).toFixed(1)) : 0
-  const protein = addedItem ? Number((addedItem.macronutrients.protein * ratio).toFixed(1)) : 0
-  const fat = addedItem ? Number((addedItem.macronutrients.fat * ratio).toFixed(1)) : 0
-  const carbs = addedItem ? Number((addedItem.macronutrients.carbs * ratio).toFixed(1)) : 0
-  
-   return (
-       <main
-         className={`dashboard-page${isSidebarOpen ? ' dashboard-page--sidebar-open' : ' dashboard-page--sidebar-closed'}`}
-       >
-         <Sidebar
-           isOpen={isSidebarOpen}
-           onToggle={() => setIsSidebarOpen((open) => !open)}
-         />
-   
-         <div
-           className={`dashboard-page__backdrop${isSidebarOpen ? ' dashboard-page__backdrop--visible' : ''}`}
-           aria-hidden="true"
-           onClick={() => setIsSidebarOpen(false)}
-         />
-   
-         <section className="dashboard-page__content">
-            <SecondaryHeader isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} pageTitle={"Food Finder"} linkBack={linkBack}></SecondaryHeader>
-            <section>
+  const fetchSavedFoods = async (query = '') => {
+    const res = await authFetch(`/users/me/saved-foods${query ? `?query=${encodeURIComponent(query)}` : ''}`)
+    const data = await res.json()
 
-                
-                <form onSubmit={handleSubmitSearch} className="search-form">
-                    <SearchIcon aria-hidden="true" className="search-icon"></SearchIcon>
-                    <input id="search-bar-input" value={userInput} onChange={(e) => setUserInput(e.target.value)} aria-label="Search Foods" type="search" placeholder="Search Foods" className="search-bar" autoComplete="off" />
-                </form>
+    if (!res.ok) {
+      throw new Error(data.error || 'Unable to load saved foods')
+    }
 
-              </section>
-              <section className="search-results">
-                {searchResults.map((result) => (                  
-                  <div onClick={() => setAddedItem(result)} key={result.name} className="search-item">
-                    <div className={`search-item-heading ${addedItem?.name === result.name ? "added" : ""}`}>
-                      
-                      <span>{result.name}</span>
-                    <div className="amount-and-unit">
-                      <span>{result.measurement}</span>
-                      <span>{result.measurementClassification}</span>
-                    </div>
-                    
-                    <span> {result.macronutrients.calories} cal</span>
-                    <button aria-label="Add item" className="add-icon"  
-                      id="add-item-button"
-                      onClick={(e) => {
-                        e.stopPropagation(); 
-                        setAddedItem(result);
-                        }}>
-                      {(addedItem?.name === result.name) ?
-                        (<RemoveCircleIcon aria-hidden="true" fontSize='medium'/>) : 
-                        (<AddCircleIcon aria-hidden="true" fontSize='medium'/>)
-                      }
+    return Array.isArray(data.results)
+      ? data.results.map((food: Partial<FoodResult>) => normalizeFoodResult(food, 'saved')).filter(Boolean) as FoodResult[]
+      : []
+  }
 
-                      
-                      </button>
-                    
-                    </div>
-                  </div>
+  const fetchGlobalFoods = async (query: string) => {
+    if (!query) return []
+
+    const res = await authFetch(`/foods/search?query=${encodeURIComponent(query)}`)
+    const data = await res.json()
+
+    if (!res.ok) {
+      throw new Error(data.error || 'Unable to search foods')
+    }
+
+    return Array.isArray(data.results)
+      ? data.results.map((food: Partial<FoodResult>) => normalizeFoodResult(food, 'global')).filter(Boolean) as FoodResult[]
+      : []
+  }
+
+  const searchFoods = async (query = userInput.trim()) => {
+    try {
+      const [nextSavedFoods, globalFoods] = await Promise.all([
+        fetchSavedFoods(query),
+        fetchGlobalFoods(query),
+      ])
+      setSavedFoods(nextSavedFoods)
+      setSearchResults(mergeFoodResults(nextSavedFoods, globalFoods))
+    } catch (error) {
+      console.error('Error searching for foods: ', error)
+      toast.error('Unable to search foods. Please try again.')
+    }
+  }
+
+  useEffect(() => {
+    let isDisposed = false
+    const timer = window.setTimeout(async () => {
+      try {
+        const initialSavedFoods = await fetchSavedFoods('')
+        if (!isDisposed) {
+          setSavedFoods(initialSavedFoods)
+          setSearchResults(initialSavedFoods)
+        }
+      } catch (error) {
+        console.error('Error loading saved foods: ', error)
+      }
+    }, 0)
+
+    return () => {
+      isDisposed = true
+      window.clearTimeout(timer)
+    }
+  }, [])
+
+  const handleSubmitSearch = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    await searchFoods(userInput.trim())
+  }
+
+  const updateCreatorField = (field: keyof FoodCreatorForm, value: string) => {
+    setCreatorForm((currentForm) => ({
+      ...currentForm,
+      [field]: value,
+    }))
+  }
+
+  const handleSaveFood = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+
+    const measurement = toNumber(creatorForm.measurement)
+
+    if (!creatorForm.name.trim()) {
+      toast.error('Enter a food name before saving.')
+      return
+    }
+
+    if (measurement <= 0) {
+      toast.error('Enter a serving size greater than 0.')
+      return
+    }
+
+    try {
+      setIsSavingFood(true)
+      const res = await authFetch('/users/me/saved-foods', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: creatorForm.name.trim(),
+          classification: creatorForm.classification,
+          measurementClassification: creatorForm.measurementClassification,
+          measurement,
+          macronutrients: {
+            calories: toNumber(creatorForm.calories),
+            carbs: toNumber(creatorForm.carbs),
+            fat: toNumber(creatorForm.fat),
+            protein: toNumber(creatorForm.protein),
+          },
+        }),
+      })
+      const data = await res.json()
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Unable to save food')
+      }
+
+      const savedFood = normalizeFoodResult(data.savedFood, 'saved')
+      const nextSavedFoods = Array.isArray(data.savedFoods)
+        ? data.savedFoods.map((food: Partial<FoodResult>) => normalizeFoodResult(food, 'saved')).filter(Boolean) as FoodResult[]
+        : savedFood ? [savedFood, ...savedFoods] : savedFoods
+
+      setSavedFoods(nextSavedFoods)
+      setSearchResults(mergeFoodResults(nextSavedFoods, searchResults.filter((food) => food.source !== 'saved')))
+
+      if (savedFood) {
+        setAddedItem(savedFood)
+        setServingCount('1')
+      }
+
+      setCreatorForm(defaultCreatorForm())
+      toast.success(`${savedFood?.name ?? 'Food'} saved`)
+    } catch (error) {
+      console.error('Error saving food: ', error)
+      toast.error('Failed to save food. Please try again.')
+    } finally {
+      setIsSavingFood(false)
+    }
+  }
+
+  const servings = toNumber(servingCount)
+  const hasValidServingCount = Number.isFinite(servings) && servings > 0
+  const selectedMeasurement = addedItem && hasValidServingCount ? roundNutrient(addedItem.measurement * servings) : 0
+  const selectedMacros = useMemo(() => {
+    return addedItem && hasValidServingCount
+      ? scaleMacros(addedItem.macronutrients, servings)
+      : { calories: 0, carbs: 0, fat: 0, protein: 0 }
+  }, [addedItem, hasValidServingCount, servings])
+
+  const handleLogFood = async () => {
+    if (!addedItem) {
+      toast.error('Choose a food before logging.')
+      return
+    }
+
+    if (!hasValidServingCount) {
+      toast.error('Enter a valid number of servings.')
+      return
+    }
+
+    const payload = {
+      name: addedItem.name,
+      classification: addedItem.classification,
+      measurementClassification: addedItem.measurementClassification,
+      measurement: selectedMeasurement,
+      servings: roundNutrient(servings),
+      servingMeasurement: addedItem.measurement,
+      servingMeasurementClassification: addedItem.measurementClassification,
+      savedFoodId: addedItem.source === 'saved' ? addedItem.id : undefined,
+      macronutrients: selectedMacros,
+    }
+
+    if (linkBack === '/fridge') {
+      try {
+        const res = await authFetch('/users/me/fridge', {
+          method: 'POST',
+          headers: { 'Content-type': 'application/json' },
+          body: JSON.stringify(payload),
+        })
+        if (!res.ok) {
+          throw new Error('Failed to add food to fridge')
+        }
+
+        toast.success(`Added ${addedItem.name} to fridge`)
+        navigate(linkBack, { state: { meal, date, memberId, addedItem } })
+      } catch (error) {
+        console.error('Error adding food to fridge: ', error)
+        toast.error('Failed to add food to fridge. Please try again')
+      }
+    } else if (linkBack === '/calorie-tracking') {
+      try {
+        const goalDate = date ?? new Date().toISOString().slice(0, 10)
+        const res = await authFetch(`/users/me/goal/${goalDate}/foods`, {
+          method: 'POST',
+          headers: { 'Content-type': 'application/json' },
+          body: JSON.stringify({
+            memberId,
+            ...payload,
+          }),
+        })
+        if (!res.ok) {
+          throw new Error('Failed to log food to calorie tracker')
+        }
+        toast.success(`Logged ${addedItem.name} to calorie tracker`)
+        navigate(linkBack, { state: { meal, date, memberId, addedItem } })
+      } catch (error) {
+        console.error('Error logging food to calorie tracker: ', error)
+        toast.error('Failed to log food. Please try again')
+      }
+    }
+  }
+
+  return (
+    <main
+      className={`dashboard-page${isSidebarOpen ? ' dashboard-page--sidebar-open' : ' dashboard-page--sidebar-closed'}`}
+    >
+      <Sidebar
+        isOpen={isSidebarOpen}
+        onToggle={() => setIsSidebarOpen((open) => !open)}
+      />
+
+      <div
+        className={`dashboard-page__backdrop${isSidebarOpen ? ' dashboard-page__backdrop--visible' : ''}`}
+        aria-hidden="true"
+        onClick={() => setIsSidebarOpen(false)}
+      />
+
+      <section className="dashboard-page__content">
+        <SecondaryHeader isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} pageTitle="Food Finder" linkBack={linkBack}></SecondaryHeader>
+
+        <form onSubmit={handleSaveFood} className="food-creator">
+          <h2>Create Food</h2>
+          <div className="food-creator-grid">
+            <label>
+              <span>Name</span>
+              <input value={creatorForm.name} onChange={(event) => updateCreatorField('name', event.target.value)} autoComplete="off" />
+            </label>
+            <label>
+              <span>Category</span>
+              <select value={creatorForm.classification} onChange={(event) => updateCreatorField('classification', event.target.value)}>
+                {FOOD_CLASSIFICATIONS.map((classification) => (
+                  <option key={classification} value={classification}>{classification}</option>
                 ))}
-              </section>
-            {addedItem !== null && 
-            <section className="macros-and-measurement-amount">
-                  <span className="added-item-name">{addedItem?.name}</span>
-                    <div className="macros">
-                      <span>Calories: {calories}</span>
-                      <span>Carbs: {carbs}</span>
-                      <span>Fat: {fat}</span>
-                      <span>Protein: {protein}</span>
-                      
-                    </div>
-                    <div className="serving-inputs">
-                      <label htmlFor="serving-size">Serving Size:</label>
-                      <input className="serving-size" name="serving-size" id="serving-size" type="number" value={servingSize} min="1" onChange={(e) => {const value = e.target.value; if (Number(value) >= 1 || value === "" ){ setServingSize(e.target.value)}}}/>
-                      <span>unit</span>
-                    </div>
-                  <div className="save-bar">
-                    <button onClick={handleLogFood} className="save-button" disabled={servingSize === ""}>Log</button>
-                  </div>
+              </select>
+            </label>
+            <label>
+              <span>Serving Size</span>
+              <input type="number" min="0.1" step="0.1" value={creatorForm.measurement} onChange={(event) => updateCreatorField('measurement', event.target.value)} />
+            </label>
+            <label>
+              <span>Unit</span>
+              <select value={creatorForm.measurementClassification} onChange={(event) => updateCreatorField('measurementClassification', event.target.value as FoodCreatorForm['measurementClassification'])}>
+                {MEASUREMENT_OPTIONS.map((unit) => (
+                  <option key={unit} value={unit}>{unit}</option>
+                ))}
+              </select>
+            </label>
+            <label>
+              <span>Calories</span>
+              <input type="number" min="0" step="0.1" value={creatorForm.calories} onChange={(event) => updateCreatorField('calories', event.target.value)} />
+            </label>
+            <label>
+              <span>Carbs</span>
+              <input type="number" min="0" step="0.1" value={creatorForm.carbs} onChange={(event) => updateCreatorField('carbs', event.target.value)} />
+            </label>
+            <label>
+              <span>Fat</span>
+              <input type="number" min="0" step="0.1" value={creatorForm.fat} onChange={(event) => updateCreatorField('fat', event.target.value)} />
+            </label>
+            <label>
+              <span>Protein</span>
+              <input type="number" min="0" step="0.1" value={creatorForm.protein} onChange={(event) => updateCreatorField('protein', event.target.value)} />
+            </label>
+          </div>
+          <div className="save-bar">
+            <button type="submit" className="save-button" disabled={isSavingFood}>
+              <AddCircleIcon aria-hidden="true" fontSize="small" />
+              Save Food
+            </button>
+          </div>
+        </form>
 
-                </section>}
+        <section>
+          <form onSubmit={handleSubmitSearch} className="search-form">
+            <SearchIcon aria-hidden="true" className="search-icon"></SearchIcon>
+            <input id="search-bar-input" value={userInput} onChange={(event) => setUserInput(event.target.value)} aria-label="Search Foods" type="search" placeholder="Search Foods" className="search-bar" autoComplete="off" />
+          </form>
+        </section>
 
-         </section>
-   
+        <section className="search-results">
+          {searchResults.map((result) => (
+            <div onClick={() => { setAddedItem(result); setServingCount('1') }} key={getFoodKey(result)} className="search-item">
+              <div className={`search-item-heading ${addedItem && getFoodKey(addedItem) === getFoodKey(result) ? 'added' : ''}`}>
+                <span>{result.name}</span>
+                <div className="amount-and-unit">
+                  <span>{formatAmount(result.measurement)}</span>
+                  <span>{result.measurementClassification}</span>
+                </div>
+                <span>{formatAmount(result.macronutrients.calories)} cal</span>
+                <span className="food-source">{result.source === 'saved' ? 'Saved' : 'Food list'}</span>
+                <button
+                  aria-label="Select item"
+                  className="add-icon"
+                  id="add-item-button"
+                  onClick={(event) => {
+                    event.stopPropagation()
+                    setAddedItem(result)
+                    setServingCount('1')
+                  }}
+                  type="button"
+                >
+                  {addedItem && getFoodKey(addedItem) === getFoodKey(result)
+                    ? <RemoveCircleIcon aria-hidden="true" fontSize="medium" />
+                    : <AddCircleIcon aria-hidden="true" fontSize="medium" />}
+                </button>
+              </div>
+            </div>
+          ))}
+        </section>
 
-         
-       </main>
-     )
-   }
-   
+        {addedItem !== null &&
+          <section className="macros-and-measurement-amount">
+            <span className="added-item-name">{addedItem.name}</span>
+            <div className="macros">
+              <span>Calories: {formatAmount(selectedMacros.calories)}</span>
+              <span>Carbs: {formatAmount(selectedMacros.carbs)}</span>
+              <span>Fat: {formatAmount(selectedMacros.fat)}</span>
+              <span>Protein: {formatAmount(selectedMacros.protein)}</span>
+            </div>
+            <div className="serving-inputs">
+              <label htmlFor="serving-count">Servings</label>
+              <input
+                className="serving-size"
+                name="serving-count"
+                id="serving-count"
+                type="number"
+                value={servingCount}
+                min="0.1"
+                step="0.1"
+                onChange={(event) => {
+                  const value = event.target.value
+                  if (value === '' || Number(value) >= 0) {
+                    setServingCount(value)
+                  }
+                }}
+              />
+              <span>{formatAmount(selectedMeasurement)} {addedItem.measurementClassification}</span>
+            </div>
+            <div className="save-bar">
+              <button onClick={handleLogFood} className="save-button" disabled={!hasValidServingCount} type="button">Log</button>
+            </div>
+          </section>}
+      </section>
+    </main>
+  )
+}
 
 export default SearchFoodPage

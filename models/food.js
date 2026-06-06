@@ -2,6 +2,7 @@ const mongoose = require('../backend/node_modules/mongoose');
 const {
     foodclassifcations: foodClassifications,
     measurementclassifications: measurementClassifications,
+    normalizeMeasurementClassification,
 } = require('./modelhelpers');
 
 const macronutrientSchema = new mongoose.Schema(
@@ -33,6 +34,7 @@ const foodSchema = new mongoose.Schema(
             type: String,
             required: true,
             trim: true,
+            set: normalizeMeasurementClassification,
             enum: measurementClassifications,
         },
         measurement: { type: Number, required: true },
@@ -48,7 +50,7 @@ foodSchema.methods.toFoodObject = function toFoodObject() {
         id: this._id.toString(),
         name: this.name,
         classification: this.classification,
-        measurementClassification: this.measurementClassification,
+        measurementClassification: normalizeMeasurementClassification(this.measurementClassification),
         measurement: this.measurement,
         macronutrients: this.macronutrients ? { ...this.macronutrients } : {},
     };
@@ -58,7 +60,7 @@ foodSchema.statics.fromInput = function fromInput(input = {}) {
     return new this({
         name: input.name,
         classification: input.classification,
-        measurementClassification: input.measurementClassification,
+        measurementClassification: normalizeMeasurementClassification(input.measurementClassification),
         measurement: Number(input.measurement),
         macronutrients: input.macronutrients || {},
     });

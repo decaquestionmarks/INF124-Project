@@ -1,4 +1,4 @@
-const { goalMacros, goalMicros } = require('./modelhelpers');
+const { goalMacros, goalMicros, normalizeMeasurementClassification } = require('./modelhelpers');
 const { randomUUID } = require('crypto');
 
 const goalNutrients = [...goalMacros, ...goalMicros];
@@ -31,6 +31,8 @@ const normalizeFood = (food) => {
 	const normalizedFood = {
 		...food,
 		id: food.id ? String(food.id) : randomUUID(),
+		measurementClassification: normalizeMeasurementClassification(food.measurementClassification),
+		servingMeasurementClassification: normalizeMeasurementClassification(food.servingMeasurementClassification),
 		macronutrients: {
 			...(food.macronutrients || {}),
 		},
