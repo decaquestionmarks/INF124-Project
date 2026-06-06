@@ -1,5 +1,5 @@
 const express = require('express');
-const { searchFoods, getFoodByIdentifier, getAllFoods, createFood } = require('../controllers/food');
+const { searchFoods, getFoodByIdentifier, getAllFoods, createFood, deleteFood } = require('../controllers/food');
 
 const router = express.Router();
 
@@ -35,5 +35,7 @@ router.get('/:identifier', async (req, res) => {
 });
 
 router.post('/', createFood);
+
+router.delete('/', deleteFood);
 
 module.exports = router;

@@ -259,4 +259,5 @@ module.exports = {
     getFoodByIdentifier,
     getAllFoods,
     createFood,
+    deleteFood
 };
