@@ -10,6 +10,7 @@ const {
 	getFridge,
 	// getSavedFoods,
 	addFamilyMember,
+	updateFamilyMember,
 	addGoalFood,
 	addFridgeItem,
 	// createSavedFood,
@@ -40,6 +41,7 @@ router.post('/me/fridge', addFridgeItem);
 // router.post('/me/saved-foods', createSavedFood);
 
 router.put('/me/account', updateAccount);
+router.put('/me/family/:memberId', updateFamilyMember);
 router.put('/me/goal/:date', updateGoal);
 router.put('/me/goal/', updateGoal);
 

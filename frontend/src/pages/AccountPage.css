@@ -4,7 +4,7 @@
 h2{
     font-family: 'Avenir Next', 'Segoe UI', sans-serif;
     color: #111111;
-    letter-spacing: -0.04em;
+    letter-spacing: 0;
     font-size: 1.8rem;
     font-weight: 800;
 }
@@ -236,6 +236,99 @@ input{
     border-bottom: 1px solid #eadfd5;
 }
 
+.family-member__details{
+    display: flex;
+    flex-direction: column;
+    gap: .45rem;
+    min-width: 0;
+}
+
+.family-member__goal{
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    color: #62574c;
+    margin-left: 3.5rem;
+}
+
+.family-member__goal label{
+    color: #8a7a6c;
+    font-size: .9rem;
+    font-weight: 600;
+}
+
+.family-member__goal-value{
+    color: #4f463f;
+    font-weight: 700;
+}
+
+.family-member__goal-edit{
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+}
+
+.family-member__goal-edit input{
+    background-color: white;
+    border: 1px solid #eadfd5;
+    border-radius: 8px;
+    color: #4f463f;
+    font: inherit;
+    font-weight: 700;
+    padding: .5rem .65rem;
+    width: 8rem;
+}
+
+.family-member__goal-edit input:focus{
+    outline: 2px solid var(--main-orange-color);
+    outline-offset: 2px;
+}
+
+.family-member__goal-edit span{
+    color: #8a7a6c;
+    font-size: .9rem;
+    white-space: nowrap;
+}
+
+.family-member__actions{
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 1rem;
+    min-width: 12rem;
+}
+
+.family-member__save-goal{
+    border: 1px solid #deb99b;
+    border-radius: 999px;
+    background: #fff7ef;
+    color: #7f5e44;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: .95rem;
+    font-weight: 700;
+    padding: .45rem .9rem;
+    transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease, opacity 160ms ease;
+}
+
+.family-member__save-goal:hover:not(:disabled){
+    background: #fff1e5;
+    border-color: var(--main-orange-color);
+    color: var(--main-orange-color);
+}
+
+.family-member__save-goal:disabled{
+    cursor: default;
+    opacity: .55;
+}
+
+.family-member__owner-label{
+    color: #8a7a6c;
+    font-size: .95rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
 .add-family-member{
     grid-template-columns: 1fr 1fr;
     opacity: 0;
@@ -245,6 +338,10 @@ input{
     align-items: center;
     gap: 1rem;
     transition: opacity 160ms ease;
+}
+
+.add-family-member[hidden]{
+    display: none;
 }
 
 .add-family-member input{
@@ -261,7 +358,7 @@ input{
     outline-offset: 2px;
 }
 
-.add-family-member.hidden{
+.add-family-member--visible{
     opacity: 1;
 }
 
@@ -279,6 +376,11 @@ input{
     width: 100%;
     gap: .5rem;
 }
+
+.add-user:disabled{
+    cursor: default;
+    opacity: .6;
+}
 .remove-user{
     transition: ease color 250ms;
     color:white;
@@ -294,6 +396,13 @@ input{
     cursor: pointer;
 }
 
+.remove-user.edit:focus,
+.family-member__save-goal:focus,
+.add-user:focus{
+    outline: 2px solid var(--main-orange-color);
+    outline-offset: 2px;
+}
+
 .family-error{
     color: #b42318;
     margin: .75rem 0 0;
@@ -307,6 +416,7 @@ input{
 }
 .icon-name-family-member span{
     color: #62574c;
+    overflow-wrap: anywhere;
 }
 
 .add-family-member span{
@@ -345,6 +455,45 @@ input{
         width: 100%;
     }
 
+}
+
+@media(max-width: 700px){
+    .family-member{
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .family-member__goal{
+        align-items: flex-start;
+        flex-direction: column;
+        gap: .35rem;
+        margin-left: 0;
+    }
+
+    .family-member__actions{
+        justify-content: space-between;
+        min-width: 0;
+        width: 100%;
+    }
+
+    .family-member__goal-edit{
+        width: 100%;
+    }
+
+    .family-member__goal-edit input{
+        flex: 1;
+        min-width: 0;
+        width: 100%;
+    }
+
+    .add-family-member{
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .add-user{
+        justify-content: center;
+    }
 }
 
 #user-email{
