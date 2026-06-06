@@ -454,12 +454,16 @@ export function SearchFoodPage({ linkBack }: SearchFoodProps) {
                   </div>
                   <span className="search-item-calories">{formatAmount(result.macronutrients.calories)} cal</span>
                   <button
-                    aria-label="Select item"
+                    aria-label={addedItem && getFoodKey(addedItem) === getFoodKey(result) ? 'Remove selected item' : 'Select item'}
                     className="add-icon"
                     id="add-item-button"
                     onClick={(event) => {
                       event.stopPropagation()
-                      setAddedItem(result)
+                      if (addedItem && getFoodKey(addedItem) === getFoodKey(result)) {
+                        setAddedItem(null)
+                      } else {
+                        setAddedItem(result)
+                      }
                       setServingCount('1')
                     }}
                     type="button"
