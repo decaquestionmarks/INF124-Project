@@ -221,6 +221,7 @@ const createFood = async (req, res) => {
     } catch (err) {
         return res.status(err.statusCode || 400).json({ error: err.message || 'Unable to create food' });
     }
+    };
 
     const deleteFood = async (req, res) => {
         if (!isMongoReady()) {
@@ -252,7 +253,6 @@ const createFood = async (req, res) => {
             .json({ error: err.message || 'Unable to delete food' });
         }
     };
-};
 
 module.exports = {
     searchFoods,
