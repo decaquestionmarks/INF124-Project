@@ -6,15 +6,15 @@ import { Header } from '../components/Header.tsx';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import { authFetch } from '../api.ts';
 
-const initialData = {
-  weightStarting: '',
-  weightCurrent: '',
-  weightGoal: '',
-  age: '',
-  activityLevel: '',
-  "height-ft": '',
-  "height-in": '',
-}
+// const initialData = {
+//   weightStarting: '',
+//   weightCurrent: '',
+//   weightGoal: '',
+//   age: '',
+//   activityLevel: '',
+//   "height-ft": '',
+//   "height-in": '',
+// }
 
 type FamilyMember = {
   id: string;
@@ -25,12 +25,12 @@ type FamilyMember = {
 export function AccountPage(){
  
 
-  const handleSaveGoals =  (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    setOriginalFormValues(formValues)
-    setEditingGoals(false)
-    // updating username/email?
-    }
+  // const handleSaveGoals =  (e: React.FormEvent<HTMLFormElement>) => {
+  //   e.preventDefault()
+  //   setOriginalFormValues(formValues)
+  //   setEditingGoals(false)
+  //   // updating username/email?
+  //   }
 
   // const formSchema = [
   //     {
@@ -39,9 +39,9 @@ export function AccountPage(){
   //       type: "number"
   //     },
   // ]
-    const [formValues, setFormValues] = useState<Record<string, string>>(initialData)
-    const [originalFormValues, setOriginalFormValues] = useState<Record<string, string>>(initialData)
-    const [editingGoals, setEditingGoals] = useState(false);
+    // const [formValues, setFormValues] = useState<Record<string, string>>(initialData)
+    // const [originalFormValues, setOriginalFormValues] = useState<Record<string, string>>(initialData)
+    // const [editingGoals, setEditingGoals] = useState(false);
     const [editingFamily, setEditingFamily] = useState(false);
     const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([])
     const [newFamilyMemberName, setNewFamilyMemberName] = useState("")
@@ -161,7 +161,7 @@ export function AccountPage(){
         return () => legacyMediaQuery.removeListener?.(syncSidebarState)
       }, [])
 
-      const formChanges = JSON.stringify(formValues) != JSON.stringify(originalFormValues)
+      // const formChanges = JSON.stringify(formValues) != JSON.stringify(originalFormValues)
 
       return (
     <main
