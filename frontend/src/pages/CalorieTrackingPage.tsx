@@ -123,6 +123,8 @@ const normalizeMeasurementLabel = (value: string) => {
 
 const formatAmount = (value: number) => Number.isInteger(value) ? String(value) : value.toFixed(1)
 
+const formatStatValue = (value: number) => formatAmount(roundNutrient(value))
+
 const getServingMeasurement = (food: TrackedFood) => Number(food.servingMeasurement)
 
 const hasServingMetadata = (food: TrackedFood) => {
@@ -492,118 +494,134 @@ export function CalorieTrackingPage(){
     </label>
   )
 
-   return (
-       <main
-         className={`dashboard-page${isSidebarOpen ? ' dashboard-page--sidebar-open' : ' dashboard-page--sidebar-closed'}`}
-       >
-         <Sidebar
-           isOpen={isSidebarOpen}
-           onToggle={() => setIsSidebarOpen((open) => !open)}
-         />
-   
-         <div
-           className={`dashboard-page__backdrop${isSidebarOpen ? ' dashboard-page__backdrop--visible' : ''}`}
-           aria-hidden="true"
-           onClick={() => setIsSidebarOpen(false)}
-         />
-   
-         <section className="dashboard-page__content">
+  const calorieGoal = goalProgress.calories.goal
+  const calorieTotal = goalProgress.calories.total
+  const calorieRemaining = goalProgress.calories.remaining
+  const calorieProgressPercent = calorieGoal > 0
+    ? Math.min(100, Math.max(0, (calorieTotal / calorieGoal) * 100))
+    : 0
+  const calorieStats = [
+    { label: 'Goal', value: formatStatValue(calorieGoal) },
+    { label: 'Total', value: formatStatValue(calorieTotal) },
+    { label: 'Remaining', value: formatStatValue(calorieRemaining) },
+  ]
+  const macroStats = [
+    { label: 'Carbs', value: `${formatStatValue(goalProgress.carbs)}g`, key: 'carbs' },
+    { label: 'Fat', value: `${formatStatValue(goalProgress.fat)}g`, key: 'fat' },
+    { label: 'Protein', value: `${formatStatValue(goalProgress.protein)}g`, key: 'protein' },
+  ]
+
+  return (
+    <main
+      className={`dashboard-page${isSidebarOpen ? ' dashboard-page--sidebar-open' : ' dashboard-page--sidebar-closed'}`}
+    >
+      <Sidebar
+        isOpen={isSidebarOpen}
+        onToggle={() => setIsSidebarOpen((open) => !open)}
+      />
+
+      <div
+        className={`dashboard-page__backdrop${isSidebarOpen ? ' dashboard-page__backdrop--visible' : ''}`}
+        aria-hidden="true"
+        onClick={() => setIsSidebarOpen(false)}
+      />
+
+      <section className="dashboard-page__content">
         <Header isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} pageTitle={"Calorie Tracker"} pageButton={memberSwitcher}></Header>
-        <section className="nav-days">
-          <div className="nav-items">
-            <button aria-label="Go to previous day" onClick={decrementDate}><ArrowLeftRoundedIcon aria-hidden="true" className="nav-icon" sx={{fontSize: 70}}></ArrowLeftRoundedIcon></button>
-            <div className="date">
-              <h2>{date.toLocaleDateString('en-us', {
-              weekday: "short",
-              month: "short",
-              day: "numeric"
-              }
-              )}</h2>
+        <section className="calorie-tracker-page">
+          <section className="nav-days" aria-label="Selected tracking day">
+            <div className="nav-items">
+              <button type="button" className="nav-day-button" aria-label="Go to previous day" onClick={decrementDate}>
+                <ArrowLeftRoundedIcon aria-hidden="true" className="nav-icon" sx={{fontSize: 42}}></ArrowLeftRoundedIcon>
+              </button>
+              <div className="date">
+                <span>Tracking day</span>
+                <h2>{date.toLocaleDateString('en-us', {
+                  weekday: "short",
+                  month: "short",
+                  day: "numeric"
+                })}</h2>
+              </div>
+              <button type="button" className="nav-day-button" aria-label="Go to next day" onClick={incrementDate}>
+                <ArrowRightRoundedIcon aria-hidden="true" className="nav-icon" sx={{fontSize: 42}}></ArrowRightRoundedIcon>
+              </button>
             </div>
-            
-            <button aria-label="Go to next day" onClick={incrementDate}><ArrowRightRoundedIcon aria-hidden="true" className="nav-icon"  sx={{fontSize: 70}}></ArrowRightRoundedIcon></button>            
-          </div>
-          {/* <button className="share-button" aria-label="Share"><ShareRoundedIcon  sx={{fontSize: 30}}></ShareRoundedIcon></button> */}
-        </section>
-        <section className="food-stats">
-          <div className="food-stats-row">
+          </section>
 
+          <section className="food-stats" aria-label="Daily nutrition progress">
+            <div className="calorie-progress">
+              <div className="calorie-progress__header">
+                <span>Calories</span>
+                <strong>{formatStatValue(calorieTotal)} / {formatStatValue(calorieGoal || calorieTotal)} kcal</strong>
+              </div>
+              <div className="calorie-progress__bar" aria-hidden="true">
+                <span style={{ width: `${calorieProgressPercent}%` }} />
+              </div>
+            </div>
+            <div className="food-stats-row">
+              {calorieStats.map((stat) => (
+                <div className="stat-item" key={stat.label}>
+                  <span>{stat.label}</span>
+                  <strong>{stat.value}</strong>
+                </div>
+              ))}
+            </div>
+            <div className="food-stats-bottom-row">
+              {macroStats.map((stat) => (
+                <div className={`stat-item macro-stat macro-stat--${stat.key}`} key={stat.label}>
+                  <span>{stat.label}</span>
+                  <strong>{stat.value}</strong>
+                </div>
+              ))}
+            </div>
+          </section>
 
-            <div className="stat-item">
-              <span>Goal</span><br />
-              <span>{goalProgress.calories.goal}</span>
-            </div>
-             <div className="stat-item">
-              <span>Total</span><br />
-              <span>{goalProgress.calories.total}</span>
-            </div>
-             <div className="stat-item">
-              <span>Remaining</span><br />
-              <span>{goalProgress.calories.remaining}</span>
-            </div>
-            
-          
-          </div>
-          <div className="food-stats-bottom-row">
-             <div className="stat-item">
-              <span>Carbs</span><br />
-              <span>{goalProgress.carbs}</span>
-            </div>
-	             <div className="stat-item">
-	              <span>Fat</span><br />
-	              <span>{goalProgress.fat}</span>
-	            </div>
-             <div className="stat-item">
-              <span>Protein</span><br />
-              <span>{goalProgress.protein}</span>
-            </div>
-
-          </div>
-              </section>
-        <section className="meal-categories">
-          
-            <div  className="meal-cat">
+          <section className="meal-categories">
+            <div className="meal-cat">
               <div className="meal-cat-header">
                 <div className="meal-cat-labels">
-                 <h3 className="meal-title">Tracked Foods</h3>
+                  <span>{foods.length} logged</span>
+                  <h3 className="meal-title">Tracked Foods</h3>
                 </div>
-                <Link to={`/calorie-tracking/search-food?date=${dateKey}&${memberQuery}`} className="add-food">Add Food<AddCircleIcon></AddCircleIcon> </Link>              
-             </div>
-              
+                <Link to={`/calorie-tracking/search-food?date=${dateKey}&${memberQuery}`} className="add-food"><AddCircleIcon aria-hidden="true"></AddCircleIcon>Add Food</Link>
+              </div>
+
               <div className="added-items">
-                {foods.length == 0 ? <p className="no-foods-tracked"> No foods tracked</p> : 
-                 foods.map((f) => (
-                  <div key={f.id} className="food-item">
-                    <div className="left-item"
-                      onClick={() => {setEditingFoodId(f.id); setEditAmount(String(getEditableAmount(f) || ''))}}>
-                        
-                      {f.name} - {editingFoodId === f.id ? (
-                        <div className="calorie-tracking-edit-input">
-                        <input autoFocus value={editAmount} 
-                          onChange={(e) => setEditAmount(e.target.value)}
-                          onKeyDown={(e) => {if (e.key === "Enter") {e.preventDefault(); saveEdit()}}}
-                          onBlur={() => {setEditAmount(""); setEditingFoodId("")}}
-                          /> 
-                        <p> {getEditUnit(f)}</p>
-                        </div>)
-                        
-                        :
-                        // TODO: CHANGE THIS TO AMOUNT
-                      (<div>{formatTrackedFoodAmount(f)}</div>)}
+                {foods.length === 0 ? <p className="no-foods-tracked">No foods tracked</p> :
+                  foods.map((f) => (
+                    <div key={f.id} className="food-item">
+                      <div
+                        className="left-item"
+                        onClick={() => {setEditingFoodId(f.id); setEditAmount(String(getEditableAmount(f) || ''))}}
+                      >
+                        <div className="food-item__main">
+                          <strong>{f.name}</strong>
+                          <span>{formatStatValue(toNumber(f.macronutrients?.calories))} kcal</span>
+                        </div>
+                        {editingFoodId === f.id ? (
+                          <div className="calorie-tracking-edit-input">
+                            <input autoFocus value={editAmount}
+                              onChange={(e) => setEditAmount(e.target.value)}
+                              onKeyDown={(e) => {if (e.key === "Enter") {e.preventDefault(); saveEdit()}}}
+                              onBlur={() => {setEditAmount(""); setEditingFoodId("")}}
+                            />
+                            <p>{getEditUnit(f)}</p>
+                          </div>)
+                          :
+                          (<div className="food-item__amount">{formatTrackedFoodAmount(f)}</div>)}
+                      </div>
+                      <div className="right-item">
+                        <button type="button" onClick={() => handleSelectFood(f)} className="details">Details</button>
+                        <button type="button" className="delete-food-item" aria-label={`Delete ${f.name}`} onClick={() => handleDeleteFood(f)}><RemoveCircleIcon className="delete-icon"></RemoveCircleIcon></button>
+                      </div>
                     </div>
-                    {/* (<div>{f.macronutrients?.calories} calories</div>) */}
-                    <div className="right-item">
-                      <button onClick={() => handleSelectFood(f)} className="details">Details</button>
-                      <button className="delete-food-item" onClick={() => handleDeleteFood(f)}><RemoveCircleIcon className="delete-icon"></RemoveCircleIcon></button>
-                    </div>
-                  </div>
                   ))}
               </div>
             </div>
+          </section>
         </section>
-        </section>
-   
-       </main>
-     )
+      </section>
+    </main>
+  )
    }
    
