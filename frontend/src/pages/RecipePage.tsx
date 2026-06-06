@@ -31,9 +31,7 @@ function RecipeCard({ recipe }: { recipe: RecipePreview }) {
           <div className="recipe-content__heading">
             <h3>{recipe.name}</h3>
           </div>
-          {recipe.image ? (
-            <img className="recipe-img" src={recipe.image} alt="" />
-          ) : (
+          {(
             <div className="recipe-img-placeholder" aria-hidden="true">
               {recipe.name.slice(0, 1).toUpperCase()}
             </div>
