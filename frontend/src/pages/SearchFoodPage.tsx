@@ -167,7 +167,6 @@ export function SearchFoodPage({linkBack}: SearchFoodProps){
   const [servingSize, setServingSize] = useState("1")
 
 
-  // TODO: CHECK THIS
   const handleSubmitSearch = async (e: React.FormEvent) => {
       e.preventDefault()
       if (!userInput.trim()) return
@@ -175,8 +174,7 @@ export function SearchFoodPage({linkBack}: SearchFoodProps){
       try{
           const res = await authFetch(`/foods/search?query=${encodeURIComponent(userInput.trim())}`);
           const data = await res.json();
-          console.log("SEARCH RESULTS: ", data)
-          setSearchResults(data.results);
+          setSearchResults(Array.isArray(data.results) ? data.results : []);
       }
       catch (error) {
         console.error("Error searching for foods: ", error)
@@ -184,24 +182,28 @@ export function SearchFoodPage({linkBack}: SearchFoodProps){
 
   }
 
- const handleLogFood = async () => {
+	 const handleLogFood = async () => {
+    if (!addedItem) {
+      toast.error("Choose a food before logging.")
+      return
+    }
+
     if (linkBack === '/fridge'){
         const body_info = JSON.stringify({
-              name: addedItem?.name,
-              classification: addedItem?.classification,
-              measurementClassification: addedItem?.measurementClassification,
-              measurement: servingSize,
+	              name: addedItem?.name,
+	              classification: addedItem?.classification,
+	              measurementClassification: addedItem?.measurementClassification,
+	              measurement: servingSize,
               macronutrients: {
                 calories: addedItem?.macronutrients.calories,
                 fat: addedItem?.macronutrients.fat,
                 protein: addedItem?.macronutrients.protein,
-                carbs: addedItem?.macronutrients.carbs
-              }
-          })
-        console.log("BODY INFO: ", body_info)
-      try{
-        const res = await authFetch('/users/me/fridge',
-          {
+	                carbs: addedItem?.macronutrients.carbs
+	              }
+	          })
+	      try{
+	        const res = await authFetch('/users/me/fridge',
+	          {
           method: 'POST',
           headers: {'Content-type': 'application/json'},
           body: body_info
@@ -211,10 +213,11 @@ export function SearchFoodPage({linkBack}: SearchFoodProps){
           throw new Error("Failed to add food to fridge")
         }
 
-        toast.success(`Added ${addedItem?.name} to fridge`)
-      }
-      catch (error){
-        console.error("Error adding food to fridge: ", error)
+	        toast.success(`Added ${addedItem?.name} to fridge`)
+          navigate(linkBack, {state: {meal, date, addedItem}})
+	      }
+	      catch (error){
+	        console.error("Error adding food to fridge: ", error)
         toast.error("Failed to add food to fridge. Please try again")
       }
   }
@@ -225,33 +228,32 @@ export function SearchFoodPage({linkBack}: SearchFoodProps){
         {
         method: 'POST',
         headers: {'Content-type': 'application/json'},
-        body: JSON.stringify({
-            name: addedItem?.name,
-            // classification: "Produce",
-            measurementClassification: "Mass",
-            measurement: Number(servingSize),
-            macronutrients: {
-              calories: calories,
-              // fat: addedItem?.macronutrients.fat,
-              protein: protein,
-              // carbs: addedItem?.macronutrients.carbs
-            }
-            
-        })
+	        body: JSON.stringify({
+	            name: addedItem?.name,
+	            classification: addedItem.classification,
+	            measurementClassification: addedItem.measurementClassification,
+	            measurement: Number(servingSize),
+	            macronutrients: {
+	              calories: calories,
+	              carbs: carbs,
+	              fat: fat,
+	              protein: protein,
+	            }
+	            
+	        })
         });
         if (!res.ok){
           throw new Error("Failed to log food to calorie tracker")
-        }
-        toast.success(`Logged ${addedItem?.name} to calorie tracker`)
-      }
-      catch (error) {
-        console.error("Error logging food to calorie tracker: ", error)
-        toast.error("Failed to log food. Please try again")
-      }
-  }
-    navigate(linkBack, 
-      {state: {meal, date, addedItem}})
-  }
+	        }
+	        toast.success(`Logged ${addedItem?.name} to calorie tracker`)
+          navigate(linkBack, {state: {meal, date, addedItem}})
+	      }
+	      catch (error) {
+	        console.error("Error logging food to calorie tracker: ", error)
+	        toast.error("Failed to log food. Please try again")
+	      }
+	  }
+	  }
 
  const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
     if (typeof window === 'undefined') {

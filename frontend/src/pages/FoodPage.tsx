@@ -6,23 +6,31 @@ import { SecondaryHeader } from '../components/Header.tsx'
 import { useLocation } from 'react-router-dom'
 import { authFetch } from '../api.ts'
 
+type TrackedFood = {
+  name: string;
+  measurement: number;
+  measurementClassification: string;
+  macronutrients?: {
+    calories?: number;
+    fat?: number;
+    protein?: number;
+    carbs?: number;
+  };
+}
+
+const toNumber = (value: unknown) => {
+  return typeof value === 'number' && Number.isFinite(value) ? value : 0
+}
 
 export function FoodPage(){
-  // change this to match to fetch
   const location = useLocation();
   const params = new URLSearchParams(location.search)
   const foodName = params.get('trackedFoodName')
-  const [amount, setAmount] = useState(0)
-  const [unit, setUnit] = useState("")
-  const [macros, setMacros] = useState({
-        calories: 0,
-        fat: 0,
-        protein: 0,
-        carbs: 0
-      });
-  
+  const selectedDate = params.get('date') ?? new Date().toISOString().slice(0, 10)
+  const [trackedFood, setTrackedFood] = useState<TrackedFood | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  console.log("FOOD NAME: ", foodName);
     const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
     if (typeof window === 'undefined') {
       return true
@@ -32,23 +40,41 @@ export function FoodPage(){
   })
 
   useEffect(() => {
-    if (!foodName) return;
-    const handleFetchFoodDetails = async () => {
-      const res = await authFetch(`/foods/${foodName}`)
-      const data = await res.json()
-      setMacros({
-        calories: data.macronutrients?.calories ?? 0,
-        fat: data.macronutrients?.fat ?? 0,
-        protein: data.macronutrients?.protein ?? 0,
-        carbs: data.macronutrients?.carbs ?? 0
-      });
-      setAmount(data.measurement);
-      setUnit(data.measurementClassification);
+    if (!foodName) {
+      setTrackedFood(null)
+      setError("No tracked food selected.")
+      setIsLoading(false)
+      return
+    }
 
-      console.log("FETCHED FOOD DETAILS: ", data)
+    const handleFetchFoodDetails = async () => {
+      try {
+        setIsLoading(true)
+        setError(null)
+        const res = await authFetch(`/users/me/goal/foods?date=${selectedDate}`)
+        const data = await res.json()
+
+        if (!res.ok) {
+          throw new Error(data.error || "Unable to load tracked food.")
+        }
+
+        const foods = Array.isArray(data.foods) ? data.foods as TrackedFood[] : []
+        const selectedFood = foods.find((food) => food.name.toLowerCase() === foodName.toLowerCase())
+        setTrackedFood(selectedFood ?? null)
+
+        if (!selectedFood) {
+          setError("Food not found for this date.")
+        }
+      } catch (err) {
+        console.error("Error loading tracked food: ", err)
+        setTrackedFood(null)
+        setError("Unable to load tracked food.")
+      } finally {
+        setIsLoading(false)
+      }
     }
     handleFetchFoodDetails()
-  }, [foodName])
+  }, [foodName, selectedDate])
 
   useEffect(() => {
     const mediaQuery = window.matchMedia('(max-width: 900px)')
@@ -74,6 +100,7 @@ export function FoodPage(){
     return () => legacyMediaQuery.removeListener?.(syncSidebarState)
   }, [])
 
+  const macros = trackedFood?.macronutrients ?? {}
   
     return (
        <main
@@ -91,32 +118,36 @@ export function FoodPage(){
          />
    
          <section className="dashboard-page__content">
-            <SecondaryHeader isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} pageTitle={"Mock Food"} linkBack="/calorie-tracking"></SecondaryHeader>
+            <SecondaryHeader isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} pageTitle={trackedFood?.name ?? foodName ?? "Food Details"} linkBack="/calorie-tracking"></SecondaryHeader>
             <section className="food-page">
 
-                <div className="overall-macros">
+                {isLoading ? <p>Loading food details...</p> : null}
+                {!isLoading && error ? <p>{error}</p> : null}
+                {!isLoading && trackedFood ? (
+                  <div className="overall-macros">
                   <div className="macro-row">
                         <span>Amount:</span>
-                         <span>{amount} {unit}</span>
+                         <span>{trackedFood.measurement} {trackedFood.measurementClassification}</span>
                     </div>
                     <div className="macro-row">
                         <span>Calories:</span>
-                        <span>{macros.calories}</span>
+                        <span>{toNumber(macros.calories)}</span>
                     </div>
    
                     <div className="macro-row">
                         <span>Fat:</span>
-                        <span>{macros.fat} g</span>
+                        <span>{toNumber(macros.fat)} g</span>
                     </div>
                     <div className="macro-row">
                         <span>Protein:</span>
-                        <span>{macros.protein} g</span>
+                        <span>{toNumber(macros.protein)} g</span>
                     </div>
                     <div className="macro-row">
                         <span>Carbs:</span>
-                        <span>{macros.carbs} g</span>
+                        <span>{toNumber(macros.carbs)} g</span>
                     </div>
-                </div>
+                  </div>
+                ) : null}
             </section>
         </section>
        </main>

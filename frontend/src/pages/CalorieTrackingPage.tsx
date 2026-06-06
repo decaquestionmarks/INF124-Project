@@ -17,7 +17,7 @@ type MacroProgress = {
     remaining: number
   };
   carbs: number;
-  fats: number;
+  fat: number;
   protein: number
 };
 
@@ -34,6 +34,62 @@ type TrackedFood = {
   };
 };
 
+type ProgressNutrient = {
+  goal?: number;
+  total?: number;
+  remaining?: number;
+};
+
+const emptyMacroProgress = (): MacroProgress => ({
+  calories: {
+    goal: 0,
+    total: 0,
+    remaining: 0,
+  },
+  carbs: 0,
+  fat: 0,
+  protein: 0,
+})
+
+const toNumber = (value: unknown) => {
+  return typeof value === 'number' && Number.isFinite(value) ? value : 0
+}
+
+const readProgressNutrient = (progress: unknown, nutrient: string): ProgressNutrient => {
+  if (!progress || typeof progress !== 'object') {
+    return {}
+  }
+
+  const progressRecord = progress as Record<string, ProgressNutrient | undefined>
+  return progressRecord[nutrient] ?? (nutrient === 'fat' ? progressRecord.fats : undefined) ?? {}
+}
+
+const toMacroProgress = (progress: unknown): MacroProgress => {
+  const calories = readProgressNutrient(progress, 'calories')
+  const carbs = readProgressNutrient(progress, 'carbs')
+  const fat = readProgressNutrient(progress, 'fat')
+  const protein = readProgressNutrient(progress, 'protein')
+
+  return {
+    calories: {
+      goal: toNumber(calories.goal),
+      total: toNumber(calories.total),
+      remaining: toNumber(calories.remaining),
+    },
+    carbs: toNumber(carbs.total),
+    fat: toNumber(fat.total),
+    protein: toNumber(protein.total),
+  }
+}
+
+const roundNutrient = (value: number) => Number(value.toFixed(1))
+
+const scaleMacronutrients = (macronutrients: TrackedFood['macronutrients'], ratio: number) => ({
+  calories: roundNutrient(toNumber(macronutrients.calories) * ratio),
+  carbs: roundNutrient(toNumber(macronutrients.carbs) * ratio),
+  fat: roundNutrient(toNumber(macronutrients.fat) * ratio),
+  protein: roundNutrient(toNumber(macronutrients.protein) * ratio),
+})
 
 export function CalorieTrackingPage(){
   const [editingName, setEditingName] = useState("");
@@ -41,20 +97,10 @@ export function CalorieTrackingPage(){
   const current = new Date();
   const [date, setDate] = useState(current)
   const [foods, setFoods] = useState<TrackedFood[]>([])
-  const [goalProgress, setGoalProgress] = useState<MacroProgress>({
-            calories: {
-              goal: 0,
-              total: 0,
-              remaining: 0
-            },
-            carbs: 0,
-            fats: 0,
-            protein: 0
-          })
+  const [goalProgress, setGoalProgress] = useState<MacroProgress>(() => emptyMacroProgress())
   const navigate = useNavigate()
   const handleSelectFood = (name: string) => {
-      console.log("name of food to view: ", name)
-      navigate(`/calorie-tracking/food?trackedFoodName=${name}`)
+      navigate(`/calorie-tracking/food?trackedFoodName=${encodeURIComponent(name)}&date=${date.toISOString().slice(0,10)}`)
   }
 
   const decrementDate = () => {
@@ -90,9 +136,8 @@ export function CalorieTrackingPage(){
         throw new Error("Failed to delete food item")
       }
       const data = await res.json()
-      const progress = data.progress
       const foods = data.foods
-      setGoalProgress({calories: {goal: progress.calories.goal, remaining: progress.calories.remaining, total: progress.calories.total}, carbs: progress.carbs.total, fats: progress.fats.total, protein: progress.protein.total})
+      setGoalProgress(toMacroProgress(data.progress))
       setFoods(Array.isArray(foods) ? foods : [])
       toast.success(`Deleted ${name}`)
     }
@@ -127,31 +172,46 @@ export function CalorieTrackingPage(){
   }, [])
 
     const saveEdit = async () => {
-    try{
-      // TODO: connect to backend for updating single food item
-      // const updatedFoods = foods.map((f) => {
-      //   if (f.name === editingName){
-      //     return {...f, amount: editAmount}
-      //   }
-      //   return f;
-      // })
-      // const res = await authFetch(`/users/me/goal/${date.toISOString().slice(0,10)}`, { // editing single food item requires sending entire food list for the day, so endpoint is same as adding food item
-      //   method: 'PUT',
-      //   headers: {
-      //     'Content-Type': 'application/json'
-      //   },
-      //   body: JSON.stringify({
-      //     foods: updatedFoods
-      //   })
-      // })
-      // const data = await res.json()
+    const nextMeasurement = Number(editAmount)
+    if (!editingName || !Number.isFinite(nextMeasurement) || nextMeasurement <= 0) {
+      toast.error("Enter a valid amount before saving.")
+      return
+    }
 
-      // if (!res.ok){
-      //   throw new Error("Failed to update food item")
-      // }
+    try{
+      const updatedFoods = foods.map((f) => {
+        if (f.name !== editingName) {
+          return f
+        }
+
+        const previousMeasurement = Number(f.measurement)
+        const ratio = previousMeasurement > 0 ? nextMeasurement / previousMeasurement : 1
+
+        return {
+          ...f,
+          measurement: nextMeasurement,
+          macronutrients: scaleMacronutrients(f.macronutrients, ratio),
+        }
+      })
+
+      const res = await authFetch(`/users/me/goal/${date.toISOString().slice(0,10)}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          foods: updatedFoods
+        })
+      })
+      const data = await res.json()
+
+      if (!res.ok){
+        throw new Error(data.error || "Failed to update food item")
+      }
       setEditingName("");
       setEditAmount("");
-      // setFoods(Array.isArray(data.foods) ? data.foods : [])
+      setFoods(Array.isArray(data.foods) ? data.foods : updatedFoods)
+      setGoalProgress(toMacroProgress(data.progress))
       toast.success("Updated food item")
     }
     catch (error) {
@@ -171,29 +231,10 @@ export function CalorieTrackingPage(){
         }
 
         const data = await res.json()
-        console.log("GETTING GOAL FOR DATE: ", data)
-        setGoalProgress({
-            calories: {
-              goal: data.progress.calories.goal ? data.progress.calories.goal : 0,
-              total: data.progress.calories.total ? data.progress.calories.total : 0,
-              remaining: data.progress.calories.remaining ? data.progress.calories.remaining: 0,
-            },
-            carbs: data.progress.carbs.total ? data.progress.carbs.total : 0,
-            fats: data.progress.fats.total ? data.progress.fats.total : 0,
-            protein: data.progress.protein.total ? data.progress.protein.total : 0,
-          });
+        setGoalProgress(toMacroProgress(data.progress));
       }
       catch {     
-        setGoalProgress({
-            calories: {
-              goal: 0,
-              total: 0,
-              remaining: 0,
-            },
-            carbs: 0,
-            fats: 0,
-            protein: 0,
-          });
+        setGoalProgress(emptyMacroProgress());
           return;
       } 
     };
@@ -208,7 +249,6 @@ export function CalorieTrackingPage(){
           return;
         }
         const data = await res.json()
-        console.log("FOODS DATA: ", data);
         setFoods(Array.isArray(data.foods) ? data?.foods : []);
       }
       catch {
@@ -278,10 +318,10 @@ export function CalorieTrackingPage(){
               <span>Carbs</span><br />
               <span>{goalProgress.carbs}</span>
             </div>
-             <div className="stat-item">
-              <span>Fat</span><br />
-              <span>{goalProgress.fats}</span>
-            </div>
+	             <div className="stat-item">
+	              <span>Fat</span><br />
+	              <span>{goalProgress.fat}</span>
+	            </div>
              <div className="stat-item">
               <span>Protein</span><br />
               <span>{goalProgress.protein}</span>

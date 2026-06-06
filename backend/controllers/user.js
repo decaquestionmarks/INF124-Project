@@ -7,6 +7,65 @@ const mongoose = require('mongoose');
 // Simple in-memory mock user store for demo / frontend consumption
 const mockUsers = {};
 const isMongoReady = () => mongoose.connection.readyState === 1;
+const DEFAULT_DAILY_GOALS = { calories: 2000, protein: 50 };
+
+const normalizeGoalValues = (goals = {}) => {
+	return Object.entries(goals || {}).reduce((normalized, [nutrient, amount]) => {
+		const numericAmount = Number(amount);
+		if (Number.isFinite(numericAmount) && numericAmount >= 0) {
+			normalized[nutrient] = numericAmount;
+		}
+
+		return normalized;
+	}, {});
+};
+
+const createDefaultGoal = () => new Goal(DEFAULT_DAILY_GOALS, []);
+
+const toGoalInstance = (goal) => {
+	if (!goal) {
+		return createDefaultGoal();
+	}
+
+	if (typeof goal.calculateProgress === 'function' && typeof goal.getFoods === 'function') {
+		return goal;
+	}
+
+	return new Goal(
+		{ ...DEFAULT_DAILY_GOALS, ...normalizeGoalValues(goal.goals || {}) },
+		Array.isArray(goal.foods) ? goal.foods : []
+	);
+};
+
+const ensureGoalForDate = (user, date) => {
+	const existingGoal = user.getGoal(date);
+	const goal = toGoalInstance(existingGoal);
+
+	if (!existingGoal || existingGoal !== goal) {
+		user.setGoal(date, goal);
+	}
+
+	return goal;
+};
+
+const saveUser = async (user, modifiedPath) => {
+	if (!isMongoReady()) return;
+
+	if (modifiedPath && typeof user.markModified === 'function') {
+		user.markModified(modifiedPath);
+	}
+
+	await user.save().catch(() => {});
+};
+
+const getGoalFoodsFromGoal = (goal) => typeof goal.getFoods === 'function' ? goal.getFoods() : goal.foods || [];
+
+const buildGoalPayload = (date, goal) => ({
+	date,
+	goal: goal.goals || {},
+	foods: getGoalFoodsFromGoal(goal),
+	progress: typeof goal.calculateProgress === 'function' ? goal.calculateProgress() : null,
+});
 
 const ensureUserExists = async (uid, decodedToken = {}) => {
 	if (mockUsers[uid]) return mockUsers[uid];
@@ -45,17 +104,15 @@ const ensureUserExists = async (uid, decodedToken = {}) => {
 		user.setFridge(fridge);
 
 		const today = new Date().toISOString().slice(0, 10);
-		const goal = new Goal({ calories: 2000, protein: 50 }, []);
+		const goal = createDefaultGoal();
 		goal.addFood({ name: 'Greek Yogurt', measurement: 100.0, measurementClassification: 'Mass', macronutrients: { calories: 120, protein: 12 } });
 		goal.addFood({ name: 'Granola Bar', measurement: 100.0, measurementClassification: 'Mass', macronutrients: { calories: 180, protein: 3 } });
 		user.setGoal(today, goal);
 
-		if (isMongoReady()) {
-			try {
-				await user.save();
-			} catch (error) {
-				// Keep the in-memory document if MongoDB is unavailable.
-			}
+		try {
+			await saveUser(user);
+		} catch (error) {
+			// Keep the in-memory document if MongoDB is unavailable.
 		}
 	}
 
@@ -103,24 +160,21 @@ const getAccount = (req, res) => {
 // GET /users/me/goal?date=YYYY-MM-DD
 const getGoalForDate = (req, res) => {
 	const date = req.query.date || req.params.date || new Date().toISOString().slice(0, 10);
-	let goal = req.appUser.getGoal(date);
+	const goal = ensureGoalForDate(req.appUser, date);
 
-	if (!goal) goal = { date, goals: {} }; // Return empty goal if not found for date
-
-	// Return goal summary and progress
-	const progress = goal.calculateProgress ? goal.calculateProgress() : null;
-
-	res.json({ date, goal: goal.goals || goal, progress });
+	saveUser(req.appUser, 'goals').finally(() => {
+		res.json(buildGoalPayload(date, goal));
+	});
 };
 
 // GET /users/me/goal/foods?date=YYYY-MM-DD
 const getGoalFoods = (req, res) => {
 	const date = req.query.date || req.params.date || new Date().toISOString().slice(0, 10);
-	const goal = req.appUser.getGoal(date);
+	const goal = ensureGoalForDate(req.appUser, date);
 
-	if (!goal) return res.status(404).json({ error: 'Goal not found for date' });
-
-	res.json({ date, foods: typeof goal.getFoods === 'function' ? goal.getFoods() : goal.foods || [] });
+	saveUser(req.appUser, 'goals').finally(() => {
+		res.json({ date, foods: getGoalFoodsFromGoal(goal) });
+	});
 };
 
 // GET /users/me/fridge
@@ -131,9 +185,7 @@ const getFridge = (req, res) => {
 
 const addGoalFood = async (req, res) => {
 	const date = normalizeGoalDate(req);
-	const goal = req.appUser.getGoal(date);
-
-	if (!goal) return res.status(404).json({ error: 'Goal not found for date' });
+	const goal = ensureGoalForDate(req.appUser, date);
 
 	try {
 		const food = req.body && req.body.name ? req.body : null;
@@ -146,11 +198,8 @@ const addGoalFood = async (req, res) => {
 			goal.foods.push(food);
 		}
 
-		if (isMongoReady()) {
-			req.appUser.markModified('goals');
-			await req.appUser.save().catch(() => {});
-		}
-		return res.status(201).json({ date, foods: typeof goal.getFoods === 'function' ? goal.getFoods() : goal.foods || [] });
+		await saveUser(req.appUser, 'goals');
+		return res.status(201).json(buildGoalPayload(date, goal));
 	} catch (err) {
 		return res.status(400).json({ error: err.message });
 	}
@@ -160,9 +209,7 @@ const addFridgeItem = async (req, res) => {
 	try {
 		const food = buildFoodFromBody(req.body);
 		req.appUser.addFood(food);
-		if (isMongoReady()) {
-			await req.appUser.save().catch(() => {});
-		}
+		await saveUser(req.appUser);
 		return res.status(201).json({ fridge: req.appUser.getFridgeItems() });
 	} catch (err) {
 		return res.status(400).json({ error: err.message });
@@ -175,9 +222,7 @@ const updateAccount = async (req, res) => {
 			req.appUser.name = req.body.name.trim();
 		}
 
-		if (isMongoReady()) {
-			await req.appUser.save().catch(() => {});
-		}
+		await saveUser(req.appUser);
 		return res.json({ account: { id: req.appUser.id, name: req.appUser.name, email: req.user?.email } });
 	} catch (err) {
 		return res.status(400).json({ error: err.message });
@@ -186,36 +231,30 @@ const updateAccount = async (req, res) => {
 
 const updateGoal = async (req, res) => {
 	const date = normalizeGoalDate(req);
-	const existingGoal = req.appUser.getGoal(date);
 
 	try {
-		const nextGoal = existingGoal && typeof existingGoal.setGoals === 'function'
-			? existingGoal
-			: new Goal(existingGoal?.goals || {}, existingGoal?.foods || []);
+		const nextGoal = ensureGoalForDate(req.appUser, date);
 
 		if (req.body?.goals && typeof req.body.goals === 'object' && !Array.isArray(req.body.goals)) {
 			if (typeof nextGoal.setGoals === 'function') {
-				nextGoal.setGoals(req.body.goals);
+				nextGoal.setGoals(normalizeGoalValues(req.body.goals));
 			} else {
-				nextGoal.goals = { ...req.body.goals };
+				nextGoal.goals = normalizeGoalValues(req.body.goals);
 			}
 		}
 
 		if (Array.isArray(req.body?.foods)) {
+			nextGoal.foods = [];
 			if (typeof nextGoal.addFood === 'function') {
 				req.body.foods.forEach((food) => nextGoal.addFood(food));
 			} else {
-				nextGoal.foods = Array.isArray(nextGoal.foods) ? nextGoal.foods : [];
 				nextGoal.foods.push(...req.body.foods);
 			}
 		}
 
 		req.appUser.setGoal(date, nextGoal);
-		if (isMongoReady()) {
-			req.appUser.markModified('goals');
-			await req.appUser.save().catch(() => {});
-		}
-		return res.json({ date, goal: nextGoal.goals || nextGoal });
+		await saveUser(req.appUser, 'goals');
+		return res.json(buildGoalPayload(date, nextGoal));
 	} catch (err) {
 		return res.status(400).json({ error: err.message });
 	}
@@ -224,13 +263,14 @@ const updateGoal = async (req, res) => {
 const deleteGoalFood = async (req, res) => {
 	const date = normalizeGoalDate(req);
 	const foodName = req.params.food;
-	const goal = req.appUser.getGoal(date);
+	const existingGoal = req.appUser.getGoal(date);
+	const goal = existingGoal ? ensureGoalForDate(req.appUser, date) : null;
 
 	if (!goal) return res.status(404).json({ error: 'Goal not found for date' });
 	if (!foodName) return res.status(400).json({ error: 'Food name is required' });
 
 	try {
-		const foods = Array.isArray(goal.foods) ? goal.foods : typeof goal.getFoods === 'function' ? goal.getFoods() : [];
+		const foods = getGoalFoodsFromGoal(goal);
 		const initialCount = foods.length;
 		const updatedFoods = foods.filter((food) => 
 			(food && food.name && food.name.trim().toLowerCase()) !== foodName.trim().toLowerCase()
@@ -246,11 +286,9 @@ const deleteGoalFood = async (req, res) => {
 		if (!removed) {
 			return res.status(404).json({ error: 'Food not found in goal' });
 		}
-		if (isMongoReady()) {
-			req.appUser.markModified('goals');
-			await req.appUser.save().catch(() => {});
-		}
-		return res.json({ date, foods: updatedFoods, progress: typeof goal.calculateProgress === 'function' ? goal.calculateProgress() : null});
+		req.appUser.setGoal(date, goal);
+		await saveUser(req.appUser, 'goals');
+		return res.json(buildGoalPayload(date, goal));
 	} catch (err) {
 		return res.status(400).json({ error: err.message });
 	}
@@ -264,9 +302,7 @@ const deleteFridgeFood = async (req, res) => {
 	try {
 		const removed = req.appUser.removeFood(foodName);
 		if (!removed) return res.status(404).json({ error: 'Food not found in fridge' });
-		if (isMongoReady()) {
-			await req.appUser.save().catch(() => {});
-		}
+		await saveUser(req.appUser);
 		return res.json({ fridge: req.appUser.getFridgeItems() });
 	} catch (err) {
 		return res.status(400).json({ error: err.message });

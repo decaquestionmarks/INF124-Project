@@ -1,6 +1,46 @@
 const { goalMacros, goalMicros } = require('./modelhelpers');
 
 const goalNutrients = [...goalMacros, ...goalMicros];
+const nutrientAliases = {
+	fats: 'fat',
+};
+
+const normalizeNutrient = (nutrient) => nutrientAliases[nutrient] || nutrient;
+
+const getNutrientAmount = (food, nutrient) => {
+	const normalizedNutrient = normalizeNutrient(nutrient);
+	const macros = food.macronutrients || {};
+	const micros = food.micronutrients || {};
+	const aliasEntries = Object.entries(nutrientAliases)
+		.filter(([, value]) => value === normalizedNutrient)
+		.map(([key]) => key);
+	const possibleKeys = [normalizedNutrient, ...aliasEntries];
+
+	for (const key of possibleKeys) {
+		const amount = macros[key] ?? micros[key];
+		if (typeof amount === 'number' && Number.isFinite(amount)) {
+			return amount;
+		}
+	}
+
+	return 0;
+};
+
+const normalizeFood = (food) => {
+	const normalizedFood = {
+		...food,
+		macronutrients: {
+			...(food.macronutrients || {}),
+		},
+	};
+
+	goalNutrients.forEach((nutrient) => {
+		normalizedFood.macronutrients[nutrient] = getNutrientAmount(food, nutrient);
+	});
+
+	delete normalizedFood.macronutrients.fats;
+	return normalizedFood;
+};
 
 class Goal {
 	constructor(goals = {}, foods = []) {
@@ -23,7 +63,9 @@ class Goal {
 	}
 
 	setGoal(nutrient, amount) {
-		if (typeof nutrient !== 'string' || !goalNutrients.includes(nutrient)) {
+		const normalizedNutrient = typeof nutrient === 'string' ? normalizeNutrient(nutrient) : nutrient;
+
+		if (typeof normalizedNutrient !== 'string' || !goalNutrients.includes(normalizedNutrient)) {
 			throw new TypeError(`nutrient must be one of: ${goalNutrients.join(', ')}`);
 		}
 
@@ -31,7 +73,7 @@ class Goal {
 			throw new TypeError('amount must be a non-negative finite number');
 		}
 
-		this.goals[nutrient] = amount;
+		this.goals[normalizedNutrient] = amount;
 	}
 
 	setGoals(goals) {
@@ -46,19 +88,23 @@ class Goal {
 			throw new TypeError('food must be an object');
 		}
 
-		if (food.macronutrients === null || typeof food.macronutrients !== 'object' || Array.isArray(food.macronutrients)) {
+		if (food.macronutrients !== undefined && (food.macronutrients === null || typeof food.macronutrients !== 'object' || Array.isArray(food.macronutrients))) {
 			throw new TypeError('food.macronutrients must be an object');
 		}
 
+		const normalizedFood = normalizeFood(food);
+
 		// combine duplicate food amounts and macros
-		const existingFood = (this.foods.find((f) => f.name===food.name));
+		const existingFood = (this.foods.find((f) => f.name===normalizedFood.name));
 		if (existingFood){
-			existingFood.measurement = Number((Number(existingFood.measurement) + Number(food.measurement)).toFixed(1))
-			existingFood.macronutrients.calories = Number((Number(existingFood.macronutrients.calories) + Number(food.macronutrients.calories)).toFixed(1))
-			existingFood.macronutrients.protein = Number((Number(existingFood.macronutrients.protein) + Number(food.macronutrients.protein)).toFixed(1))
+			existingFood.measurement = Number((Number(existingFood.measurement) + Number(normalizedFood.measurement)).toFixed(1))
+			existingFood.macronutrients = existingFood.macronutrients || {};
+			goalNutrients.forEach((nutrient) => {
+				existingFood.macronutrients[nutrient] = Number((getNutrientAmount(existingFood, nutrient) + getNutrientAmount(normalizedFood, nutrient)).toFixed(1));
+			});
 		}
 		else{
-			this.foods.push(food);
+			this.foods.push(normalizedFood);
 		}
 	}
 
@@ -75,7 +121,7 @@ class Goal {
 	calculateTotals() {
 		return goalNutrients.reduce((totals, nutrient) => {
 			totals[nutrient] = this.foods.reduce((sum, food) => {
-				const amount = food.macronutrients[nutrient] ?? food.micronutrients?.[nutrient] ?? 0;
+				const amount = getNutrientAmount(food, nutrient);
 				if (typeof amount !== 'number' || !Number.isFinite(amount)) {
 					return sum;
 				}
