@@ -82,7 +82,7 @@ export function SearchFood({addedIngredients, setAddedIngredients}: SearchFoodPr
                 <div className="search-food-detail-item">
                 <h2>Ingredients</h2>
                 <div className="search-food-ingredients-text">
-                  {addedIngredients.length != 0 ? addedIngredients.map((f, i) => (
+                  {addedIngredients.map((f, i) => (
                     <div key={i} className="search-food-ingredient-item">
                       <div className="search-food-food-item">
                         <span>{f.name}</span>
@@ -106,14 +106,7 @@ export function SearchFood({addedIngredients, setAddedIngredients}: SearchFoodPr
                       </div>                    
                     </div>
                     
-                  )) :  
-                   <div className="ingredient-item">
-                      <p>Mock Ingredient - 1 unit</p>
-                      <p className="missing-item">Missing Item!</p>
-                    </div>
-                    
-                  
-                 }
+                  ))}
                   </div>
                 </div>
                 }

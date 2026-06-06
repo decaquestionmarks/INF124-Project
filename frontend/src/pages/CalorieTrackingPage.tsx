@@ -480,6 +480,7 @@ export function CalorieTrackingPage(){
     <label className="member-switcher">
       <span>Tracking</span>
       <select
+        id="select-family-member"
         value={activeMember?.id || DEFAULT_MEMBER_ID}
         onChange={(event) => setActiveMemberId(event.target.value)}
         aria-label="Select family member"

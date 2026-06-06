@@ -32,13 +32,13 @@ export function AccountPage(){
     // updating username/email?
     }
 
-  const formSchema = [
-      {
-        id: "calorie-goal:",
-        label: "Calorie Goal:",
-        type: "number"
-      },
-  ]
+  // const formSchema = [
+  //     {
+  //       id: "calorie-goal:",
+  //       label: "Calorie Goal:",
+  //       type: "number"
+  //     },
+  // ]
     const [formValues, setFormValues] = useState<Record<string, string>>(initialData)
     const [originalFormValues, setOriginalFormValues] = useState<Record<string, string>>(initialData)
     const [editingGoals, setEditingGoals] = useState(false);
@@ -181,7 +181,7 @@ export function AccountPage(){
       <section className="dashboard-page__content">
       
         <Header setIsSidebarOpen={setIsSidebarOpen} isSidebarOpen={isSidebarOpen} pageTitle={"Account"}></Header>
-            <section className="account-page__user-goals-content">
+            {/* <section className="account-page__user-goals-content">
               <div className="account-page__section-header">
                 <h2>Goals</h2>
                 <button className="edit-button" onClick={() => (
@@ -255,7 +255,7 @@ export function AccountPage(){
                       
                 </form>
             
-            </section>
+            </section> */}
 
             <section className="account-page-family-content">
                <div className="account-page__section-header">

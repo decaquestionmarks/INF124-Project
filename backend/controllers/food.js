@@ -209,8 +209,23 @@ const getFoodByIdentifier = async (identifier) => {
     };
 };
 
+const createFood = async (req, res) => {
+    if (!isMongoReady()) {
+        return res.status(503).json({ error: 'Database unavailable' });
+    }
+
+    try {
+        const food = FoodModel.fromInput(req.body || {});
+        await food.save();
+        return res.status(201).json(toFoodObject(food));
+    } catch (err) {
+        return res.status(err.statusCode || 400).json({ error: err.message || 'Unable to create food' });
+    }
+};
+
 module.exports = {
     searchFoods,
     getFoodByIdentifier,
     getAllFoods,
+    createFood,
 };

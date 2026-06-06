@@ -23,7 +23,7 @@ export function CreateRecipePage(){
   const navigate = useNavigate();
   const [recipeTitle, setRecipeTitle] = useState("My Recipe")
 
-	  const [addedIngredients, setAddedIngredients] = useState<Ingredient[]>([])
+	const [addedIngredients, setAddedIngredients] = useState<Ingredient[]>([])
   const [recipeDescription, setRecipeDescription] = useState("")
   const [steps, setSteps] = useState("")
 
@@ -53,7 +53,7 @@ export function CreateRecipePage(){
 	      }
 	      const createdRecipe = await response.json()
 	      toast.success(`Added ${recipeTitle} to recipes`)
-	      navigate(`/recipes/${createdRecipe.id}`)
+	      navigate(`/recipes/${createdRecipe._id}`)
 	    }
 	    catch (error){
 	      console.error("ERROR CreatingRecipePage", error)

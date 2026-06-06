@@ -196,7 +196,7 @@ export function RecipeDetail(){
          />
 
          <section className="dashboard-page__content">
-            <SecondaryHeader isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} pageTitle={title ? title : "Mock Title"} linkBack="/recipes"></SecondaryHeader>
+            <SecondaryHeader isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} pageTitle={title ? title : ""} linkBack="/recipes"></SecondaryHeader>
 	            <div className="selection-items">
 	            {canMutateRecipe ? <div className="edit-or-delete">
 	              <button type="button" className="recipe-icon-button" aria-label="Edit recipe" onClick={startEdit}><EditRoundedIcon className="edit"></EditRoundedIcon></button>
